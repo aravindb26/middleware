@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: PGP mail functionality
+Bundle-SymbolicName: com.openexchange.pgp.mail
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.pgp.mail.osgi.PGPMailActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.osgi,
+ com.openexchange.pgp.core,
+ com.openexchange.tools.io,
+ javax.activation,
+ javax.mail;version="1.5.0",
+ javax.mail.internet;version="1.5.0",
+ org.apache.commons.lang3;version="3.4.0",
+ org.bouncycastle.openpgp;version="1.60.0",
+ org.osgi.framework,
+ org.slf4j
+Export-Package: com.openexchange.pgp.mail,
+ com.openexchange.pgp.mail.tools
+Automatic-Module-Name: com.openexchange.pgp.mail

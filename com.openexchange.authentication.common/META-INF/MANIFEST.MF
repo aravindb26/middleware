@@ -1,0 +1,30 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange authentication bundle
+Bundle-SymbolicName: com.openexchange.authentication.common
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.authentication
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: com.openexchange.authentication.common
+Import-Package: com.google.common.collect,
+ com.google.common.base,
+ com.google.common.annotations,
+ com.openexchange.authentication,
+ com.openexchange.authentication.application.exceptions,
+ com.openexchange.config,
+ com.openexchange.config.lean,
+ com.openexchange.context,
+ com.openexchange.exception,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.java.util,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.server,
+ com.openexchange.session,
+ com.openexchange.user,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.authentication.common.osgi.CommonAuthenticationActivator

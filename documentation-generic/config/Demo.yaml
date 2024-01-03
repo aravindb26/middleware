@@ -1,0 +1,365 @@
+feature_name: Demo
+properties:
+  - key: com.openexchange.demo.enabled
+    description: |
+      Switch to enable or disable the demo mode feature.
+
+      <b>Note</b>:
+      Please do not enable this feature in production environments!
+    defaultValue: false
+    version: 8.0.0
+    related:
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.provisioning.masterAdminUser
+    description: |
+      The name of the master admin user.
+    defaultValue: oxadminmaster
+    version: 8.0.0
+    related: com.openexchange.demo.provisioning.masterAdminPass
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.provisioning.masterAdminPass
+    description: |
+      The password of the master admin user.
+    defaultValue: secret
+    version: 8.0.0
+    related: com.openexchange.demo.provisioning.masterAdminUser
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.provisioning.userList
+    description: |
+      A list of users which should be created.
+
+      <b>Note:</b>
+      If the list is empty, which is the default, then random user will be generated.
+    defaultValue:
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.provisioning.userPassword
+      - com.openexchange.demo.provisioning.userLocale
+      - com.openexchange.demo.provisioning.userImage
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.provisioning.userPassword
+    description: |
+      The password of the provisioned users.
+    defaultValue: secret
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.provisioning.userLocale
+      - com.openexchange.demo.provisioning.userList
+      - com.openexchange.demo.provisioning.userImage
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.provisioning.userLocale
+    description: |
+      List of user locales which should be used to provision the user.
+    defaultValue: en_US,de_DE,fr_FR
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.provisioning.userPassword
+      - com.openexchange.demo.provisioning.userList
+      - com.openexchange.demo.provisioning.userImage
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.provisioning.userImage
+    description: |
+      Whether a user image should be generated or not.
+    defaultValue: false
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.provisioning.userPassword
+      - com.openexchange.demo.provisioning.userLocale
+      - com.openexchange.demo.provisioning.userList
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.provisioning.mailDomain
+    description: |
+      The mail domain part of the provisioned users.
+    defaultValue: ox.test
+    version: 8.0.0
+    related:
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.provisioning.userPerContext
+    description: |
+      How many users should be created per context.
+
+      <code>Minimum: 1</code>
+    defaultValue: 1
+    version: 8.0.0
+    related: com.openexchange.demo.provisioning.numberOfContext
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.provisioning.numberOfContext
+    description: |
+      How many context should be created.
+
+      <code>Minimum: 1</code>
+    defaultValue: 1
+    version: 8.0.0
+    related: com.openexchange.demo.provisioning.userPerContext
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.database.readHost
+    description: |
+      The host or ip of the database read host.
+    defaultValue:
+    version: 8.0.0
+    related: com.openexchange.demo.database.writeHost
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.database.writeHost
+    description: |
+      The host or ip of the database write host.
+    defaultValue: localhost
+    version: 8.0.0
+    related: com.openexchange.demo.database.readHost
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.database.readUser
+    description: |
+      The database user of the read host.
+    defaultValue:
+    version: 8.0.0
+    related: com.openexchange.demo.database.writeUser
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.database.writeUser
+    description: |
+      The database user of the write host.
+    defaultValue: openexchange
+    version: 8.0.0
+    related: com.openexchange.demo.database.readUser
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.database.readPassword
+    description: |
+      The password of the read host.
+    defaultValue:
+    version: 8.0.0
+    related: com.openexchange.demo.database.writePassword
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.database.writePassword
+    description: |
+      The password of the write host.
+    defaultValue: secret
+    version: 8.0.0
+    related: com.openexchange.demo.database.readPassword
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.database.userdb
+    description: |
+      The name of the user db.
+    defaultValue: oxdatabase
+    version: 8.0.0
+    related:
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.database.globaldb.name
+    description: |
+      The name of the global db.
+    defaultValue: oxglobal
+    version: 8.0.0
+    related: com.openexchange.demo.database.globaldb.enabled
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.database.globaldb.enabled
+    description: |
+      Whether a global db should be registered or not.
+    defaultValue: false
+    version: 8.0.0
+    related: com.openexchange.demo.database.globaldb.name
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.filestore.scheme
+    description: |
+      The scheme part of the filestore URI.
+      Possible values:
+      <ul>
+        <li><code>file</code></li>
+        <li><code>s3</code></li>
+        <li><code>sproxyd</code></li>
+      </ul>
+    defaultValue: file
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.filestore.path
+      - com.openexchange.demo.filestore.size
+      - com.openexchange.demo.gdprstore.path
+      - com.openexchange.demo.gdprstore.size
+      - com.openexchange.demo.fileitemstore.path
+      - com.openexchange.demo.fileitemstore.size
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.filestore.path
+    description: |
+      The filestore path.
+    defaultValue: filestore
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.filestore.scheme
+      - com.openexchange.demo.filestore.size
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.filestore.size
+    description: |
+      The size of the filestore
+    defaultValue: 1000
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.filestore.scheme
+      - com.openexchange.demo.filestore.path
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.gdprstore.enabled
+    description: |
+       Whether a gdprstore should be registered or not.
+    defaultValue: false
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.gdprstore.path
+      - com.openexchange.demo.gdprstore.size
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.gdprstore.path
+    description: |
+      The gdprstore path.
+    defaultValue: gdprstore
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.gdprstore.enabled
+      - com.openexchange.demo.filestore.scheme
+      - com.openexchange.demo.gdprstore.size
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.gdprstore.size
+    description: |
+      The size of the gdprstore.
+    defaultValue: 1000
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.gdprstore.enabled
+      - com.openexchange.demo.filestore.scheme
+      - com.openexchange.demo.gdprstore.path
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.fileitemstore.enabled
+    description: |
+       Whether a fileitemstore, which is needed by the <code>FileItemService/ImageConverter</code>, 
+       should be registered or not.
+    defaultValue: false
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.fileitemstore.path
+      - com.openexchange.demo.fileitemstore.size
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.fileitemstore.path
+    description: |
+      The fileitemstore path.
+    defaultValue: fileitem
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.fileitemstore.enabled
+      - com.openexchange.demo.filestore.scheme
+      - com.openexchange.demo.fileitemstore.size
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]
+  - key: com.openexchange.demo.fileitemstore.size
+    description: |
+      The size of the fileitemstore.
+    defaultValue: false
+    version: 8.0.0
+    related:
+      - com.openexchange.demo.fileitemstore.enabled
+      - com.openexchange.demo.filestore.scheme
+      - com.openexchange.demo.fileitemstore.path
+    configcascadeAware: false
+    reloadable: false
+    file: demo.properties
+    packageName: open-xchange-demo
+    tags: ["Demo"]

@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Webhooks Bundle
+Bundle-SymbolicName: com.openexchange.webhooks
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.webhooks
+Bundle-Activator: com.openexchange.webhooks.osgi.WebhookActivator
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.config,
+ com.openexchange.config.lean,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.server,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Export-Package: com.openexchange.webhooks

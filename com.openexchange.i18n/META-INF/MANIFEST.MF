@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange I18n
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-SymbolicName: com.openexchange.i18n
+Bundle-Activator: com.openexchange.i18n.osgi.I18nActivator
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.config,
+ com.openexchange.exception,
+ com.openexchange.groupware,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Automatic-Module-Name: com.openexchange.i18n

@@ -1,0 +1,90 @@
+'/mail/compose/{id}/attachments/{attachmentId}':
+  parameters:
+    - in: path
+      name: id
+      description: The ID of the composition space
+      required: true
+      schema:
+        type: string
+    - in: path
+      name: attachmentId
+      description: The ID of the attachment
+      required: true
+      schema:
+        type: string
+  post:
+    operationId: postAttachmentsById
+    tags:
+      - MailCompose
+    summary: Replaces an existing attachment
+    security: 
+      - session: []       
+    description: >-
+      Uploads an attachment again and removes the old attachment from the
+      server. Used for image resize.
+    parameters:
+      - $ref: '#/components/parameters/MailComposeClientToken'
+    responses:
+      '200':
+        description: A JSON object containing the newly added attachment.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailComposeAttachmentResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            title: postAttachmentsBody
+            properties:
+              file:
+                description: The file to add
+                type: string
+                format: binary
+            required:
+              - file
+  get:
+    operationId: getAttachmentsById
+    tags:
+      - MailCompose
+    summary: Get binary attachment
+    security: 
+      - session: []       
+    description: This URL pattern can be used for inline images.
+    responses:
+      '200':
+        description: The attachment as file.
+        content:
+          application/json:
+            schema:
+              type: string
+              format: byte
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+  delete:
+    operationId: deleteAttachmentsById
+    tags:
+      - MailCompose
+    summary: Delete an existing attachment.
+    security: 
+      - session: []       
+    parameters:
+      - $ref: '#/components/parameters/MailComposeClientToken'
+    responses:
+      '200':
+        description: A JSON object containing the current state of the mail compose
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailComposeAttachmentResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized

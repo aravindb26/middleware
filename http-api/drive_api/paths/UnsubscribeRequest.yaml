@@ -1,0 +1,126 @@
+/drive?action=unsubscribe:
+  get:
+    operationId: unsubscribePushEvents_get_req
+    tags:
+      - Drive
+    summary: Unsubscribes from push events.
+    security: 
+        - session: []    
+    description: >
+      Unregisters a previously registered client device to stop receiving push
+      notifications from the server. The same parameters that were used to perform the subscription need to be
+      passed again, which includes the root folder ID or domain, the device token and the service name. 
+      If no root / domain is present, all susbcriptions for the token / service are removed implicitly.
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+      - in: query
+        name: service
+        description: >-
+          The name of the underlying push service to use, currently one of gcm,
+          apn, or apn2.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: token
+        description: The device's registration token as assigned by the service.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: domain
+        description: >-
+          The push domain representing the root of the folder subtree to remove the notifications for. 
+        required: false
+        schema:
+          type: string
+          enum:
+            - myFiles
+            - sharedFiles
+            - publicFiles
+    responses:
+      '200':
+        description: >
+          An empty JSON result. In case of errors the responsible fields in the
+          response are filled.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonResponse'
+    x-ox-examples:
+      - Example1: null
+        description: Basic example
+        example: >
+          ==> GET
+          http://192.168.32.191/ajax/drive?action=unsubscribe&root=65841&session=51378e29f82042b4afe4af1c034c6d68&service=apn&token=28919862989a1b5ba59c11d5f7cb7ba2b9678be9dd18b033184d04f682013677
+
+
+          <== HTTP 200 OK (26.0015 ms elapsed, 11 bytes received)
+
+          <   Content: 
+              {
+                "data" : {
+                }
+              }
+  put:
+    operationId: unsubscribePushEvents_put_req
+    tags:
+      - Drive
+    summary: Unsubscribes from push events.
+    description: >
+      Unregisters a previously registered client device to stop receiving push
+      notifications from the server.
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamSession'
+      - in: query
+        name: service
+        description: >-
+          The name of the underlying push service to use, currently one of gcm,
+          apn, or apn.macos.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: token
+        description: The device's registration token as assigned by the service.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          An empty JSON result. In case of errors the responsible fields in the
+          response are filled.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonResponse'
+    x-ox-examples:
+      - Example1: null
+        description: Basic example
+        example: >
+          ==> PUT
+          http://192.168.32.191/ajax/drive?action=unsubscribe&session=51378e29f82042b4afe4af1c034c6d68&service=apn&token=28919862989a1b5ba59c11d5f7cb7ba2b9678be9dd18b033184d04f682013677
+
+          > Content:
+            {
+              "root": [ "129136", "129137" ]
+            },
+
+          <== HTTP 200 OK (132.7421 ms elapsed, 11 bytes received)
+
+          <   Content: 
+              {
+                "data": {}
+              }
+    requestBody:
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: string
+      description: >-
+        A JSON object named "root" holding a JSON array of those root folder
+        identifiers to unsubscribe from.
+        Alternatively, a JSON array named "domain" can be set representing 
+        the roots of the folder subtree to remove the notifications for. 
+      required: true

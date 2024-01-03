@@ -1,0 +1,42 @@
+====[       ${mail.event.summary!""}       ]====
+
+${labels.timezoneInfo!""}
+
+${labels.whenLabel} ${formatters.dateSpec} ${formatters.interval}
+<#if mail.event.location??>
+${labels.whereLabel} ${mail.event.location!""}
+</#if>
+
+
+<#if mail.event.description??>
+====================================
+${mail.event.description!""}
+====================================
+</#if>
+
+<#if mail.conferences?has_content>
+== ${labels.conferencesLabel} ==
+
+<#list mail.conferences as conference>
+${participantHelper.conferenceLine(conference)}
+</#list>
+</#if>
+
+== ${labels.participantsLabel} ==
+
+<#list mail.participants as participant>
+${participantHelper.participantLine(participant)}
+</#list>
+
+== ${labels.resourcesLabel} ==
+
+<#list mail.resources as participant>
+${participantHelper.participantLine(participant)}
+</#list>
+
+== ${labels.detailsLabel} ==
+
+${labels.showAsLabel} ${labels.showAs}
+${labels.createdLabel} ${formatters.created} - ${labels.creator}‚
+
+${labels.justification!""}

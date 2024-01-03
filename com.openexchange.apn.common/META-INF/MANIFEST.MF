@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange APN common bundle
+Bundle-SymbolicName: com.openexchange.apn.common
+Bundle-Version: 8.0.0
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.apn.common
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Activator: com.openexchange.apn.common.osgi.Activator
+Import-Package: com.eatthepath.pushy.apns,
+ com.eatthepath.pushy.apns.auth,
+ com.eatthepath.pushy.apns.util,
+ com.eatthepath.pushy.apns.util.concurrent,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.keystore,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.push.clients,
+ com.openexchange.server,
+ org.apache.commons.io,
+ org.apache.log4j,
+ org.osgi.framework,
+ org.slf4j
+Export-Package: com.openexchange.apn.common

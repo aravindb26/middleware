@@ -1,0 +1,9 @@
+type: object
+properties:
+  $ref: CalendarUserRaw.yaml
+  sentBy:
+    type: object
+    title: SentByCalendarUser
+    properties:
+      $ref: CalendarUserRaw.yaml
+    description: A calendar user that is acting on behalf of this calendar user

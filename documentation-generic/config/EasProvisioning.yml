@@ -1,0 +1,81 @@
+feature_name: EAS provisioning 
+properties:
+    - key: com.openexchange.mobile.configuration.generator.iPhoneRegex
+      description: |
+        The regular expression for detecting an iPhone specific client.
+      defaultValue: "^.*(iPhone|iPad).*$"
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: eas-provisioning.properties
+      packageName: open-xchange-eas-provisioning
+      tags: ["EAS"]
+    - key: com.openexchange.mobile.configuration.generator.WinMobRegex
+      description: |
+        The regular expression for detecting an Windows Phone specific client.
+      defaultValue: "^.*Windows Phone.*$"
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: eas-provisioning.properties
+      packageName: open-xchange-eas-provisioning
+      tags: ["EAS"]
+    - key: com.openexchange.mobile.configuration.generator.OnlySecureConnect
+      description: |
+        Defines whether the configuration in only accessible over a secure TLS connection
+      defaultValue: true
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: eas-provisioning.properties
+      packageName: open-xchange-eas-provisioning
+      tags: ["EAS"]
+    - key: com.openexchange.mobile.configuration.generator.SignConfig
+      description: |
+        Defines whether the returned configuration should be signed
+      defaultValue: false
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: eas-provisioning.properties
+      packageName: open-xchange-eas-provisioning
+      tags: ["EAS"]
+    - key: com.openexchange.mobile.configuration.generator.CertFile
+      description: |
+        Defines the full path to the certificate used for signing the configuration.
+        Required if signing is enabled.
+      defaultValue: 
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: eas-provisioning.properties
+      packageName: open-xchange-eas-provisioning
+      tags: ["EAS"]
+    - key: com.openexchange.mobile.configuration.generator.KeyFile
+      description: |
+        Defines the full path to the certificate's private key file used for singing the configuration.
+        Required if signing is enabled.
+      defaultValue: 
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: eas-provisioning.properties
+      packageName: open-xchange-eas-provisioning
+      tags: ["EAS"]
+    - key: com.openexchange.mobile.configuration.generator.PemFile
+      description: |
+        An optional file defining additional certificates which get included into the signed configuration.
+      defaultValue: 
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: eas-provisioning.properties
+      packageName: open-xchange-eas-provisioning
+      tags: ["EAS"]

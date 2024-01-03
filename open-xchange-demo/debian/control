@@ -1,0 +1,13 @@
+Source: open-xchange-demo
+Section: web
+Priority: optional
+Maintainer: Nikolaos Tsapanidis <nikolaos.tsapanidis@open-xchange.com>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.9.8
+Homepage: http://www.open-xchange.com
+
+Package: open-xchange-demo
+Architecture: all
+Pre-Depends: open-xchange-core (>= @OXVERSION@)
+Depends: ${misc:Depends}
+Description: The Open-Xchange demo service

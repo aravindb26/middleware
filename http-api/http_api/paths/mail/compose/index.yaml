@@ -1,0 +1,10 @@
+requests: 
+  - AttachmentsRequest.yaml
+  - ComposeRequest.yaml
+  - OriginalRequest.yaml
+  - SaveRequest.yaml
+  - SendRequest.yaml
+  - VcardRequest.yaml
+  - AttachmentIdRequest.yaml
+  - IdRequest.yaml
+  - ReferencedAttachmentRequest.yaml

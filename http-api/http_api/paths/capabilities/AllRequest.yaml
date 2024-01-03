@@ -1,0 +1,19 @@
+/capabilities?action=all:
+  get:
+    operationId: getAllCapabilities
+    tags:
+      - Capabilities
+    summary: Gets all capabilities.
+    security: 
+        - session: []    
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with data for all capabilities. In
+          case of errors the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapabilitiesResponse'

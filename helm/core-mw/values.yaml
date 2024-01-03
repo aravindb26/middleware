@@ -1,0 +1,722 @@
+global:
+  # -- Sets the image registry globally
+  imageRegistry: ""
+  mysql:
+    existingSecret: ""
+  extras:
+    monitoring:
+      enabled: false
+
+# -- Partially override of the `ox-common.names.fullname` template<br/>
+# *NOTE: Preserves the release name.*
+nameOverride: ""
+
+# -- Fully override of the `ox-common.names.fullname` template
+fullnameOverride: ""
+
+# -- The default registry
+defaultRegistry: registry.open-xchange.com
+
+image:
+  # -- Image repository
+  repository: appsuite-core/middleware
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Image tag
+  tag: ""
+
+update:
+  # -- Whether an update task job for the specified database schemata is created or not
+  enabled: false
+  # -- Filter for which types the update tasks are triggered. Every type with an unique bundle set will create a container in the update job. All containers (except one) are configured as init containers to ensure they run sequentially.
+  types: []
+  # -- Image used for containers of the update job
+  # image:
+    # -- Image repository
+  #  repository: appsuite-core/middleware
+    # -- Image pull policy
+  #  pullPolicy: Always
+    # -- Image tag
+  #  tag: ""
+  # -- Database schemata to update. If empty, all schemata will be updated.
+  schemata: ""
+  # -- Override type sepcific update values
+  values: {}
+  # -- Job object settings
+  job:
+    # -- The number of seconds after which a job is deleted automatically
+    ttlSecondsAfterFinished: 86400 # 24hrs
+
+# -- Reference to one or more secrets to be used when pulling images
+imagePullSecrets: []
+
+rbac:
+  # -- Whether Role-Based Access Control (RBAC) resources should be created
+  create: true
+  # -- Custom RBAC rules
+  rules: []
+
+serviceAccount:
+  # -- Whether a service account should be created
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- Annotations to add to the pod
+podAnnotations:
+  logging.open-xchange.com/format: "appsuite-json"
+
+# -- The pod security context
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# -- The security context
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# -- Duration in seconds the pod waits to terminate gracefully.
+terminationGracePeriodSeconds: 120
+
+restricted:
+  drive:
+    # -- If enabled tries to mount drive restricted configuration
+    enabled: true
+
+  mobileApiFacade:
+    # -- If enabled tries to mount mobile api facade configuration
+    enabled: true
+
+remoteDebug:
+  # -- Whether Java Remote Debugging is enabled.
+  enabled: false
+  # -- The Java Remote Debug port.
+  port: 8102
+  # -- The node port (default range: 30000-32767)
+  nodePort: null
+
+## Istio configuration
+## Need a cluster wide installed istio and a gateway configuration which
+## is not part of this helm chart
+istio:
+  injection:
+    # -- Whether to enable sidecar injection or not.
+    enabled: false
+  compression:
+    # -- Whether to enable HTTP compression (gzip, deflate, etc.).
+    enabled: false
+
+# -- Whether initial bootstraping is enabled or not.
+enableInitialization: false
+
+# -- Whether to wait for configdb.
+enableDBConnectionCheck: true
+
+features:
+  definitions:
+    # -- Admin definitions
+    # @default -- see `values.yaml`
+    admin:
+      - open-xchange-admin
+      - open-xchange-admin-contextrestore
+      - open-xchange-admin-oauth-provider
+      - open-xchange-admin-soap
+      - open-xchange-admin-soap-usercopy
+      - open-xchange-admin-user-copy
+    # -- Reseller definitions
+    # @default -- see `values.yaml`
+    reseller:
+      - open-xchange-admin-reseller
+      - open-xchange-admin-soap-reseller
+    # -- Documents definitions
+    # @default -- see `values.yaml`
+    documents:
+      - open-xchange-documents-backend
+    # -- Guard definitions
+    # @default -- see `values.yaml`
+    guard:
+      - open-xchange-guard
+      - open-xchange-guard-backend-mailfilter
+      - open-xchange-guard-backend-plugin
+      - open-xchange-guard-file-storage
+      - open-xchange-guard-s3-storage
+    # -- Plugins definitions
+    # @default -- see `values.yaml`
+    plugins:
+      - open-xchange-plugins-antiphishing
+      - open-xchange-plugins-antiphishing-vadesecure
+      - open-xchange-plugins-blackwhitelist
+      - open-xchange-plugins-blackwhitelist-sieve
+      - open-xchange-plugins-contact-storage-group
+      - open-xchange-plugins-contact-whitelist-sync
+      - open-xchange-plugins-mx-checker
+      - open-xchange-plugins-onboarding-maillogin
+      - open-xchange-plugins-trustedidentity
+      - open-xchange-plugins-unsubscribe
+      - open-xchange-plugins-unsubscribe-vadesecure
+    # -- OX2OX Migration Framework Source definitions
+    # @default -- see `values.yaml`
+    omf-source:
+      - open-xchange-omf-source
+      - open-xchange-omf-source-dualprovisioning
+      - open-xchange-omf-source-dualprovisioning-cloudplugins
+      - open-xchange-omf-source-guard
+      - open-xchange-omf-source-mailfilter
+    # -- USM EAS sync definitions
+    # @default -- see `values.yaml`
+    usm-eas:
+      - open-xchange-usm
+      - open-xchange-eas
+  # -- Choose whether to enable or disable features.
+  # @default -- see `values.yaml`
+  status:
+    reseller: disabled
+    plugins: disabled
+    omf-source: disabled
+    usm-eas: disabled
+
+packages:
+  # -- Minimal package whitelist
+  # @default -- see `values.yaml`
+  minimalWhitelist:
+    - open-xchange-admin
+    - open-xchange-admin-soap
+    - open-xchange-appsuite-backend
+    - open-xchange-authentication-database
+    - open-xchange-authorization-standard
+    - open-xchange-core
+    - open-xchange-grizzly
+    - open-xchange-hazelcast-community
+    - open-xchange-imap
+    - open-xchange-osgi
+    - open-xchange-pop3
+    - open-xchange-rest
+    - open-xchange-sessionstorage-hazelcast
+    - open-xchange-smtp
+    - open-xchange-soap-cxf
+    - open-xchange-unifiedmail
+    - open-xchange-xerces
+  # -- Choose whether to enable or disable packages.
+  # @default -- see `values.yaml`
+  status:
+    open-xchange-admin-autocontextid: disabled
+    open-xchange-authentication-imap: disabled
+    open-xchange-authentication-kerberos: disabled
+    open-xchange-authentication-ldap: disabled
+    open-xchange-authentication-masterpassword: disabled
+    open-xchange-authentication-oauth: disabled
+    open-xchange-cassandra: disabled
+    open-xchange-dataretention-csv: disabled
+    open-xchange-drive-client-windows: disabled
+    open-xchange-eas-provisioning: disabled
+    open-xchange-eas-provisioning-mail: disabled
+    open-xchange-eas-provisioning-sms: disabled
+    open-xchange-hostname-ldap: disabled
+    open-xchange-hostname-config-cascade: disabled
+    open-xchange-multifactor: disabled
+    open-xchange-parallels: disabled
+    open-xchange-passwordchange-script: disabled
+    open-xchange-sms-sipgate: disabled
+    open-xchange-sms-twilio: disabled
+    open-xchange-spamhandler-parallels: disabled
+    open-xchange-saml-core: disabled
+    open-xchange-sso: disabled
+
+# -- The name of the master admin.
+masterAdmin: ""
+# -- The password of the master admin.
+masterPassword: ""
+# -- The [Hazelcast](https://hazelcast.com/) group name.
+hzGroupName: ""
+# -- The [Hazelcast](https://hazelcast.com/) group password.
+hzGroupPassword: ""
+# -- The user name used for HTTP basic auth.
+basicAuthLogin: ""
+# -- The password used for HTTP basic auth.
+basicAuthPassword: ""
+# -- User used for authentication with HTTP Basic Authentication.
+jolokiaLogin: ""
+# -- Password used for authentification with HTTP Basic Authentication.
+jolokiaPassword: ""
+
+# -- CPU/Memory resource requests/limits
+resources:
+  limits:
+    cpu: 2000m
+    memory: 8192Mi
+  requests:
+    cpu: 1000m
+    memory: 1024Mi
+
+javaOpts:
+  other: ""
+  server: ""
+  memory:
+    # maxHeapSize
+    maxHeapSize: "8192M"
+  debug:
+    heapdump:
+      # -- Enables Java Heap Dump creation in OOM situations
+      enabled: false
+      hostPath:
+        # -- hostPath directory on the k8s worker nodes, which needs to be created manually by the k8s admin. The directory will be mounted inside the core-mw container as '/heapdump'.
+        dir: "/mnt/appsuite-heap-dumps"
+      # -- The definition of a custom volume excluding its name which shall be used instead of a hostpath volume.
+      custom: {}
+    gcLogs:
+      # -- Enables Java Garbage Collector logging
+      enabled: false
+
+probe:
+  liveness:
+    # -- Enable the liveness probe
+    enabled: true
+    # -- The liveness probe period (in seconds)
+    periodSeconds: 10
+    # -- The liveness probe failure threshold
+    failureThreshold: 15
+  readiness:
+    # -- Enable the readiness probe
+    enabled: true
+    # -- The readiness probe initial delay (in seconds)
+    initialDelaySeconds: 30
+    # -- The readiness probe period (in seconds)
+    periodSeconds: 5
+    # -- The readiness probe failure threshold
+    failureThreshold: 2
+    # -- The readiness probe timeout (in seconds)
+    timeoutSeconds: 5
+  startup:
+    # -- Enable the startup probe
+    enabled: true
+    # -- The startup probe initial delay (in seconds)
+    initialDelaySeconds: 30
+    # -- The startup probe period (in seconds)
+    periodSeconds: 10
+    # -- The startup probe failure threshold
+    failureThreshold: 30
+
+##
+## Standalone example:
+###
+## host: "mysql-master"
+## port: "3306"
+## database: "configdb"
+## auth:
+##   user: "openexchange"
+##   password: "secret"
+##   rootPassword: "supersecret"
+##
+## Replication example:
+###
+## writeHost: "mysql-master"
+## writePort: "3306"
+## writeDatabase: "configdb"
+## readHost: "mysql-slave"
+## readPort: "3306"
+## readDatabase: "configdb"
+## auth:
+##   rootPassword: "supersecret"
+##   writeUser: "openexchange"
+##   writePassword: "writePassword"
+##   readUser: "openexchange"
+##   readPassword: "readPassword"
+mysql:
+  # -- Name of an existing secret.
+  existingSecret: ""
+  # -- The database host.
+  # *`(read/write connection)`*
+  host: ""
+  # -- The database port.
+  # *`(read/write connection)`*
+  port: "3306"
+  # -- The database/schema name.
+  # *`(read/write connection)`*
+  database: "configdb"
+  # -- The database host.
+  # *`(write connection)`*
+  writeHost: ""
+  # -- The database port.
+  # *`(write connection)`*
+  writePort: "3306"
+  # -- The database/schema name.
+  # *`(write connection)`*
+  writeDatabase: "configdb"
+  # -- The database host.
+  # *`(read connection)`*
+  readHost: ""
+  # -- The database port.
+  # *`(read connection)`*
+  readPort: "3306"
+  # -- The database/schema name.
+  # *`(read connection)`*
+  readDatabase: "configdb"
+
+  auth:
+    # -- The database user name.
+    # *`(read/write connection)`*
+    user: ""
+    # -- The database password.
+    # *`(read/write connection)`*
+    password: ""
+    # -- The MySQL `root` password.
+    rootPassword: ""
+    # -- The database user name.
+    # *`(write connection)`*
+    writeUser: ""
+    # -- The database password.
+    # *`(write connection)`*
+    writePassword: ""
+    # -- The database user name.
+    # *`(read connection)`*
+    readUser: ""
+    # -- The database password.
+    # *`(read connection)`*
+    readPassword: ""
+
+redis:
+  # -- Whether `Redis` should be enabled or not
+  enabled: false
+  # -- Redis operation mode (`standalone`, `cluster`, `sentinel`)
+  mode: standalone
+  # -- List of `Redis` hosts: <br/>
+  # Example for `redis`: [ <redis_host>:<redis_port> ] <br/>
+  # Example for `redis+sentinel`: [ <sentinel1_host>:<sentinel1_port>,<sentinel2_host>:<sentinel2_port>,<sentinel3_host>:<sentinel3_port> ] <br/>
+  # > Note: If `hosts` is empty or null, then an internal `redis`-standalone instance will be deployed.
+  hosts: []
+  auth:
+    # -- The `Redis` username.
+    username: ""
+    # -- The `Redis` password.
+    password: ""
+  # -- Name of the `sentinel` masterSet, if operation mode is set to `sentinel`.
+  sentinelMasterId: "mymaster"
+
+# -- Configuration
+configuration:
+  businessmobility:
+    logging:
+      debug:
+        # -- Whether debug log is enabled or not
+        enabled: false
+        # -- The path of the log file
+        # @default /var/log/open-xchange
+        logPath: ""
+
+  # -- List of languages which should be enabled. The default set of languages
+  # is `de_DE`, `en_US`, `es_ES`, `fr_FR` and `it_IT`.<br/>
+  # Example for enabling a couple of languages: `[ nl_NL, fi_FI, pl_PL ]` or
+  # for all available languages `[ all ]`
+  languages: []
+  logging:
+    # -- Enables logback's debug mode
+    debug: true
+    # -- The number of logging events to retain for delivery
+    queueSize: 2048
+    # -- Syslog configuration
+    syslog:
+      host: localhost
+      port: 514
+      facility: USER
+    # -- Logstash configuration
+    logstash:
+      host: localhost
+      port: 31337
+    json:
+      # -- Whether `PrettyPrint` is enabled
+      prettyPrint: false
+    root:
+      # -- Sets the log level of the root logger
+      level: INFO
+      # -- Whether logging to `logstash` is enabled
+      logstash: false
+      # -- Whether `JSON` logging is enabled
+      json: true
+    # -- List of named logger
+    logger:
+      - name: org.apache.cxf
+        level: WARN
+      - name: com.openexchange.soap.cxf.logger
+        level: WARN
+  sessiond:
+    redis:
+      enabled: false
+
+# -- Properties
+# @default -- see `values.yaml`
+properties:
+  #  com.openexchange.some.prop: Some Value
+  #  com.openexchange.some.prop2: "true"
+  #  com.openexchange.some.prop3: "12"
+  com.openexchange.connector.networkListenerHost: "*"
+  com.openexchange.cookie.hash: "remember"
+  com.openexchange.IPCheck: "false"
+  com.openexchange.jolokia.start: "true"
+
+# -- Secret properties
+secretProperties: {}
+#  com.openexchange.some.secret.prop: Some Secret Value
+#  com.openexchange.some.secret.prop2: Some Secret Value
+
+# -- UI settings<br/>
+uiSettings: {}
+#  io.ox.core//someProp: someValue
+#  io.ox.core//someProp2: someValue
+
+# -- Secret UI settings<br/>
+secretUISettings: {}
+#  io.ox.core//someSecretProp: someValue
+#  io.ox.core//someSecretProp2: someValue
+
+# -- Properties files
+propertiesFiles: {}
+#  /opt/open-xchange/etc/specific.properties:
+#    com.openexchange.some.specific.prop: Some Value
+#    com.openexchange.some.specific.prop2: Some Value
+
+# -- Secret properties files
+secretPropertiesFiles: {}
+#  /opt/open-xchange/etc/secret-specific.properties:
+#    com.openexchange.some.specific.secret.prop: Some Value
+#    com.openexchange.some.specific.secret.prop2: Some Value
+
+# -- UI settings files
+uiSettingsFiles: {}
+#  /opt/open-xchange/etc/settings/specific.properties:
+#    io.ox/core//some/secret/property: Some Value
+#    io.ox/core//some/secret/property2: Some Value
+
+# -- Secret UI settings files
+secretUISettingsFiles: {}
+#  /opt/open-xchange/etc/settings/specific-secret.properties:
+#    io.ox/core//some/secret/specific/property: Some Value
+#    io.ox/core//some/secret/specific/property2: Some Value
+
+# -- Meta
+meta: {}
+#  io.ox/core//design:
+#    protected: true
+#  io.ox/core//someProp:
+#    protected: false
+#  io.ox/core//apps/quickLaunchCount:
+#    protected: false
+
+# -- Context sets
+contextSets: {}
+#  brand.com:
+#    withTags: brand.com
+#    com.openexchange.sessiond.maxSession: 10
+
+# -- Secret Context sets
+secretContextSets: {}
+#  brand.com:
+#    withTags: brand.com
+#    com.openexchange.google.secret_key_id: abc123
+
+asConfig:
+  default:
+    host: all
+# Override certain settings for certain hosts
+#  myhost:
+#    host: myexchange.myhost.mytld
+#    someConfig: some overriding value
+
+# -- etc files
+etcFiles: {}
+
+# -- Secret etc files
+secretETCFiles: {}
+
+# -- etc files
+etcBinaries: []
+#   - name: binary1
+#     filename: something.bin
+#     b64Content: <base 64 encoded file content>
+
+# -- Secret etc files
+secretETCBinaries: []
+#   - name: binary1
+#     filename: something.bin
+#     b64Content: <base 64 encoded file content>
+
+# -- YAML files
+yamlFiles: {}
+#  yamlFile1:
+#    key: value
+#  relative/path/to/yamlFile2:
+#    key: value
+
+# -- Secret YAML files
+secretYAMLFiles: {}
+#  yamlFile1:
+#    key: value
+#  relative/path/to/yamlFile2:
+#    key: value
+
+hooks:
+  start: {}
+  #    welcome_to_the_machine.sh: |
+  #      #! /bin/bash
+  #      echo "WELCOME TO THE MACHINE"
+  beforeApply: {}
+  beforeAppsuiteStart: {}
+
+# -- Number of nodes
+replicas: 1
+defaultScaling:
+  nodes:
+    default:
+      roles:
+        - hazelcast-data-holding
+        - http-api
+        - sync
+        - admin
+        - businessmobility
+        - request-analyzer
+#scaling:
+#  nodes:
+#    hazelcast:
+#      replicas: 3
+#      roles:
+#        - hazelcast-data-holding
+#    http-api:
+#      replicas: 4
+#      roles:
+#        - http-api
+#        - hazelcast-lite-member
+#    sync:
+#      replicas: 2
+#      roles:
+#        - sync
+#        - hazelcast-lite-member
+#    admin:
+#      replicas: 1
+#      roles:
+#        - admin
+#        - hazelcast-lite-member
+#    businessmobility:
+#      replicas: 1
+#      roles:
+#        - businessmobility
+#        - hazelcast-lite-member
+# -- List of extra sidecar containers
+extraContainers: []
+
+# -- List of extra volumes
+extraVolumes: []
+
+# -- List of extra mounts
+extraMounts: []
+
+# -- List of extra environment variables
+extraEnv: []
+
+# -- List of extra StatefulSet properties
+extraStatefulSetProperties: {}
+
+# -- Tolerations for pod assignment
+nodeSelector: {}
+
+# -- Tolerations for pod assignment
+tolerations: []
+
+# -- Affinity for pod assignment
+affinity: {}
+
+roles:
+  http-api:
+    services:
+      - type: ClusterIP
+        ports:
+          - port: 80
+            targetPort: http
+            protocol: TCP
+            name: http
+  sync:
+    services:
+      - type: ClusterIP
+        ports:
+          - port: 80
+            targetPort: http
+            protocol: TCP
+            name: http
+  admin:
+    services:
+      - type: ClusterIP
+        ports:
+          - port: 80
+            targetPort: http
+            protocol: TCP
+            name: http
+  businessmobility:
+    services:
+      - type: ClusterIP
+        ports:
+          - port: 80
+            targetPort: http
+            protocol: TCP
+            name: http
+    values:
+      features:
+        status:
+          usm-eas: enabled
+      properties:
+        com.openexchange.usm.ox.url: http://localhost:8009/appsuite/api/
+  hazelcast-data-holding:
+    controller: "StatefulSet"
+    statefulSetServiceName: "hazelcast-headless"
+    services:
+      - name: hazelcast-headless
+        headless: true
+        ports:
+          - name: tcp-hazelcast
+            port: 5701
+  hazelcast-lite-member: {}
+  request-analyzer:
+    services:
+      - type: ClusterIP
+        ports:
+          - port: 80
+            targetPort: http
+            protocol: TCP
+            name: http
+
+
+extras:
+  monitoring:
+    # -- Whether monitoring resources should be created, e.g. a `ConfigMap` containing the Grafana dashboards.
+    enabled: false
+
+# -- Whether to create a secret containing common properties as environment variables (e.g. SESSIOND_ENCRYPTION_KEY)
+createCommonEnv: true
+
+# |--------------------------------------|
+# |          Chart Dependencies          | 
+# |--------------------------------------|
+
+## Gotenberg sub-chart configurable values
+## Please see https://github.com/MaikuMori/helm-charts/blob/master/charts/gotenberg/values.yaml
+gotenberg:
+  # -- Whether `Gotenberg` should be enabled or not.
+  enabled: false
+  image:
+    repository: registry.open-xchange.com/appsuite-core-internal/3rdparty/gotenberg
+    tag: '7.8.2'
+  chromium:
+    disableJavaScript: true
+
+## Collabora sub-chart configurable values
+## Please see https://github.com/CollaboraOnline/online/tree/master/kubernetes/helm/collabora-online
+collabora-online:
+  # -- Whether `Collabora` should be enabled or not.
+  enabled: false
+  image:
+    repository: registry.open-xchange.com/appsuite-core-internal/3rdparty/collabora-online
+    tag: "22.05.8.4.1"

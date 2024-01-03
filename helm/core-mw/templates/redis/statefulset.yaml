@@ -1,0 +1,61 @@
+{{- if and (empty .Values.redis.hosts) .Values.redis.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "core-mw.redis" . }}
+  labels:
+{{ include "ox-common.labels.standard" . | indent 4 }}
+    component: redis
+spec:
+  replicas: 1
+  serviceName: {{ include "core-mw.redis" . }}
+  selector:
+    matchLabels:
+{{ include "ox-common.labels.matchLabels" . | indent 6 }}
+      component: redis
+  template:
+    metadata:
+      labels:
+{{ include "ox-common.labels.standard" . | indent 8 }}
+        component: redis
+    spec:
+      securityContext:
+        runAsUser: 999
+        fsGroup: 999
+      terminationGracePeriodSeconds: 120
+      serviceAccountName: {{ include "core-mw.serviceAccountName" . }}
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 300
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 1
+            periodSeconds: 10
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              memory: 256Mi
+              cpu: 100m
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/redis
+              subPath: ""
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: data
+          emptyDir: {}
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+{{- end -}}

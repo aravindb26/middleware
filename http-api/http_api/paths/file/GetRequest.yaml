@@ -1,0 +1,27 @@
+/file?action=get:
+  get:
+    operationId: getFile
+    tags:
+      - File
+    summary: Requests a formerly uploaded file.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: id
+        description: The ID of the uploaded file.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >-
+          The content of the requested file is directly written into output
+          stream.
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      '404':
+        description: Not found.

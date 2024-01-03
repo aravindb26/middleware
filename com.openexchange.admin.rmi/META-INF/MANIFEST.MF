@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Admin RMI bundle
+Bundle-SymbolicName: com.openexchange.admin.rmi
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: com.openexchange.admin.rmi,
+ com.openexchange.admin.rmi.dataobjects,
+ com.openexchange.admin.rmi.exceptions,
+ com.openexchange.admin.rmi.extensions,
+ com.openexchange.admin.rmi.service
+Bundle-ClassPath: .
+Eclipse-BuddyPolicy: registered
+Import-Package: com.google.common.collect,
+ com.openexchange.auth,
+ com.openexchange.database,
+ com.openexchange.exception,
+ com.openexchange.gab,
+ com.openexchange.java,
+ com.openexchange.log
+Automatic-Module-Name: com.openexchange.admin.rmi

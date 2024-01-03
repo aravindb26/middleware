@@ -1,0 +1,33 @@
+/tasks?action=get:
+  get:
+    operationId: getTask
+    tags:
+      - Tasks
+    summary: Gets a task.
+    security: 
+        - session: []
+        - oauth:
+          - read_tasks    
+    parameters:
+      - in: query
+        name: id
+        description: Object ID of the requested task.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/gblQueryParamTaskFolder'
+    responses:
+      '200':
+        description: >
+          An object containing all data of the requested task. In case of errors
+          the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

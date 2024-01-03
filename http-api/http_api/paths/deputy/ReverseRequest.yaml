@@ -1,0 +1,15 @@
+/deputy?action=reverse:
+  get:
+    operationId: reverseDeputyPermissions
+    tags:
+      - Deputypermission
+    summary: Gets all deputy permission granted to session-associated user
+    security: 
+        - session: []    
+    responses:
+      '200':
+        description: A JSON array containing deputy permissions.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeputyListResponse'

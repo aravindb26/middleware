@@ -1,0 +1,30 @@
+feature_name: Notification
+properties:
+    - key: object_link
+      description: |
+        Direct links for notifications are generated according to the following pattern.  
+        [hostname] needs to be replaced with the hostname of your machine. This is done automatically by software on backend machines using the
+        hosts canonical host name.  
+        [uiwebpath] is replaced with the value of [[com.openexchange.UIWebPath]].  
+        [module], [object] and [folder] are replaced with the relevant IDs to generate the direct link.
+      defaultValue: https://[hostname]/[uiwebpath]#!!&app=io.ox/[module]&id=[object]&folder=[folder]
+      version: 
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: notification.properties
+      packageName: open-xchange-core
+      tags: ["Notification", "Task", "Appointment", "Host"]
+    - key: com.openexchange.notification.fromSource
+      description: |
+        This property defines which email address of a user is used when this user triggers notification mails. The property
+        influences the used FROM header as well as the email address used in the notifaction mail.
+        Possible values are: <code>primaryMail</code> or <code>defaultSenderAddress</code>.
+      defaultValue: defaultSenderAddress
+      version: 
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: notification.properties
+      packageName: open-xchange-core
+      tags: ["Notification", "Task", "Mail"]

@@ -1,0 +1,34 @@
+type: object
+properties:
+  $ref: ./CommonResponseData.yaml
+  data:
+    type: object
+    description: >-
+      If `diagnostics` parameter is set, this is a JSON object with the fields
+      `actions` (array of actions to execute), `diagnostics` (contains
+      diagnostics trace), `pathToRoot`(Path to internal 'real' root folder from given rootFolderId),
+      `localizedPathToRoot` (localized path to internal 'real' root folder from given rootFolderId 
+      based on the user's locale) and `quota`(quota limits and usage).
+    properties:
+      actions:
+        type: array
+        items:
+          $ref: '#/components/schemas/DriveAction'
+      diagnostics:
+        type: string
+        description: The diagnostics trace.
+      pathToRoot:
+        type: string
+        description: Path to internal 'real' root folder from given rootFolderId
+      localizedPathToRoot:
+        type: string
+        description: >
+          Localized path to internal 'real' root folder from given rootFolderId 
+          (based on the user's locale).
+      quota:
+        type: array
+        description: >-
+          An array of quota objects showing the quota limits and usage. A size of
+          zero represents unlimited quota.
+        items:
+          $ref: '#/components/schemas/DriveQuota'

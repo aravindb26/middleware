@@ -1,0 +1,26 @@
+type: object
+properties:
+  folder_id:
+    type: string
+    description: The object ID of the destination folder.
+  appendAttachmentPreviews:
+     type: boolean
+     description: Whether previews of convertible non-inline attachments shall be appended as content in the PDF. Default is true.
+  embedNonConvertibleAttachments:
+     type: boolean
+     description: Whether non-convertible non-inline attachments shall be included in the PDF as embedded attachments. Default is false.
+  embedAttachmentPreviews:
+     type: boolean
+     description: Whether previews of convertible non-inline attachments shall be included as embedded attachments in the PDF. Default is false.
+  embedRawAttachments:
+     type: boolean
+     description: Whether convertible non-inline attachments shall be included as embedded attachments in the PDF. Default is true.
+  preferRichText:
+     type: boolean
+     description: Whether the rich text (i.e. the HTML) version of an e-mail shall be preferred for exporting. Default is true.
+  pageFormat:
+     type: string
+     description: Sets the page format for the export. If absent, the page format is selected according to the user's locale setting
+  includeExternalImages:
+     type: boolean  
+     description: Whether external images embedded in the html body shall be included in the PDF.

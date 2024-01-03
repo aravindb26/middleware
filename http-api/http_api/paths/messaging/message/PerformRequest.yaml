@@ -1,0 +1,56 @@
+/messaging/message?action=perform:
+  put:
+    operationId: performMessagingAction
+    tags:
+      - Messaging
+    summary: Performs a certain messaging action on a message
+    security: 
+        - session: []    
+    description: >
+      On actions of type "message" the body should contain the JSON
+      representation of the message the action should be applied to.
+
+      To invoke a messaging action of type "storage" the folder and id are
+      needed in URL parameters.
+
+      Messaging actions of type "none" need a messaging message and account.
+    parameters:
+      - in: query
+        name: messageAction
+        description: The message action to invoke.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: id
+        description: >-
+          The ID of the message the action shall be invoked on. Only used on
+          actions of type "storage".
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: folder
+        description: The folder ID of the message. Only used on actions of type "storage".
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: account
+        description: The account ID. Only used on actions of type "none".
+        required: false
+        schema:
+          type: integer
+    responses:
+      '200':
+        description: >
+          A JSON object containing the number 1 if message could be sent. In
+          case of errors the responsible fields in the
+
+          response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessagingMessageUpdateResponse'
+    requestBody:
+      $ref: '#/components/requestBodies/MessagingMessageData'

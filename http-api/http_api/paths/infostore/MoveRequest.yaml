@@ -1,0 +1,95 @@
+/infostore?action=move:
+  get:
+    operationId: moveFile
+    tags:
+      - Infostore
+    summary: Moves one infoitem to another folder.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: timestamp
+        description: Timestamp of the last update of the infoitem to move.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - in: query
+        name: folder
+        description: ID of the destination folder.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: id
+        description: Object ID of the infoitem that shall be moved.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: pushToken
+        description: The client's push token to restrict the generated drive event
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/glbQueryParamsIgnoreWarnings'
+    responses:
+      '200':
+        description: >
+          A JSON object with an array of infoitem identifiers that could not be
+          moved (due to a conflict).
+
+          Th array is empty if everything went fine. In case of errors the
+          responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InfoItemMovedResponse'
+  put:
+    operationId: moveInfoItems
+    tags:
+      - Infostore
+    summary: Moves one or more infoitems to another folder
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: folder
+        description: ID of the destination folder.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: pushToken
+        description: The push token of the drive client
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/glbQueryParamsIgnoreWarnings'
+    responses:
+      '200':
+        description: >
+          A JSON object with an array of infoitem identifiers that could not be
+          moved (due to a conflict).
+
+          Th array is empty if everything went fine. In case of errors the
+          responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InfoItemsMovedResponse'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/InfoItemListElement'
+      description: >-
+        A JSON array of JSON objects each referencing to an existing infoitem
+        that is supposed to be moved to the destination folder.
+      required: true

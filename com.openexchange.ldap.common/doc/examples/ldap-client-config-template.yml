@@ -1,0 +1,188 @@
+# This template provides some basic ldap client configuration as a reference
+# If you want to learn more about all possible fields and options please refere to the documentation on documentation.open-xchange.com
+# To use one of the examples just copy the example into your 'ldap-client-config.yml' and fill in the relevant fields.
+# This examples can also be used as a starting point for your own configuration. So feel free to extend or combine them as you like.
+
+# Example 1: a single server client
+example1:
+  pool:
+    type: simple
+    trust-store:
+      trustAll: true
+    host:
+      address: <ldap address>
+      port: <ldap port>
+    pool-min: 5
+    pool-max: 20
+  auth:
+    type: adminDN
+    adminDN: 
+      dn: <enter your admin dn>
+      password: <enter your password>
+
+# Example 2: a single server with failover and a given baseDN
+example2:
+  pool:
+    type: failover
+    trust-store:
+      trustAll: true
+    hosts:
+      - address: <ldap address>
+        port: <ldap port>
+      - address: <ldap failover address>
+        port: <ldap failover port>
+    pool-min: 5
+    pool-max: 20
+  auth:
+    type: adminDN
+    adminDN: 
+      dn: <enter your admin dn>
+      password: <enter your password>
+  baseDN: <base dn>      
+
+# Example 3: a single ldap server with userdn template authentication which uses the users mail address
+example3:
+  pool:
+    type: simple
+    trust-store:
+      trustAll: true
+    host:
+      address: <ldap address>
+      port: <ldap port>
+    pool-min: 5
+    pool-max: 20
+  auth:
+    type: USERDN_TEMPLATE
+    userDNTemplate: 
+      nameSource: MAIL
+      dnTemplate: <your dn template>
+
+# Example 4: multiple servers with round robin
+example4:
+  pool:
+    type: roundRobin
+    trust-store:
+      trustAll: true
+    hosts:
+      - address: <ldap address>
+        port: <ldap port>
+      - address: <second ldap address>
+        port: <second ldap port>
+      - address: <third ldap address>
+        port: <third ldap port>
+    pool-min: 5
+    pool-max: 20
+  auth:
+    type: adminDN
+    adminDN: 
+      dn: <enter your admin dn>
+      password: <enter your password>
+
+# Example 5: single servers with ssl certificates
+example5:
+  pool:
+    type: simple
+    trust-store:
+      file: <path to truststore>
+      password: <optional store password>
+    key-store:
+      file: <path to keystore>
+      password: <optional store password>
+    host:
+      address: <ldap address>
+      port: <ldap port>
+    pool-min: 5
+    pool-max: 20
+  auth:
+    type: adminDN
+    adminDN: 
+      dn: <enter your admin dn>
+      password: <enter your password>
+
+# Example 6: a more complex example with multiple configurations
+example6:
+  pool:
+    type: fewestConnections
+    trust-store:
+      file: <path to truststore>
+      password: <optional store password>
+      examineValidityDates: true
+    key-store:
+      file: <path to keystore>
+      password: <optional store password>
+    hosts:
+      - address: <ldap address>
+        port: <ldap port>
+      - address: <second ldap address>
+        port: <second ldap port>
+      - address: <third ldap address>
+        port: <third ldap port>
+    pool-min: 5
+    pool-max: 20
+    responseTimeoutMillis: 60000
+    maxWaitTimeMillis: 30000
+    retryFailedOperations: true
+  auth:
+    type: adminDN
+    adminDN: 
+      dn: <enter your admin dn>
+      password: <enter your password>
+  baseDN: <base dn>      
+
+# Example 7: a custom configuration with anonymous pool initialization
+example7:
+  pool:
+    type: simple
+    trust-store:
+      trustAll: true
+    host:
+      address: <ldap address>
+      port: <ldap port>
+    pool-min: 5
+    pool-max: 20
+  auth:
+    type: CUSTOM
+    custom:
+      id: <bind-request-factory-id>
+      initPoolAuthType: anonymous
+      
+# Example 8: a custom configuration with adminDN pool initialization 
+example8:
+  pool:
+    type: simple
+    trust-store:
+      trustAll: true
+    host:
+      address: <ldap address>
+      port: <ldap port>
+    pool-min: 5
+    pool-max: 20
+  auth:
+    type: CUSTOM
+    custom:
+      id: <bind-request-factory-id>
+      initPoolAuthType: adminDN
+    adminDN: 
+      dn: <enter your admin dn>
+      password: <enter your password>
+
+# Example 9: single servers with ssl certificates by id
+example9:
+  pool:
+    type: simple
+    trust-store:
+      id: <keystore id>
+      password: <optional store password>
+    key-store:
+      id: <keystore id>
+      password: <optional store password>
+    host:
+      address: <ldap address>
+      port: <ldap port>
+    pool-min: 5
+    pool-max: 20
+  auth:
+    type: adminDN
+    adminDN: 
+      dn: <enter your admin dn>
+      password: <enter your password>      

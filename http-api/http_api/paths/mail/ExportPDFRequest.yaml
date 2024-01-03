@@ -1,0 +1,53 @@
+/mail?action=export_PDF:
+  put:
+    operationId: exportPDF
+    tags:
+      - Mail
+    summary: Gets file identifier of the mail which should be exported as pdf.
+    security: 
+        - session: []      
+        - oauth:
+          - export_pdf    
+    parameters:
+      - in: query
+        name: folder
+        description: Folder ID of the mail folder which contains the mail.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: id
+        description: Mail ID of the mail which should be exported as pdf.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: allow_enqueue
+        description: Flag to determine if the query should be enqueueble.
+        required: false
+        schema:
+          type: boolean
+      - $ref: '#/components/parameters/gblQueryParamsDecrypt'
+      - $ref: '#/components/parameters/glbQueryParamsCryptoAuth'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DestinationBody'
+      description: A JSON object containing the id of the destination folder.
+      required: true                
+    responses:
+      '200':
+        description: >
+          A JSON object with the object ID of the newly created infoitem. In
+          case of errors the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportPDFResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope' 

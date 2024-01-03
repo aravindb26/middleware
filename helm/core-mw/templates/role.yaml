@@ -1,0 +1,31 @@
+{{- if and .Values.serviceAccount.create .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "ox-common.names.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ox-common.labels.standard" . | nindent 4 }}
+rules:
+  {{- if .Values.enableInitialization }}
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+      - update
+      - delete
+      - list
+      - get
+  {{- end }}
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - secrets
+      - services
+    verbs:
+      - get
+      - list
+{{- end }}

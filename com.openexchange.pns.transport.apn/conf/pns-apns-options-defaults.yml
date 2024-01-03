@@ -1,0 +1,91 @@
+# The YAML configuration file for the APNS transport of the Push Notification Service
+#
+# Notation/meaning is:
+# <unique-client-identifier>:
+#     enabled: <true|false>
+#       Boolean. If set to "false" the client configuration will not be available.
+#                Default is "true".
+#
+#     topic: <topic>
+#       String. The topic of the app, which is typically the bundle ID of the app
+#
+#     authtype: <"certificate"|"jwt">
+#       String. The authentication type of the app. Either "certificate" to connect to APNs
+#               using a provider certificate or "jwt" to use a JSON Web Token (JWT).
+#               For "certificate" the fields "keystore" and "Password" are required, for "jwt"
+#               the fields "privatekey", "keyid" and "teamid" are required. Default
+#               is "certificate".
+#
+#     keystore: <keystore-name>
+#       String. Specifies the path to the local keystore file (PKCS #12) containing the APNS
+#               certificate and keys for the client-associated iOS application
+#
+#     keystoreId: <keystore-id>
+#       String. Specifies the id of the keystore
+#
+#     password: <password>
+#       String. Specifies the password to use when creating the referenced keystore containing
+#               the certificate of the iOS application.
+#
+#     production: <true|falses>
+#       Boolean. Indicates which APNS service is used when sending push notifications to iOS
+#                devices. A value of "true" will use the production service, a value of "false"
+#                references to the sandbox service. Default is "true".
+#
+#     privatekey: <private-key>
+#       String. The path to the APNS authentication key
+#
+#     privatekeyId: <private-key-id>
+#       String. Specifies the id of the private key
+#
+#     keyid: <key-id>
+#       String. The key identifier obtained from developer account
+#
+#     teamid: <team-id>
+#       String. The team identifier obtained from developer account
+#
+
+# An example using a keystore identified by its id
+myiosclient:
+    # Disabled...
+    enabled: false
+    authtype: certificate
+    keystoreId: myKeystoreId
+    password: ABCDEF12345
+    production: true
+    topic: bundleIdFromMyIosClient
+
+
+
+# An example using a local keystore file
+myiosclient2:
+    # Disabled...
+    enabled: false
+    authtype: certificate
+    keystore: /opt/open-xchange/etc/mykey-apns.p12
+    password: ABCDEF12345
+    production: true
+    topic: bundleIdFromMyIosClient
+
+
+# Another example with authtype=jwt. The private key is identified by its id
+myiosclient3:
+    # Disabled...
+    enabled: false
+    authtype: jwt
+    privatekeyId: myPrivateKeyId
+    keyid: 1465WKAKR8XB
+    teamid: 1256GFT56
+    production: true
+    topic: AS34HGZ456
+
+# Another example with authtype=jwt
+myiosclient4:
+    # Disabled...
+    enabled: false
+    authtype: jwt
+    privatekey: /opt/open-xchange/etc/anotherkey-apns.p8
+    keyid: 1465WKAKR8XB
+    teamid: 1256GFT56
+    production: true
+    topic: AS34HGZ456

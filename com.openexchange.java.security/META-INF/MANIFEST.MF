@@ -1,0 +1,33 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Java Security Bundle
+Bundle-SymbolicName: com.openexchange.java.security
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.annotations,
+ com.google.common.base,
+ com.google.common.cache,
+ com.google.common.collect,
+ com.google.common.util.concurrent,
+ com.openexchange.config,
+ com.openexchange.java,
+ com.openexchange.osgi,
+ com.openexchange.startup,
+ com.openexchange.timer,
+ javax.activation,
+ javax.annotation.concurrent,
+ javax.crypto,
+ javax.crypto.interfaces,
+ javax.crypto.spec,
+ javax.naming,
+ javax.net,
+ javax.net.ssl,
+ javax.security.auth.callback,
+ javax.security.sasl,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j,
+ sun.misc
+Automatic-Module-Name: com.openexchange.java.security
+Bundle-Activator: com.openexchange.java.security.osgi.JavaSecurityActivator

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="lib/netty-buffer-4.1.97.Final.jar" sourcepath="lib/source/netty-buffer-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-codec-4.1.97.Final.jar" sourcepath="lib/source/netty-codec-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-codec-dns-4.1.97.Final.jar" sourcepath="lib/source/netty-codec-dns-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-codec-http2-4.1.97.Final.jar" sourcepath="lib/source/netty-codec-http2-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-codec-http-4.1.97.Final.jar" sourcepath="lib/source/netty-codec-http-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-codec-socks-4.1.97.Final.jar" sourcepath="lib/source/netty-codec-socks-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-common-4.1.97.Final.jar" sourcepath="lib/source/netty-common-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-handler-4.1.97.Final.jar" sourcepath="lib/source/netty-handler-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-handler-proxy-4.1.97.Final.jar" sourcepath="lib/source/netty-handler-proxy-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-resolver-4.1.97.Final.jar" sourcepath="lib/source/netty-resolver-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-resolver-dns-4.1.97.Final.jar" sourcepath="lib/source/netty-resolver-dns-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-transport-4.1.97.Final.jar" sourcepath="lib/source/netty-transport-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-transport-native-unix-common-4.1.97.Final.jar" sourcepath="lib/source/netty-transport-native-unix-common-4.1.97.Final-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-tcnative-classes-2.0.46.Final.jar" sourcepath="lib/source/netty-tcnative-classes-2.0.46.Final-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

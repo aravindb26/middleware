@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: The OAuth provider SOAP Bundle
+Bundle-SymbolicName: com.openexchange.oauth.provider.soap
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Eclipse-RegisterBuddy: jakarta.xml.ws
+Require-Bundle: com.openexchange.soap.common
+Import-Package: com.openexchange.admin.rmi.dataobjects,
+ com.openexchange.admin.rmi.exceptions,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.oauth.provider.rmi.client,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.tools.net,
+ org.apache.commons.codec,
+ org.apache.commons.codec.binary,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.oauth.provider.soap.osgi.OAuthClientServiceActivator
+Automatic-Module-Name: com.openexchange.oauth.provider.soap

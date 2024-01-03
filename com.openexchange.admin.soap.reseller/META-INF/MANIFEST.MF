@@ -1,0 +1,35 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Admin SOAP Reseller Bundle
+Bundle-SymbolicName: com.openexchange.admin.soap.reseller
+Automatic-Module-Name: com.openexchange.admin.soap.reseller
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.admin.plugins,
+ com.openexchange.admin.reseller.rmi,
+ com.openexchange.admin.reseller.rmi.dataobjects,
+ com.openexchange.admin.reseller.rmi.exceptions,
+ com.openexchange.admin.reseller.rmi.extensions,
+ com.openexchange.admin.rmi,
+ com.openexchange.admin.rmi.dataobjects,
+ com.openexchange.admin.rmi.exceptions,
+ com.openexchange.admin.rmi.extensions,
+ com.openexchange.exception,
+ com.openexchange.gab,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.tools.net,
+ com.openexchange.tools.oxfolder,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j,
+ javax.xml.datatype,
+ javax.xml.namespace
+Require-Bundle: com.openexchange.soap.common,
+ com.openexchange.admin.reseller;bundle-version="6.21.0"
+Bundle-Activator: com.openexchange.admin.soap.reseller.osgi.SoapResellerActivator
+Bundle-ClassPath: .

@@ -1,0 +1,5 @@
+requests: 
+  - AcsRequest.yaml
+  - InitRequest.yaml
+  - MetadataRequest.yaml
+  - SlsRequest.yaml

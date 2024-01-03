@@ -1,0 +1,43 @@
+feature_name: Conference Webhook
+properties:
+    - key: com.openexchange.conference.webhook.baseUri
+      description: |
+        Defines the base URI to the webhook target. Must be configured for communicating with the external conference service. Once a 
+        value is defined, notifications are triggered to the webhook target upon new and updated appointments with conferences.
+      defaultValue: 
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: true
+      file: conference_webhook.properties
+      packageName: open-xchange-conference-webhook
+      tags: ["Calendar", "Webhook", "Conference"]
+    - key: com.openexchange.conference.webhook.secret
+      description: |
+        Configures the webhook secret for communicating with the external conference service.
+      defaultValue: 
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: true
+      file: conference_webhook.properties
+      packageName: open-xchange-conference-webhook
+      tags: ["Calendar", "Webhook", "Conference"]
+    - key: com.openexchange.conference.webhook.enableZoomInterceptor
+      description: |
+        Enables or disables integrity checks prior storing appointments that are associated with Zoom meetings. If enabled, incompatible start/endtimes or recurrence rules will be prevented.
+      defaultValue: true
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: true
+      file: conference_webhook.properties
+      packageName: open-xchange-conference-webhook
+      tags: ["Calendar", "Webhook", "Conference"]
+    - key: com.openexchange.conference.webhook.enableJitsiInterceptor
+      description: |
+        Enables or disables integrity checks prior storing appointments that are associated with Jitsi meetings. If enabled, incompatible start/endtimes or recurrence rules will be prevented.
+      defaultValue: true
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: true
+      file: conference_webhook.properties
+      packageName: open-xchange-conference-webhook
+      tags: ["Calendar", "Webhook", "Conference"]

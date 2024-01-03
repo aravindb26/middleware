@@ -1,0 +1,61 @@
+/folders?action=allVisible:
+  get:
+    operationId: getVisibleFolders
+    tags:
+      - Folders
+    summary: Gets all visible folders of a certain module.
+    security: 
+        - session: []
+        - oauth: []
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamFolderTree'
+      - in: query
+        name: content_type
+        description: >-
+          The desired content type, either numbers or strings. Known default content types are:
+          <ul>
+          <li>"tasks": for folders holding Task objects</li>
+          <li>"calendar": for folders holding legacy Appointment objects (see module "calendar")</li>
+          <li>"event": for folders holding Event objects (see module "chronos")</li>
+          <li>"contacts": for folders holding Contact objects (see module "contacts"; with folder identifiers in legacy format)</li>
+          <li>"addressdata": for folders holding Contact objects (see module "addressbooks"; with folder identifiers in composite format)</li>
+          <li>"mail": for folders holding Maildata objects (see module "mail")</li>
+          <li>"infostore": for folders holding Infoitem objects (see module "infostore")</li>
+          </ul>
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/gblQueryParamFolderColumns'
+      - $ref: '#/components/parameters/gblQueryParamLanguage'
+      - in: query
+        name: all
+        description: >-
+          Whether or not to include subscribed folders.
+        required: false
+        schema:
+          type: boolean
+          default: false
+    responses:
+      '200':
+        description: >
+          A JSON object containing three fields: "private", "public, and
+          "shared". Each field is a JSON array with data for all folders. 
+
+          Each folder is itself described by an array. The elements of each
+          array contain the information specified by the corresponding
+          identifiers in the columns parameter. 
+
+          For the content_type "mail" a JSON object only containing the JSON
+          array "private" is returned. Mail folders are managed by the mail
+          storage and all are considered 
+
+          to be in private folder namespace for an Open-Xchange user.
+
+          In case of errors the responsible fields in the response are filled
+          (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoldersVisibilityResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'

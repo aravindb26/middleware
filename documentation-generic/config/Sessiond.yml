@@ -1,0 +1,220 @@
+feature_name: SessionD 
+properties:
+  - key: com.openexchange.sessiond.maxSession
+    description: |
+      Maximum number of concurrent sessions, 0 stands for unlimited.
+    defaultValue: 50000
+    version: 
+    reloadable: false
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Limit"]
+  - key: com.openexchange.sessiond.maxSessionPerUser
+    description: |
+      Maximum number of concurrent sessions per user, a value less than or equal to zero means unlimited.
+    defaultValue: 100
+    version: 
+    reloadable: false
+    configcascadeAware: false
+    related: com.openexchange.sessiond.maxSessionPerLink, com.openexchange.sessiond.maxSessionPerGuest
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Limit"]
+  - key: com.openexchange.sessiond.maxSessionPerClient
+    description: |
+      Specify the number of sessions allowed per client (Web UI, EAS, WebDAV, ...) and user.
+      A value equal to or less than zero means unlimited.
+    defaultValue: 0
+    version: 
+    reloadable: false
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Limit"]
+  - key: com.openexchange.sessiond.sessionDefaultLifeTime
+    description: |
+      Life time (in milliseconds) of a session in the short term session containers. After this time the session is put into the long life time container and all
+      temporary session data is removed. This only applies if the user requested to stay signed in.
+      Short term session containers are rotated every 6 minutes. Therefore this value should be a multiple of 6 minutes.
+    defaultValue: 3600000
+    version: 
+    reloadable: false
+    configcascadeAware: false
+    related:
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session"]
+  - key: com.openexchange.sessiond.sessionLongLifeTime
+    description: |
+      This amount of time a session can live without any interaction, if the user requested to stay signed in. First the session lives
+      in the short term session container, see configuration option [[com.openexchange.sessiond.sessionDefaultLifeTime]]. Then the session is moved
+      into the long term session container. The session can be restored from here, but it won't have any temporary session data anymore.
+      Restoring temporary session data may cause some slower functionality and maybe temporary errors on image, proxy data or the like. The
+      overall time a session can live is defined by this option. The life time in the long term session container is the time configured here
+      subtracted by the time in the short term session container.
+      Can contain units of measurement: D(=days) W(=weeks) H(=hours) M(=minutes).
+      Long term session containers are rotated every hour. Therefore this value should be a multiple of 1 hour.
+    defaultValue: 1W
+    version: 
+    reloadable: false
+    configcascadeAware: false
+    related: com.openexchange.sessiond.sessionDefaultLifeTime
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session"]
+  - key: com.openexchange.sessiond.randomTokenTimeout
+    description: |
+      The random token to access a newly created session is valid for this configured time.
+      Can contain units of measurement: D(=days) W(=weeks) H(=hours) M(=minutes).
+    defaultValue: 30000
+    version: 
+    reloadable: false
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session"]
+  - key: com.openexchange.sessiond.encryptionKey
+    description: |
+      Key to encrypt passwords during transmission during session migration. This property is mandatory. Please make sure it's the same in the entire cluster
+    defaultValue: 
+    version: 
+    reloadable: false
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Security"]
+  - key: com.openexchange.sessiond.asyncPutToSessionStorage
+    description: |
+      Specifies if sessions shall be put asynchronously to session storage.
+    defaultValue: true
+    version: 
+    reloadable: false
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session"]
+  - key: com.openexchange.sessiond.useDistributedTokenSessions
+    description: |
+      Defines if a distributed session container is supposed to be used for special token-login (login requests of kind "/ajax/login?action=tokenLogin").
+      A value of <code>false</code> means that pre-initialized sessions are only hold node-local.
+    defaultValue: false
+    version: 
+    reloadable: false
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session"]
+  - key: com.openexchange.sessiond.maxSessionPerLink
+    description: |
+      Maximum number of concurrent sessions per anonymous link, a value less than or equal to zero means unlimited.
+    defaultValue: 250
+    version: 7.10.0
+    reloadable: false
+    configcascadeAware: false
+    related: com.openexchange.sessiond.maxSessionPerUser, com.openexchange.sessiond.maxSessionPerGuest
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Limit"]
+  - key: com.openexchange.sessiond.maxSessionPerGuest
+    description: |
+      Maximum number of concurrent sessions per guest, a value less than or equal to zero means unlimited.
+    defaultValue: 20
+    version: 7.10.0
+    reloadable: false
+    configcascadeAware: false
+    related: com.openexchange.sessiond.maxSessionPerLink, com.openexchange.sessiond.maxSessionPerUser
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Limit"]
+  - key: com.openexchange.sessiond.removeFromSessionStorageOnTimeout
+    description: |
+       Configures whether sessions that were rotated out of the containers are implicitly also removed from the session storage or not. 
+       Defaults to "true". If set to "false", sessions will be preserved in the storage, which helps in situations where the same session
+       is used from clients on different nodes in the cluster. Still, the session in the in the distributed storage will get evicted 
+       after being idle for some time, as specified in the map config at "hazelcast/session.properties".
+    defaultValue: false
+    version: 7.10.4
+    reloadable: false
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Hazelcast"]
+  - key: com.openexchange.sessiond.redis.enabled
+    description: |
+       Enables or disables the Redis-backed sesion storage effectively replacing node-local SessionD service
+    defaultValue: false
+    version: 8.0.0
+    reloadable: false
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Redis"]
+  - key: com.openexchange.sessiond.redis.ensureExistenceOnLocalFetch
+    description: |
+       Controls whether session existence is explicitly checked when a session is fetched from node-local session cache.
+       If false, sessions are only dropped from local session cache when locally expired or a session invalidation event is remotely received.
+    defaultValue: true
+    version: 8.0.0
+    reloadable: true
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Redis"]
+  - key: com.openexchange.sessiond.redis.checkExistenceThreshold
+    description: |
+       Specifies the threshold (milliseconds) in which a local session needs to be checked if still existent in Redis session storage.
+       The higher chosen the value is, the less checks for existence are performed with a higher risk of working with a non-existent session.
+       Only applicable if "com.openexchange.sessiond.ensureExistenceOnLocalFetch" is set to "true".
+       A value of 0 (zero) or less disables the check; forcing every access to a locally cached session's existence being verified.
+    defaultValue: 5000
+    version: 8.0.0
+    reloadable: true
+    configcascadeAware: false
+    related: ["com.openexchange.sessiond.redis.ensureExistenceOnLocalFetch"]
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Redis"]
+  - key: com.openexchange.sessiond.redis.tryLockBeforeRedisLookUp
+    description: |
+       Specifies if a node-local lock should be acquired when loading session data from Redis storage. When acquiring a lock, session data is
+       not fetched concurrently, less load on Redis storage, but with the burden to acquire a lock.
+    defaultValue: true
+    version: 8.0.0
+    reloadable: true
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Redis"]
+  - key: com.openexchange.sessiond.redis.consistencyCheckIntervalMinutes
+    description: |
+       Specifies the interval in minutes in which session data held in Redis storage is checked for consistency/validity
+    defaultValue: 30
+    version: 8.0.0
+    reloadable: true
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Redis"]
+  - key: com.openexchange.sessiond.redis.expirerAndCountersUpdateIntervalMinutes
+    description: |
+       Specifies the interval in minutes when to perform session expiration and counters update against Redis session storage
+    defaultValue: 5
+    version: 8.0.0
+    reloadable: true
+    configcascadeAware: false
+    related: 
+    file: sessiond.properties
+    packageName: open-xchange-core
+    tags: ["Session", "Redis"]

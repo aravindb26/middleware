@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="lib/aws-java-sdk-cloudwatch-1.12.487.jar" sourcepath="lib/source/aws-java-sdk-cloudwatch-1.12.487-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/aws-java-sdk-core-1.12.487.jar" sourcepath="lib/source/aws-java-sdk-core-1.12.487-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/aws-java-sdk-kms-1.12.487.jar" sourcepath="lib/source/aws-java-sdk-kms-1.12.487-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/aws-java-sdk-s3-1.12.487.jar" sourcepath="lib/source/aws-java-sdk-s3-1.12.487-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/aws-java-sdk-sts-1.12.487.jar" sourcepath="lib/source/aws-java-sdk-sts-1.12.487-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jmespath-java-1.12.487.jar" sourcepath="lib/source/jmespath-java-1.12.487-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ion-java-1.5.1.jar" sourcepath="lib/source/ion-java-1.5.1-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

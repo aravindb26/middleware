@@ -1,0 +1,27 @@
+feature_name: Segmenter
+feature_description: |
+  Configurations related to the segmenter client for active/active environments.
+properties:
+    - key: com.openexchange.segmenter.baseUrl
+      description: |
+        Contains the base URL for the segmenter service; e.g. `https://my.segmenter.domain</code>`. As long as no value is defined,
+        a non-sharded environment is assumed where all segments are served by the 'local' site.
+      defaultValue:
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: com.openexchange.segmenter.localSiteId
+      file: segmenter.properties
+      packageName: open-xchange-core
+      tags: ["Segmenter"]
+    - key: com.openexchange.segmenter.localSiteId
+      description: |
+        Holds the identifier of the local site where this node is deployed, defaults to `default` unless overridden.
+      defaultValue: default
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: com.openexchange.segmenter.baseUrl 
+      file: segmenter.properties
+      packageName: open-xchange-core
+      tags: ["Segmenter"]

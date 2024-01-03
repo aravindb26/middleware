@@ -1,0 +1,537 @@
+feature_name: Drive
+feature_description: |
+  Properties for com.openexchange.drive
+properties:
+    - key: com.openexchange.capability.drive
+      description: |
+        Enables or disables the "drive" module capability globally. The capability
+        can also be set more fine-grained via config cascade. Per default it is only
+        enabled for users that have the "infostore" permission set. This is configured
+        in /opt/open-xchange/etc/contextSets/drive.yml.
+      defaultValue: false
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Capability"]
+    - key: com.openexchange.drive.shortProductName
+      description: |
+        Short product name as used in the version comment string inserted for drive
+        uploads, e.g. "Uploaded with OX Drive (Ottos Laptop)".
+      defaultValue: OX Drive
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.useTempFolder
+      description: |
+        Specifies whether the synchronization logic will make use of a folder named
+        ".drive" below the root synchronization folder or not. If enabled, this
+        folder is used to store temporary uploads and removed files, which usually
+        leads to a better user experience since previously synchronized files can
+        be restored from there for example. If not, removed files are not kept, and
+        uploads are performed directly in the target folder.
+      defaultValue: true
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Folder"]
+    - key: com.openexchange.drive.cleaner.interval
+      description: |
+        Configures the interval between runs of the cleaner process for the
+        temporary ".drive" folder. A cleaner run is only initiated if the
+        synchronization is idle, i.e. the last synchronization resulted in no
+        actions to be performed, and the last run was before the configured
+        interval. The value can be defined using units of measurement: "D" (=days),
+        "W" (=weeks) and "H" (=hours).
+      defaultValue: 1D
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Folder"]
+    - key: com.openexchange.drive.cleaner.maxAge
+      description: |
+        Defines the maximum age of files and directories to be kept inside the
+        temporary ".drive" folder. Files or directories that were last modified
+        before the configured age are deleted during the next run of the cleaner
+        process. The value can be defined using units of measurement: "D" (=days),
+        "W" (=weeks) and "H" (=hours).
+      defaultValue: 1D
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Folder", "Limit"]
+    - key: com.openexchange.drive.checksum.cleaner.interval
+      description: |
+        Defines the interval of a periodic background task that performs cleanup 
+        operations for cached checksums in the database. The task is executed only 
+        once per interval in the cluster, so this value should be equally defined 
+        on each node.
+        The value can be defined using units of measurement: "D" (=days), 
+        "W" (=weeks) and "H" (=hours) with a minimum of "1H" (one hour). 
+        A value of "0" disables the periodic background task.
+      defaultValue: 1D
+      version:
+      reloadable: false
+      configcascadeAware: true
+      related: com.openexchange.database.cleanup.enabled
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Database"]
+    - key: com.openexchange.drive.checksum.cleaner.maxAge
+      description: |
+        Defines the timespan after which an unused checksum should be removed from 
+        the database cache.
+        The value can be defined using units of measurement: "D" (=days), 
+        "W" (=weeks) and "H" (=hours) with a minimum of "1D" (one day). 
+      defaultValue: 4W
+      version:
+      reloadable: false
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Database", "Limit"]
+    - key: com.openexchange.drive.maxBandwidth
+      description: |
+        Allows to limit the maximum used bandwidth for all downloads. If
+        configured, downloads via the drive module handled by this backend node will
+        not exceed the configured bandwidth. The available bandwidth is defined as
+        the number of allowed bytes per second, where the byte value can be
+        specified with one of the units "B" (bytes), "kB" (kilobyte), "MB"
+        (Megabyte) or "GB" (Gigabyte), e.g. "10 MB". Must fit into the "Integer"
+        range, i.e. the configured number of bytes has to be be smaller than 2^31.
+        <code>-1</code> means no limitations.
+      defaultValue: -1
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit"]
+    - key: com.openexchange.drive.maxBandwidthPerClient
+      description: |
+        Allows to limit the maximum used bandwidth for client downloads within the
+        same session. If configured, downloads originating in the same session via
+        the drive module handled by this backend node will not exceed the
+        configured bandwidth. The available bandwidth is defined as the number of
+        allowed bytes per second, where the byte value can be specified with one of
+        the units "B" (bytes), "kB" (kilobyte), "MB" (Megabyte) or "GB" (Gigabyte),
+        e.g. "500 kB". Must fit into the "Integer" range, i.e. the configured
+        number of bytes has to be be smaller than 2^31. 
+        <code>-1</code> means no limitations.
+      defaultValue: -1
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit"]
+    - key: com.openexchange.drive.maxConcurrentSyncOperations
+      description: |
+        Specifies the maximum allowed number of synchronization operations, i.e.
+        all requests to the "drive" module apart from up- and downloads, that the
+        server accepts concurrently. While the limit is reached, further
+        synchronization requests are rejected in a HTTP 503 manner (service
+        unavailable), and the client is instructed to try again at a later time.
+        <code>-1</code> means no limitations.
+      defaultValue: -1
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit"]
+    - key: com.openexchange.drive.maxDirectories
+      description: |
+        Defines the maximum number of synchronizable directories per root folder. A
+        value of <code>-1</code> disables the limitation.
+      defaultValue: 65535
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit", "Folder"]
+    - key: com.openexchange.drive.maxFilesPerDirectory
+      description: |
+        Defines the maximum number of synchronizable files per root folder. A
+        value of <code>-1</code> disables the limitation.
+      defaultValue: 65535
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit", "Folder"]
+    - key: com.openexchange.drive.maxConcurrentSyncFiles
+      description: |
+        Specifies the configured limit for concurrent syncFiles-Operation that 
+        is allowed to be performed by a single user. While the limit is reached, further
+        syncFiles requests are rejected for that user in a HTTP 503 manner (service
+        unavailable), and the client is instructed to try again at a later time.
+        <code>-1</code> means no limitations.
+      defaultValue: 10
+      version: 7.10.4
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit"]
+    - key: com.openexchange.drive.maxConcurrentSyncFolders
+      description: |
+        Specifies the configured limit for concurrent syncFolders-Operation that 
+        is allowed to be performed by a single user. While the limit is reached, further
+        syncFolders requests are rejected for that user in a HTTP 503 manner (service
+        unavailable), and the client is instructed to try again at a later time.
+        <code>-1</code> means no limitations.
+      defaultValue: 3
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit"]
+    - key: com.openexchange.drive.enabledServices
+      description: |
+        Configures a list of allowed file storage services where synchronization via OX Drive should be enabled. 
+        The services must be defined in a comma-separated list of their unique identifiers.
+      defaultValue: com.openexchange.infostore
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.directLinkQuota
+      description: |
+        Configures the pattern for a direct link to manage a user's quota. 
+        Text in brackets is replaced dynamically during link generation in the backend,
+        however, it's still possible to overwrite them here with a static value, or
+        even define an arbitrary URL here.
+
+        [protocol] is replaced automatically with the protocol used by the client
+        (typically "http" or "https").  
+        [hostname] should be replaced with the server's canonical host name (if not,
+        the server tries to determine the hostname on it's own),  
+        [uiwebpath] is replaced with the value of [[com.openexchange.UIWebPath]], while [dispatcherPrefix] is replaced with the value of
+        [[com.openexchange.dispatcher.prefix]].  
+        [contextid], [userid] and [login] are replaced to reflect the values of the
+        current user.     
+      defaultValue: "[protocol]://[hostname]"
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: ["com.openexchange.UIWebPath","com.openexchange.dispatcher.prefix"]
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Host"]
+    - key: com.openexchange.drive.directLinkHelp
+      description: |
+        Configures the pattern for a direct link to the online help. This serves as
+        target for the "Help" section in the client applications. Text in brackets
+        is replaced dynamically during link generation in the backend, however, it's
+        still possible to overwrite them here with a static value, or even define an
+        arbitrary URL here.
+
+        [protocol] is replaced automatically with the protocol used by the client
+        (typically "http" or "https").  
+        [hostname] should be replaced with the server's canonical host name (if not,
+        the server tries to determine the hostname on it's own),  
+        [uiwebpath] is replaced with the value of [[com.openexchange.UIWebPath]], while [dispatcherPrefix] is replaced with the value of
+        [[com.openexchange.dispatcher.prefix]].  
+        [contextid], [userid] and [login] are replaced to reflect the values of the
+        current user.   
+      defaultValue: "[protocol]://[hostname]/[uiwebpath]/help-drive/l10n/[locale]/index.html"
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: ["com.openexchange.UIWebPath","com.openexchange.dispatcher.prefix"]
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Host"]
+    
+    - key: com.openexchange.drive.version.[client].softMinimum
+      description: |
+        This property allows the configuration of "soft" limit restrictions for
+        the supported clients. This limit has informational
+        character only, i.e. the client is just informed about an available update
+        when identifying with a lower version number. 
+        The property is disabled by default to always fall back to the
+        recommended setting, but can be overridden if needed.
+        
+        [client] must be replaced with one of the following:
+        <ul>
+          <li>windows</li>
+          <li>macos</li>
+          <li>ios</li>
+          <li>android</li>
+        </ul>
+      defaultValue:
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related:
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Windows", "Android", "Apple"]
+    - key: com.openexchange.drive.version.[client].hardMinimum
+      description: |
+        This property allows the configuration of "hard" limit restrictions for
+        the supported clients. This limit will restrict further synchronization 
+        of clients that identify themselves with a lower version number.
+        The property is disabled by default to always fall back to the
+        recommended setting, but can be overridden if needed.
+
+        [client] must be replaced with one of the following:
+        <ul>
+          <li>windows</li>
+          <li>macos</li>
+          <li>ios</li>
+          <li>android</li>
+        </ul>
+      defaultValue:
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related:
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Windows", "Android", "Apple"]
+    - key: com.openexchange.drive.minApiVersion
+      description: |
+        The minimum expected API version the client has to support
+      defaultValue: 1
+      version: 7.0.1
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.excludedFilesPattern
+      description: |
+        REGEX-pattern to filter file names to exclude from sync
+      defaultValue: 'thumbs\\.db|desktop\\.ini|\\.ds_store|icon\\\r|\\.msngr_hstr_data_.*\\.log'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.excludedDirectoriesPattern
+      description: |
+        REGEX-pattern to filter directory names to exclude from sync
+      defaultValue: '^/\\.drive(?:$|/.*)|^.*/\\.msngr_hstr_data$|^.*/\\.drive-meta(?:$|/.*)'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.maxDirectoryActions
+      description: |
+        Gets the maximum number of actions to be evaluated per synchronization request. Any further open actions will need to be handled in
+        consecutive synchronizations. A smaller value will lead to faster responses for the client and less resource utilization on the
+        backend, but increases the chance of rename- and move-optimizations not being detected.
+      defaultValue: 1000
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.maxFileActions
+      description: |
+        Gets the maximum number of actions to be evaluated per synchronization request. Any further open actions will need to be handled in
+        consecutive synchronizations. A smaller value will lead to faster responses for the client and less resource utilization on the
+        backend, but increases the chance of rename- and move-optimizations not being detected.
+      defaultValue: 500
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.directLinkFragmentsFile
+      description: |
+        Template for direct link fragments for a file.
+      defaultValue: 'm=infostore&f=[folder]&i=[object]'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Template"]
+    - key: com.openexchange.drive.directLinkFile
+      description: |
+        Template for a ready-to-use direct link for a file.
+      defaultValue: '[protocol]://[hostname]/[uiwebpath]#[filefragments]'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Template"]
+    - key: com.openexchange.drive.jumpLink
+      description: |
+        Template for a direct link to jump to a file.
+      defaultValue: '[protocol]://[hostname]/[uiwebpath]#[app]&[folder]&[id]'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Template"]
+    - key: com.openexchange.drive.previewImageSize
+      description: |
+        Preview images' size
+      defaultValue: 1600x1600
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.thumbnailImageSize
+      description: |
+        Preview images' size
+      defaultValue: 200x150
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.imageLinkImageFile
+      description: |
+        Template for a link to generate a preview for an image file
+      defaultValue: '[protocol]://[hostname]/[dispatcherPrefix]/files?action=document&folder=[folder]&id=[object]&version=[version]&context=[contextid]&user=[userid]&delivery=download&scaleType=contain&width=[width]&height=[height]&shrinkOnly=true&rotate=true'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Template"]
+    - key: com.openexchange.drive.imageLinkAudioFile
+      description: |
+        Template for a link to generate a preview for an audio file
+      defaultValue: '[protocol]://[hostname]/[dispatcherPrefix]/image/file/mp3Cover?folder=[folder]&id=[object]&version=[version]&context=[contextid]&user=[userid]&delivery=download&scaleType=contain&width=[width]&height=[height]'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Template"]
+    - key: com.openexchange.drive.imageLinkDocumentFile
+      description: |
+        Template for a link to generate a preview for a document file
+      defaultValue: '[protocol]://[hostname]/[dispatcherPrefix]/files?action=document&format=preview_image&folder=[folder]&id=[object]&version=[version]&context=[contextid]&user=[userid]&delivery=download&scaleType=contain&width=[width]&height=[height]'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Template"]
+    - key: com.openexchange.drive.directLinkFragmentsDirectory
+      description: |
+        Template for direct link fragments for a directory.
+      defaultValue: 'm=infostore&f=[folder]'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Template"]
+    - key: com.openexchange.drive.directLinkDirectory
+      description: |
+        Template for a direct link for a directory.
+      defaultValue: '[protocol]://[hostname]/[uiwebpath]#[directoryfragments]'
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Template"] 
+    - key: com.openexchange.drive.optimisticSaveThresholdDesktop
+      description: |
+        The desktop clients maximum file length of uploads to be stored directly at the target location - others are going to be written to a
+        temporary upload file first.
+      defaultValue: 64kB
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit"] 
+    - key: com.openexchange.drive.optimisticSaveThresholdMobile
+      description: |
+        The mobile clients maximum file length of uploads to be stored directly at the target location - others are going to be written to a
+        temporary upload file first.
+      defaultValue: 64kB
+      version:
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit"]
+    - key: com.openexchange.drive.listenTimeout
+      description: |
+        The default timeout in milliseconds to use for the long polling "listen" operation, if not overridden by clients. Defaults to 90000, and 
+        should be adjusted if there are even lower timeouts in upfront proxies. 
+      defaultValue: 90000
+      version:
+      reloadable: true
+      configcascadeAware: false
+      file: drive.properties
+      related:
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.lazyDirectoryChecksumCalculation
+      description: |
+        Configures whether directory checksums should be calculated in a lazy way or not. If enabled, server directory checksums will be 
+        retrieved in chunks according to the configured "maxDirectoryActions", which may reduce the processing time for the initial sync of 
+        large directory subtrees.
+      defaultValue: true
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      related: ["com.openexchange.drive.maxDirectoryActions"]
+      packageName: open-xchange-drive
+      tags: ["Drive"]
+    - key: com.openexchange.drive.maxSyncProcessingTime
+      description: |
+        Configures the processing time (in seconds) after a running syncFiles- or syncFolders-operation is cancelled. This can be helpful 
+        during initial synchronizations where no previously calculated checksums are available, and a long running request would otherwise be
+        interrupted by a proxy timeout. The value can be defined using units of measurement: "m" (=minutes), "s" (=seconds) and "ms" 
+        (=milliseconds). A value of or smaller than 0 disables the limit. 
+        Please mind that the maximum processing time will be checked periodically, so that request interruption may not be accurate.
+      defaultValue: 90s
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Limit"]

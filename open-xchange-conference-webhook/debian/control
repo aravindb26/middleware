@@ -1,0 +1,11 @@
+Source: open-xchange-conference-webhook
+Section: web
+Priority: optional
+Maintainer: Martin Herfurth <martin.herfurth@open-xchange.com>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.9.8
+Homepage: http://www.open-xchange.com
+Package: open-xchange-conference-webhook
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing handlers/interceptors to propagate conference updates

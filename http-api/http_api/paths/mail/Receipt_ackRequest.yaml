@@ -1,0 +1,38 @@
+/mail?action=receipt_ack:
+  put:
+    operationId: receiptMailAck
+    tags:
+      - Mail
+    summary: Requests a delivery receipt for a priviously sent mail.
+    security: 
+        - session: []      
+        - oauth:
+          - write_mail    
+    description: >-
+      This delivery receipt only acknowledges that the message could be
+      receipted on the recipients computer.
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MailAckBody'
+      description: >-
+        A JSON object containing the information of a mail for which a delivery
+        receipt shall be requested.
+      required: true      
+    responses:
+      '200':
+        description: >
+          A JSON object with an empty data field if everything went well or a
+          JSON object containing the error
+
+          information. In case of errors the responsible fields in the response
+          are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailAckResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

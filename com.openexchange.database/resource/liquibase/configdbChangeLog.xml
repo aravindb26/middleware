@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- *************************************************************************************
+    Hints:
+       - changeSet id has to be unique as it is used as primary key for DATABASECHANGELOG table
+       - use failOnError param to define if a successful execution of the ChangeSet is required
+       - DDLs for the configdb have additionally be considered within the configdb.sql file (for new installations)
+ ************************************************************************************* -->
+
+<databaseChangeLog xmlns="urn:liquibase"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:liquibase /liquibase/dbchangelog-3.0.xsd"
+    logicalFilePath="configdbChangeLog">
+
+
+    <!-- ******************************************************* -->
+    <!-- ************** Release 7.6.1 starts here ************** -->
+    <!-- ******************************************************* -->
+
+    <changeSet id="7.6.1-milestone" author="martin.schneider@open-xchange.com">
+        <tagDatabase tag="7.6.1-milestone" />
+    </changeSet>
+
+    <changeSet id="7.6.1:login2context:login_info" author="martin.schneider@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <customPrecondition
+                className="liquibase.precondition.ext.ColumnSizePrecondition">
+                <param name="expectedSize" value="255" />
+                <param name="tableName" value="login2context" />
+                <param name="columnName" value="login_info" />
+            </customPrecondition>
+        </preConditions>
+        <comment>Fix for bug 33418: enhances the login_info column to 255
+            characters</comment>
+        <modifyDataType columnName="login_info" newDataType="varchar(255)"
+            tableName="login2context" />
+        <dropDefaultValue columnDataType="varchar(255)"
+            columnName="login_info" tableName="login2context" />
+        <rollback>
+            <dropDefaultValue tableName="login2context"
+                columnName="login_info" />
+            <modifyDataType tableName="login2context" columnName="login_info"
+                newDataType="varchar(128)" />
+            <dropDefaultValue columnDataType="varchar(128)"
+                columnName="login_info" tableName="login2context" />
+        </rollback>
+    </changeSet>
+
+    <!-- ******************************************************* -->
+    <!-- ************** Release 7.6.2 starts here ************** -->
+    <!-- ******************************************************* -->
+
+    <changeSet id="7.6.2:changelog:addprimarykey" author="martin.schneider@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <primaryKeyExists tableName="DATABASECHANGELOG"/>
+            </not>
+        </preConditions>
+        <comment>Add missing primary key for DATABASECHANGELOG</comment>
+        <addPrimaryKey columnNames="id, author, filename" tableName="DATABASECHANGELOG" />
+    </changeSet>
+
+    <changeSet id="7.6.2:context_server2db_pool:addpoolandschemaindex" author="thorben.betten@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="context_server2db_pool"  columnNames="write_db_pool_id,db_schema"/>
+            </not>
+        </preConditions>
+        <comment>Add index to context_server2db_pool table for columns write_db_pool_id and db_schema</comment>
+        <createIndex indexName="poolAndSchema" tableName="context_server2db_pool">
+            <column name="write_db_pool_id"/>
+            <column name="db_schema"/>
+        </createIndex>
+        <rollback>
+            <dropIndex indexName="poolAndSchema" tableName="context_server2db_pool"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="7.6.2:context2push_registration" author="thorben.betten@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="context2push_registration" />
+            </not>
+        </preConditions>
+        <comment>Creates the 'context2push_registration' table</comment>
+        <sql>
+            CREATE TABLE context2push_registration (
+            cid INT4 UNSIGNED NOT NULL,
+            PRIMARY KEY (cid)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="context2push_registration" />
+        </rollback>
+    </changeSet>
+
+    <changeSet id="7.6.2:milestone" author="martin.schneider@open-xchange.com">
+        <tagDatabase tag="7.6.2:milestone" />
+    </changeSet>
+
+    <!-- ******************************************************* -->
+    <!-- ************** Release 7.8.0 starts here ************** -->
+    <!-- ******************************************************* -->
+
+    <changeSet id="7.8.0:context:addcontextnameunique" author="thorben.betten@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="context" columnNames="name"/>
+            </not>
+        </preConditions>
+        <comment>Creates a UNIQUE constraint on name column of the context table</comment>
+        <sql>
+            ALTER TABLE context ADD UNIQUE KEY `context_name_unique` (name)
+        </sql>
+        <rollback>
+            <dropIndex indexName="context_name_unique" tableName="context"/>
+        </rollback>
+    </changeSet>
+
+    <!-- ******************************************************* -->
+    <!-- ************** Release 7.8.1 starts here ************** -->
+    <!-- ******************************************************* -->
+
+    <changeSet id="7.8.1:replicationMonitor:createForConfigDB" author="martin.schneider@open-xchange.com" failOnError="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="replicationMonitor" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'replicationMonitor' for master/slave replication.
+        </comment>
+        <sql>
+            CREATE TABLE replicationMonitor (
+                cid int(10) unsigned NOT NULL,
+                transaction bigint(20) NOT NULL,
+                PRIMARY KEY (cid)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+            INSERT INTO replicationMonitor (cid,transaction) VALUES (0,0);
+        </sql>
+        <rollback>
+            <dropTable tableName="replicationMonitor" />
+        </rollback>
+    </changeSet>
+    
+    <!-- ******************************************************* -->
+    <!-- ************** Release 7.8.2 starts here ************** -->
+    <!-- ******************************************************* -->
+    
+    <changeSet id="7.8.2:filestore2user" author="thorben.betten@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="filestore2user" />
+            </not>
+        </preConditions>
+        <comment>Creates the 'filestore2user' table</comment>
+        <sql>
+        	CREATE TABLE filestore2user (
+    		cid INT4 UNSIGNED NOT NULL,
+    		user INT4 UNSIGNED NOT NULL,
+    		filestore_id INT4 UNSIGNED,
+    		PRIMARY KEY (cid, user, filestore_id)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="filestore2user" />
+        </rollback>
+    </changeSet>
+    
+    <!-- ******************************************************* -->
+    <!-- ************** Release 7.8.3 starts here ************** -->
+    <!-- ******************************************************* -->
+    
+    <changeSet id="7.8.3:advertisement_config:createForConfigDB" author="kevin.ruthmann@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="advertisement_config" />
+            </not>
+        </preConditions>
+        <comment>Creates the 'advertisement_config' table</comment>
+        <sql>
+        	CREATE TABLE advertisement_config (
+    		configId int NOT NULL AUTO_INCREMENT,
+    		reseller VARCHAR(128) NOT NULL,
+    		config text NOT NULL,
+    		PRIMARY KEY (configId)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="advertisement_config" />
+        </rollback>
+    </changeSet>
+    
+    <changeSet id="7.8.3:advertisement_mapping:createForConfigDB" author="kevin.ruthmann@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="advertisement_mapping" />
+            </not>
+        </preConditions>
+        <comment>Creates the 'advertisement_mapping' table</comment>
+        <sql>
+        	CREATE TABLE advertisement_mapping (
+    		reseller VARCHAR(128) NOT NULL,
+    		package VARCHAR(128) NOT NULL,
+    		configId int NOT NULL,
+    		PRIMARY KEY (reseller, package)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="advertisement_mapping" />
+        </rollback>
+    </changeSet>
+
+	<changeSet
+		id="7.10:com.openexchange.database.migration:createcounttables"
+		author="thorben.betten@open-xchange.com">
+		<comment>This changeset executes a custom task which cares about creation of context count tables.</comment>
+		<customChange class="com.openexchange.database.internal.change.custom.CountTablesCustomTaskChange" />
+	</changeSet>
+
+	<changeSet id="7.10.0:configdb:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+		<comment>Converts the table/column definition to support utf8mb4</comment>
+		<customChange class="com.openexchange.database.internal.change.utf8mb4.configdb.ConfigDbToUtf8mb4Change" />
+	</changeSet>
+
+	<changeSet id="7.10.0:advertisement_config:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+		<preConditions onFail="CONTINUE">
+			<changeSetExecuted id="7.8.3:advertisement_config:createForConfigDB" author="kevin.ruthmann@open-xchange.com" changeLogFile="configdbChangeLog" />
+		</preConditions>
+		<comment>Converts the table/column definition to support utf8mb4</comment>
+		<customChange class="com.openexchange.database.internal.change.utf8mb4.configdb.AdvertisementConfigToUtf8mb4Change" />
+	</changeSet>
+
+	<changeSet id="7.10.0:advertisement_mapping:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+		<preConditions onFail="CONTINUE">
+			<changeSetExecuted id="7.8.3:advertisement_mapping:createForConfigDB" author="kevin.ruthmann@open-xchange.com" changeLogFile="configdbChangeLog" />
+		</preConditions>
+		<comment>Converts the table/column definition to support utf8mb4</comment>
+		<customChange class="com.openexchange.database.internal.change.utf8mb4.configdb.AdvertisementMappingToUtf8mb4Change" />
+	</changeSet>
+
+	<changeSet id="7.10.0:context2push_registration:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+		<preConditions onFail="CONTINUE">
+			<changeSetExecuted id="7.6.2:context2push_registration" author="thorben.betten@open-xchange.com" changeLogFile="configdbChangeLog" />
+		</preConditions>
+		<comment>Converts the table/column definition to support utf8mb4</comment>
+		<customChange class="com.openexchange.database.internal.change.utf8mb4.configdb.Context2pushRegistrationToUtf8mb4Change" />
+	</changeSet>
+
+	<changeSet id="7.10.0:filestore2user:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+		<preConditions onFail="CONTINUE">
+			<changeSetExecuted id="7.8.2:filestore2user" author="thorben.betten@open-xchange.com" changeLogFile="configdbChangeLog" />
+		</preConditions>
+		<comment>Converts the table/column definition to support utf8mb4</comment>
+		<customChange class="com.openexchange.database.internal.change.utf8mb4.configdb.Filestore2userToUtf8mb4Change" />
+	</changeSet>
+
+	<changeSet id="7.10.0:replicationMonitor:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+		<preConditions onFail="CONTINUE">
+			<changeSetExecuted id="7.8.1:replicationMonitor:createForConfigDB" author="martin.schneider@open-xchange.com" changeLogFile="configdbChangeLog" />
+		</preConditions>
+		<comment>Converts the table/column definition to support utf8mb4</comment>
+		<customChange class="com.openexchange.database.internal.change.utf8mb4.configdb.ReplicationMonitorToUtf8mb4Change" />
+	</changeSet>
+	
+	<changeSet id="7.10.0:countTables:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+		<preConditions onFail="CONTINUE">
+			<changeSetExecuted id="7.10:com.openexchange.database.migration:createcounttables" author="thorben.betten@open-xchange.com" changeLogFile="configdbChangeLog" />
+		</preConditions>
+		<comment>Converts the table/column definition to support utf8mb4</comment>
+		<customChange class="com.openexchange.database.internal.change.utf8mb4.configdb.CountTablesToUtf8mb4Change" />
+	</changeSet>
+
+	<changeSet id="7.10.1:filestore2user:changePrimaryKey" author="thorben.betten@open-xchange.com">
+		<comment>This changeset executes a custom task which cares about correcting the PRIMARY KEY of the filestore2user table.</comment>
+		<customChange class="com.openexchange.database.internal.change.custom.ChangeFilestore2UserPrimaryKeyCustomTaskChange" />
+	</changeSet>
+
+	<changeSet id="7.10.2:db_pool:removeUrlParameters" author="martin.herfurth@open-xchange.com" failOnError="false">
+		<preConditions onFail="CONTINUE">
+			<tableExists tableName="db_pool" />
+		</preConditions>
+		<comment>Removes parameters from db_pool connection URLs</comment>
+		<customChange class="com.openexchange.database.internal.change.custom.RemoveParametersFromPoolConnectionUrlCustomTaskChange" />
+	</changeSet>
+
+	<changeSet id="7.10.3:filestore2user:addFilestoreIdIndex" author="thorben.betten@open-xchange.com" failOnError="false">
+		<comment>This changeset executes a custom task which adds an INDEX to filestore2user table.</comment>
+		<customChange class="com.openexchange.database.internal.change.custom.AddIndexForFilestore2UserCustomTaskChange" />
+	</changeSet>
+    <changeSet id="7.10.5:swift_token:drop" author="daniel.becker@open-xchange.com" failOnError="false" logicalFilePath="swiftConfigdbChangeLog">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="swift_token" />
+        </preConditions>
+         <dropTable tableName="swift_token"/>
+        <comment>Drops the swift_token table</comment>
+    </changeSet>
+
+    <!-- ******************************************************* -->
+    <!-- ************** Release 8 starts here ************** -->
+    <!-- ******************************************************* -->
+
+	<changeSet id="8.12:server:addUuidColumn" author="tobias.friedrich@open-xchange.com">
+		<comment>This changeset executes a custom task that adds the column 'uuid' to table 'server'.</comment>
+		<customChange class="com.openexchange.database.internal.change.custom.ServerAddUuidColumnCustomTaskChange" />
+	</changeSet>
+
+</databaseChangeLog>

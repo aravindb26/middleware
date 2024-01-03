@@ -1,0 +1,8 @@
+# Override certain settings
+default:
+    host: all
+
+# Override certain settings for certain hosts
+#myhost:
+#    host: myexchange.myhost.mytld
+#    someConfig: some overriding value

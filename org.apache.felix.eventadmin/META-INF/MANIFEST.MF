@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Apache Felix EventAdmin
+Bundle-SymbolicName: org.apache.felix.eventadmin
+Automatic-Module-Name: org.apache.felix.eventadmin
+Bundle-Version: 1.4.2
+Bundle-Vendor: The Apache Software Foundation
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Description: This bundle provides an implementation of the OSGi R4 EventAdmin service
+Bundle-DocURL: http://www.apache.org/
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+Import-Package: javax.management,
+ org.osgi.framework,
+ org.osgi.service.cm;resolution:=optional,
+ org.osgi.service.event,
+ org.osgi.service.log,
+ org.osgi.service.metatype;resolution:=optional,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: org.apache.felix.eventadmin.impl.Activator
+Export-Package: org.apache.felix.eventadmin

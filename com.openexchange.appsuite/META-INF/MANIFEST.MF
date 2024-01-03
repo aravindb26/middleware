@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange RequireJS servlet bundle
+Bundle-SymbolicName: com.openexchange.appsuite
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: com.openexchange.appsuite

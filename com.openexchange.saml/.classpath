@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="lib/velocity-engine-core-2.3.jar" sourcepath="lib/sources/velocity-engine-core-2.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptacular-1.1.4.jar" sourcepath="lib/sources/cryptacular-1.1.4-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/java-support-7.5.1.jar" sourcepath="lib/sources/java-support-7.5.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jsr305-3.0.1.jar" sourcepath="lib/sources/jsr305-3.0.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/metrics-core-3.1.2.jar" sourcepath="lib/sources/metrics-core-3.1.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-core-3.4.5.jar" sourcepath="lib/sources/opensaml-core-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-messaging-api-3.4.5.jar" sourcepath="lib/sources/opensaml-messaging-api-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-profile-api-3.4.5.jar" sourcepath="lib/sources/opensaml-profile-api-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-saml-api-3.4.5.jar" sourcepath="lib/sources/opensaml-saml-api-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-saml-impl-3.4.5.jar" sourcepath="lib/sources/opensaml-saml-impl-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-security-api-3.4.5.jar" sourcepath="lib/sources/opensaml-security-api-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-security-impl-3.4.5.jar" sourcepath="lib/sources/opensaml-security-impl-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-soap-api-3.4.5.jar" sourcepath="lib/sources/opensaml-soap-api-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-soap-impl-3.4.5.jar" sourcepath="lib/sources/opensaml-soap-impl-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-storage-api-3.4.5.jar" sourcepath="lib/sources/opensaml-storage-api-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-xmlsec-api-3.4.5.jar" sourcepath="lib/sources/opensaml-xmlsec-api-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opensaml-xmlsec-impl-3.4.5.jar" sourcepath="lib/sources/opensaml-xmlsec-impl-3.4.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/xmlsec-2.1.7.jar" sourcepath="lib/sources/xmlsec-2.1.7-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17"><attributes><attribute name="module" value="true"/></attributes></classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="src" path="sim"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.test"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

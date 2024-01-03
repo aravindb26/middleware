@@ -1,0 +1,326 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.mail.conversion;
+
+import static com.openexchange.mail.mime.utils.MimeMessageUtility.shouldRetry;
+import static com.openexchange.mail.utils.MailFolderUtility.prepareMailFolderParam;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import org.slf4j.Logger;
+import com.openexchange.ajax.requesthandler.AJAXRequestData;
+import com.openexchange.ajax.requesthandler.crypto.CryptographicServiceAuthenticationFactory;
+import com.openexchange.conversion.Data;
+import com.openexchange.conversion.DataArguments;
+import com.openexchange.conversion.DataExceptionCodes;
+import com.openexchange.conversion.DataProperties;
+import com.openexchange.conversion.DataSource;
+import com.openexchange.conversion.SimpleData;
+import com.openexchange.exception.OXException;
+import com.openexchange.image.ImageDataSource;
+import com.openexchange.image.ImageLocation;
+import com.openexchange.image.ImageUtility;
+import com.openexchange.mail.FullnameArgument;
+import com.openexchange.mail.MailExceptionCode;
+import com.openexchange.mail.api.IMailFolderStorage;
+import com.openexchange.mail.api.IMailMessageStorage;
+import com.openexchange.mail.api.MailAccess;
+import com.openexchange.mail.api.crypto.CryptographicAwareMailAccessFactory;
+import com.openexchange.mail.dataobjects.MailPart;
+import com.openexchange.mail.mime.ContentType;
+import com.openexchange.mail.mime.MimeType2ExtMap;
+import com.openexchange.mail.mime.MimeTypes;
+import com.openexchange.server.ServiceLookup;
+import com.openexchange.session.Session;
+
+/**
+ * {@link InlineImageDataSource} - A {@link DataSource} for image parts inside a mail.
+ *
+ * @author <a href="mailto:thorben.betten@open-xchange.com">Thorben Betten</a>
+ */
+public final class InlineImageDataSource implements ImageDataSource {
+
+    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(InlineImageDataSource.class);
+
+    private static final InlineImageDataSource INSTANCE = new InlineImageDataSource();
+
+    /**
+     * Gets the instance
+     *
+     * @return The instance
+     */
+    public static InlineImageDataSource getInstance() {
+        return INSTANCE;
+    }
+
+    private static final long EXPIRES = ImageDataSource.YEAR_IN_MILLIS * 50;
+
+    /**
+     * Common required arguments for uniquely determining a mail part:
+     * <ul>
+     * <li>com.openexchange.mail.conversion.fullname</li>
+     * <li>com.openexchange.mail.conversion.mailid</li>
+     * <li>com.openexchange.mail.conversion.cid</li>
+     * </ul>
+     */
+    private static final String[] ARGS = {
+        "com.openexchange.mail.conversion.fullname", "com.openexchange.mail.conversion.mailid", "com.openexchange.mail.conversion.cid", "com.openexchange.mail.conversion.auth" };
+
+    private static final Class<?>[] TYPES = { InputStream.class };
+
+    private ServiceLookup serviceLookup;
+
+
+    /**
+     * Initializes a new {@link InlineImageDataSource}
+     */
+    private InlineImageDataSource() {
+        super();
+    }
+
+    private MailPart getImagePart(int accountId, String fullname, String mailId, String cid, Session session, String auth) throws OXException {
+        MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess = null;
+        try {
+            mailAccess = MailAccess.getInstance(session, accountId);
+            if (serviceLookup != null) {
+                CryptographicAwareMailAccessFactory cryptoMailAccessFactory = serviceLookup.getOptionalService(CryptographicAwareMailAccessFactory.class);
+                if (cryptoMailAccessFactory != null) {
+                    //Handling for encrypted mails if a cryptographic aware service is available.
+                    mailAccess = cryptoMailAccessFactory.createAccess((MailAccess<IMailFolderStorage, IMailMessageStorage>) mailAccess, session, auth, null);
+                }
+            }
+            mailAccess.connect();
+            return loadImagePart(fullname, mailId, cid, mailAccess);
+        } catch (OXException e) {
+            if ((null != mailAccess) && shouldRetry(e)) {
+                // Re-connect
+                mailAccess = MailAccess.reconnect(mailAccess);
+                return loadImagePart(fullname, mailId, cid, mailAccess);
+            }
+            throw e;
+        } finally {
+            if (null != mailAccess) {
+                mailAccess.close(true);
+            }
+        }
+    }
+
+    private MailPart loadImagePart(String fullname, String mailId, String cid, MailAccess<?, ?> mailAccess) throws OXException {
+        final MailPart imagePart = mailAccess.getMessageStorage().getImageAttachment(fullname, mailId, cid);
+        if (null == imagePart) {
+            return null;
+        }
+        ContentType contentType = imagePart.containsContentType() ? imagePart.getContentType() : ContentType.DEFAULT_CONTENT_TYPE;
+        if (!contentType.startsWith("image/") && !contentType.startsWith("application/octet-stream")) {
+            String contentTypeByFileName = MimeType2ExtMap.getContentType(imagePart.getFileName(), "text/plain");
+            if (!contentTypeByFileName.startsWith("image/")) {
+                // Does not seem to be an image
+                return null;
+            }
+        }
+        imagePart.loadContent();
+        return imagePart;
+    }
+
+    /**
+     * Sets the ServiceLookup
+     *
+     * @param serviceLookup
+     */
+    public void setServiceLookup(ServiceLookup serviceLookup) {
+        this.serviceLookup = serviceLookup;
+
+    }
+
+    @Override
+    public String generateUrl(ImageLocation imageLocation, Session session) {
+        final StringBuilder sb = new StringBuilder(64);
+
+        // Nothing special...
+        ImageUtility.startImageUrl(imageLocation, session, this, true, sb);
+
+        // Append authentication token to StringBuilder here
+        CryptographicServiceAuthenticationFactory crypto = serviceLookup.getOptionalService(CryptographicServiceAuthenticationFactory.class);
+        if (crypto != null) {  // Images may be encrypted within an Email
+            try {
+                // Try to get authentication from Image URL, else from session
+                String auth = imageLocation.getAuth() == null ? crypto.getAuthTokensFromSession(session) : crypto.getTokenValueFromString(imageLocation.getAuth());
+                if (auth != null && !auth.isEmpty()) {
+                    sb.append("&decrypt=true");
+                    sb.append("&cryptoAuth=").append(URLEncoder.encode(auth, "UTF-8"));
+                    sb.append("&session=").append(session.getSessionID());
+                }
+            } catch (Exception ex) {
+                // Don't care...
+                LOG.debug("", ex);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public DataArguments generateDataArgumentsFrom(ImageLocation imageLocation) {
+        final DataArguments dataArguments = new DataArguments(3);
+        dataArguments.put(ARGS[0], imageLocation.getFolder());
+        dataArguments.put(ARGS[1], imageLocation.getId());
+        dataArguments.put(ARGS[2], imageLocation.getImageId());
+        dataArguments.put(ARGS[3], imageLocation.getAuth());
+        return dataArguments;
+    }
+
+    @Override
+    public ImageLocation parseUrl(String url) {
+        return ImageUtility.parseImageLocationFrom(url);
+    }
+
+    @Override
+    public ImageLocation parseRequest(AJAXRequestData requestData) {
+        return ImageUtility.parseImageLocationFrom(requestData);
+    }
+
+    @Override
+    public long getExpires() {
+        return EXPIRES;
+    }
+
+    @Override
+    public String getETag(ImageLocation imageLocation, Session session) {
+        final char delim = '#';
+        final StringBuilder builder = new StringBuilder(128);
+        builder.append(delim).append(imageLocation.getFolder());
+        builder.append(delim).append(imageLocation.getId());
+        builder.append(delim).append(imageLocation.getImageId());
+        // builder.append(delim).append(session.getUserId());
+        // builder.append(delim).append(session.getContextId());
+        builder.append(delim);
+        return ImageUtility.getMD5(builder.toString(), "hex");
+    }
+
+    /**
+     * Common required arguments for uniquely determining a mail part:
+     * <ul>
+     * <li>com.openexchange.mail.conversion.fullname</li>
+     * <li>com.openexchange.mail.conversion.mailid</li>
+     * <li>com.openexchange.mail.conversion.cid</li>
+     * </ul>
+     */
+    @Override
+    public String[] getRequiredArguments() {
+        return ARGS;
+    }
+
+    @Override
+    public Class<?>[] getTypes() {
+        return TYPES;
+    }
+
+    @Override
+    public <D> Data<D> getData(Class<? extends D> type, DataArguments dataArguments, Session session) throws OXException {
+        if (!InputStream.class.equals(type)) {
+            throw DataExceptionCodes.TYPE_NOT_SUPPORTED.create(type.getName());
+        }
+        final MailPart mailPart;
+        {
+            final String fullnameArgument = dataArguments.get(ARGS[0]);
+            if (null == fullnameArgument) {
+                throw DataExceptionCodes.MISSING_ARGUMENT.create(ARGS[0]);
+            }
+            final FullnameArgument arg = prepareMailFolderParam(fullnameArgument);
+            final String fullname = arg.getFullname();
+            final String mailId = dataArguments.get(ARGS[1]);
+            if (null == mailId) {
+                throw DataExceptionCodes.MISSING_ARGUMENT.create(ARGS[1]);
+            }
+            final String cid = dataArguments.get(ARGS[2]);
+            if (null == cid) {
+                throw DataExceptionCodes.MISSING_ARGUMENT.create(ARGS[2]);
+            }
+            String auth = dataArguments.get(ARGS[3]);
+            mailPart = getImagePart(arg.getAccountId(), fullname, mailId, cid, session, auth);
+            if (null == mailPart) {
+                throw MailExceptionCode.IMAGE_ATTACHMENT_NOT_FOUND.create(cid, mailId, fullname);
+            }
+            final ContentType contentType = mailPart.getContentType();
+            if (contentType == null) {
+                throw DataExceptionCodes.ERROR.create("Missing header 'Content-Type' in requested mail part");
+            }
+            final String fileName = mailPart.getFileName();
+            if (!contentType.isMimeType(MimeTypes.MIME_IMAGE_ALL)) {
+                /*
+                 * Either general purpose "application/octet-stream" or check by file name
+                 */
+                if (null == fileName) {
+                    if (!contentType.startsWith(MimeTypes.MIME_APPL_OCTET)) {
+                        throw DataExceptionCodes.ERROR.create("Requested mail part is not an image: " + contentType.getBaseType());
+                    }
+                } else {
+                    final String byFileName = MimeType2ExtMap.getContentType(fileName);
+                    if (ContentType.isMimeType(byFileName, MimeTypes.MIME_IMAGE_ALL)) {
+                        /*
+                         * File name indicates an image/* content type
+                         */
+                        contentType.setBaseType(byFileName);
+                    } else {
+                        if (!contentType.isMimeType(MimeTypes.MIME_APPL_OCTET)) {
+                            throw DataExceptionCodes.ERROR.create("Requested mail part is not an image: " + contentType.getBaseType());
+                        }
+                    }
+                }
+            } else if (null != fileName) {
+                final String byFileName = MimeType2ExtMap.getContentType(fileName);
+                if (ContentType.isMimeType(byFileName, MimeTypes.MIME_IMAGE_ALL) && !contentType.startsWith(byFileName)) {
+                    /*
+                     * File name indicates an image/* content type and Content-Type indicates a different one than determined by file name
+                     */
+                    contentType.setBaseType(byFileName);
+                }
+            }
+            final DataProperties properties = new DataProperties(8);
+            properties.put(DataProperties.PROPERTY_FOLDER_ID, fullnameArgument);
+            properties.put(DataProperties.PROPERTY_ID, mailId);
+            properties.put(DataProperties.PROPERTY_CONTENT_TYPE, contentType.getBaseType());
+            final String charset = contentType.getCharsetParameter();
+            if (charset != null) {
+                properties.put(DataProperties.PROPERTY_CHARSET, charset);
+            }
+            // Exact size is not known
+            //properties.put(DataProperties.PROPERTY_SIZE, Long.toString(mailPart.getSize()));
+            properties.put(DataProperties.PROPERTY_NAME, fileName);
+            return new SimpleData<D>((D) mailPart.getInputStream(), properties);
+        }
+    }
+
+    private static final String REGISTRATION_NAME = "com.openexchange.mail.image";
+
+    @Override
+    public String getRegistrationName() {
+        return REGISTRATION_NAME;
+    }
+
+    private static final String ALIAS = "/mail/picture";
+
+    @Override
+    public String getAlias() {
+        return ALIAS;
+    }
+}
+

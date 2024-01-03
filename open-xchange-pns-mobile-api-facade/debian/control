@@ -1,0 +1,13 @@
+Source: open-xchange-pns-mobile-api-facade
+Section: web
+Priority: optional
+Maintainer: Thorben Betten <thorben.betten@open-xchange.com>
+Build-Depends: debhelper (>= 7.0.1)
+Standards-Version: 3.9.8
+Homepage: http://www.open-xchange.com
+
+Package: open-xchange-pns-mobile-api-facade
+Architecture: all
+Pre-Depends: open-xchange-pns-impl (>= @OXVERSION@)
+Depends: ${misc:Depends}
+Description: The Mobile API Facade bundle for Push Notification Service

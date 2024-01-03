@@ -1,0 +1,28 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Picture Halo
+Bundle-SymbolicName: com.openexchange.halo.pictures
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.halo.pictures.osgi.PictureHaloActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.ajax.container,
+ com.openexchange.ajax.fileholder,
+ com.openexchange.ajax.helper,
+ com.openexchange.ajax.requesthandler,
+ com.openexchange.ajax.requesthandler.osgiservice,
+ com.openexchange.contact.picture,
+ com.openexchange.exception,
+ com.openexchange.groupware.container,
+ com.openexchange.halo,
+ com.openexchange.java,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.session,
+ com.openexchange.tools.servlet,
+ com.openexchange.tools.servlet.http,
+ com.openexchange.tools.session,
+ javax.servlet,
+ javax.servlet.http,
+ org.osgi.framework
+Automatic-Module-Name: com.openexchange.halo.pictures

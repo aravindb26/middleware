@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Transaction APIs
+Bundle-SymbolicName: com.openexchange.tx
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.tx.osgi.TransactionActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.exception,
+ com.openexchange.groupware,
+ com.openexchange.i18n,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ gnu.trove,
+ gnu.trove.map,
+ gnu.trove.map.hash,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.slf4j
+Export-Package: com.openexchange.tx
+Automatic-Module-Name: com.openexchange.tx

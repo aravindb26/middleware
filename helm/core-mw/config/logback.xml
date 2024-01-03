@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration debug={{ .Values.configuration.logging.debug | quote }}>
+
+  <property scope="context" name="com.openexchange.logging.filter.loggerWhitelist" value="com.openexchange" />
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
+  <define name="syslogPatternLayoutActivator" class="com.openexchange.logback.extensions.SyslogPatternLayoutActivator" />
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!--                              JSON Appender                              -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  {{- if .Values.configuration.logging.root.json }}
+  <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+        <layout class="com.openexchange.logback.json.extensions.ExtendedJsonLayout">
+            <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
+                <prettyPrint>{{ .Values.configuration.logging.json.prettyPrint }}</prettyPrint>
+            </jsonFormatter>
+            <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampFormat>
+            <timestampFormatTimezoneId>Etc/UTC</timestampFormatTimezoneId>
+            <includeReadableTimestamp>{{ ternary true false (.Values.configuration.logging.json.prettyPrint) }}</includeReadableTimestamp>
+            <includeLogLevelName>{{ ternary true false (.Values.configuration.logging.json.prettyPrint) }}</includeLogLevelName>
+            <appendLineSeparator>true</appendLineSeparator>
+        </layout>
+    </encoder>
+  </appender>
+  {{ end }}
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!--                            Logstash Appender                            -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  {{- if .Values.configuration.logging.root.logstash }}
+  <property scope="context" name="com.openexchange.logback.extensions.logstash.enabled" value="true" />
+  <property scope="context" name="com.openexchange.logback.extensions.logstash.alwaysPersistEvents" value="true" />
+  <property scope="context" name="com.openexchange.logback.extensions.logstash.loadFactor" value="0.67" />
+  <appender name="LOGSTASH" class="com.openexchange.logback.extensions.logstash.LogstashSocketAppender">
+    <remoteHost>{{ .Values.configuration.logging.logstash.host }}</remoteHost>
+    <port>{{ .Values.configuration.logging.logstash.port }}</port>
+    <reconnectionDelay>10000</reconnectionDelay>
+    <eventDelayLimit>30000</eventDelayLimit>
+    <encoder class="com.openexchange.logback.extensions.logstash.LogstashEncoder" />
+    <queueSize>{{ .Values.configuration.logging.queueSize }}</queueSize>
+  </appender>
+  {{ end }}
+
+  <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>{{ .Values.configuration.logging.queueSize }}</queueSize>
+    <discardingThreshold>0</discardingThreshold>
+    <includeCallerData>true</includeCallerData>
+    <appender-ref ref="JSON"/>
+  </appender>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!--                               Root Logger                               -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <root level={{ .Values.configuration.logging.root.level | quote }}>
+  {{- if .Values.configuration.logging.root.logstash }}
+    <appender-ref ref="LOGSTASH" />
+  {{- end }}
+  {{- if .Values.configuration.logging.root.json }}
+    <appender-ref ref="ASYNC" />
+  {{- end }}
+  </root>
+
+  <logger name="com.openexchange.login.internal.LoginPerformer" level="INFO"/>
+  <logger name="com.openexchange.sessiond.impl.SessionHandler" level="INFO"/>
+
+  <logger name="sun.rmi" level="INFO"/>
+  <logger name="org.apache" level="WARN"/>
+  <logger name="com.sun" level="INFO"/>
+  <logger name="javax.management" level="INFO"/>
+  <logger name="javax.jmdns" level="WARN"/>
+  <logger name="org.glassfish.grizzly" level="WARN"/>
+  <logger name="liquibase.ext.logging.slf4j.Slf4jLogger" level="WARN"/>
+
+  <logger name="org.jaudiotagger" level="ERROR"/>
+  <logger name="com.openexchange.documentconverter.impl.Manager" level="WARN"/>
+  <logger name="com.gargoylesoftware.htmlunit" level="WARN"/>
+
+  <logger name="org.docx4j" level="WARN"/>
+  <logger name="org.xlsx4j" level="WARN"/>
+  <logger name="org.pptx4j" level="WARN"/>
+
+  <logger name="com.openexchange.ajax.requesthandler.DispatcherServlet" level="INFO"/>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!--                                 Logger                                  -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  {{- range .Values.configuration.logging.logger }}
+  <logger name={{ .name | quote }} level={{ .level | quote }}/>
+  {{- end }}
+
+</configuration>

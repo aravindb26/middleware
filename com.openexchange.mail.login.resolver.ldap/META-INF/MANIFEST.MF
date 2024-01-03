@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: LDAP-based Mail Login Resolver
+Bundle-SymbolicName: com.openexchange.mail.login.resolver.ldap
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.mail.login.resolver.ldap.osgi.LDAPResolverActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.cache,
+ com.google.common.util.concurrent,
+ com.openexchange.config,
+ com.openexchange.config.lean,
+ com.openexchange.context,
+ com.openexchange.exception,
+ com.openexchange.groupware.contexts,
+ com.openexchange.java,
+ com.openexchange.ldap.common,
+ com.openexchange.mail.login.resolver,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.session,
+ com.openexchange.user,
+ com.unboundid.ldap.sdk,
+ org.osgi.framework,
+ org.slf4j
+Automatic-Module-Name: com.openexchange.mail.login.resolver.ldap

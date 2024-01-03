@@ -1,0 +1,9 @@
+type: object
+description: Contains the extended properties for contact folders
+properties:
+  usedInPicker:
+    type: object
+    description: Indicates whether the folder should be considered for the enterprise contact picker or not.
+    properties:
+      value:
+        type: boolean

@@ -1,0 +1,42 @@
+/contacts?action=listuser:
+  put:
+    operationId: getContactListByUsers
+    tags:
+      - Contacts
+    summary: Gets a list of users.
+    security: 
+        - session: []      
+        - oauth:
+          - read_contacts    
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamContactColumns'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: integer
+      description: A JSON array with user IDs.
+      required: true      
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with contact data. Each array
+          element describes one contact and
+
+          is itself an array. The elements of each array contain the information
+          specified by the corresponding
+
+          identifiers in the `columns` parameter. In case of errors the
+          responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactsResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'               

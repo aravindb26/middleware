@@ -1,0 +1,27 @@
+/jump?action=identityToken:
+  get:
+    operationId: acquireIdentityToken
+    tags:
+      - Jump
+    summary: Acquires an identity token.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: system
+        description: >-
+          The identifier for the external service/system, like
+          "com.openexchange.jump.endpoint.mysystem".
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object containing the identity token. In case of errors the
+          responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JumpResponse'

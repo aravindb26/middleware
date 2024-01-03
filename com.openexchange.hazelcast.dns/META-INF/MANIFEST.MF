@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Hazelcast DNS Bundle
+Bundle-SymbolicName: com.openexchange.hazelcast.dns
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.hazelcast.dns.osgi.HazelcastDnsActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.hazelcast.config,
+ com.hazelcast.instance,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ javax.crypto,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j,
+ org.xbill.DNS,
+ org.xbill.DNS.spi,
+ org.xbill.DNS.utils
+Bundle-ClassPath: .
+Export-Package: com.openexchange.hazelcast.dns
+Automatic-Module-Name: com.openexchange.hazelcast.dns

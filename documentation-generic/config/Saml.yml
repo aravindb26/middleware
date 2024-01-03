@@ -1,0 +1,237 @@
+feature_name: Saml
+feature_description: |
+  See [[https://documentation.open-xchange.com/{{version}}/middleware/components/saml.html]] for more informations.
+properties:
+    - key: com.openexchange.saml.enabled
+      description: |
+        Must be set to <code>true</code> to enable the feature, otherwise it is fully deactivated.
+      defaultValue: false
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML"]
+    - key: com.openexchange.saml.enableMetadataService
+      description: |
+        Whether the SPs metadata XML shall be made available via HTTP. The according
+        servlet will then be available under 'http(s)://{hostname}/{prefix}/saml/metadata'.
+      defaultValue: false
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML"]
+    - key: com.openexchange.saml.enableSingleLogout
+      description: |
+          Whether the single logout profile is enabled.
+      defaultValue: false
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core 
+      tags: ["SAML"]
+    - key: com.openexchange.saml.entityID
+      description: |
+          Sets the entity ID of the service provider. This property is mandatory.
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML"]
+    - key: com.openexchange.saml.providerName
+      description: |
+          Sets the human-readable name of the service provider. This property is mandatory.
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML"]
+    - key: com.openexchange.saml.acsURL
+      description: |
+        Sets the URL of the local assertion consumer service (ACS). This value is used within
+        authentication requests, compared against Destination attributes in IdP responses
+        and will be contained in the service providers metadata XML. The according endpoint
+        is always registered with '{prefix}/saml/acs' as servlet alias.
+        
+        This property is mandatory.
+        Example:
+        <pre>
+        com.openexchange.saml.acsURL=https://appsuite.example.com/appsuite/api/saml/acs
+        </pre>
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML", "Host"]
+    - key: com.openexchange.saml.slsURL
+      description: |
+        Sets the URL of the local single logout service. This value is compared against Destination
+        attributes in IdP responses and will be contained in the service providers metadata XML.
+        The according endpoint is always registered with '{prefix}/saml/sls' as servlet alias.
+
+        This property is mandatory if [[com.openexchange.saml.enableSingleLogout]] is <code>true</code>.
+        Example:
+        <pre>
+        com.openexchange.saml.slsURL=https://appsuite.example.com/appsuite/api/saml/sls
+        </pre>
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML", "Host"]
+    - key: com.openexchange.saml.logoutResponseBinding
+      description: |
+        The binding via which logout responses shall be sent to the IdP on IdP-initiated single
+        logout flows. Must be <code>http-redirect</code> or <code>http-post</code>.
+        
+        This property is mandatory if [[com.openexchange.saml.enableSingleLogout]] is <code>true</code>.
+      defaultValue: http-redirect
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML"]
+    - key: com.openexchange.saml.logoutResponseTemplate
+      description: |
+        The HTML template to use when logout responses are sent to the IdP via HTTP POST.
+        The template must be located in '/opt/open-xchange/templates'.
+
+        This property is mandatory if [[com.openexchange.saml.enableSingleLogout]] is <code>true</code>
+        and [[com.openexchange.saml.logoutResponseBinding]] is set to <code>http-post</code>.
+      defaultValue: saml.logout.response.html.tmpl
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core 
+      tags: ["SAML"]
+    - key: com.openexchange.saml.idpEntityID
+      description: |
+        The entity ID of the IdP. It will be used to validate the 'Issuer' elements of SAML responses.
+        This property is mandatory.
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML"]
+    - key: com.openexchange.saml.idpAuthnURL
+      description: |
+        The URL of the IdP endpoint where authentication requests are to be sent to.
+        This property is mandatory.
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML", "Host"]
+    - key: com.openexchange.saml.idpLogoutURL
+      description: |
+        The URL of the IdP endpoint where logout requests are to be sent to.
+
+        This property is mandatory if [[com.openexchange.saml.enableSingleLogout]] is <code>true</code>.
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML", "Host"]
+    - key: com.openexchange.saml.enableAutoLogin
+      description: |
+        By default any created OX session gets reused if the user refreshes the browser window. He
+        is then also able to open more than one tab of OX App Suite at the same time. This
+        mechanism can only re-use sticky sessions, i.e. it is mandatory that the requests are always
+        routed to the same backend for a certain session.
+        If disabled, every page refresh from the user will initiate a new IdP roundtrip, create a
+        new user session and will cause additional load on the IDM. This works independently from
+        the usual App Suite autologin behavior, which is not considered in SAML scenarios.
+      defaultValue: true
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML"]
+    - key: com.openexchange.saml.allowUnsolicitedResponses
+      description: |
+        Whether unsolicited responses will be accepted or not.
+      defaultValue: true
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML"]
+    - key: com.openexchange.saml.enableSessionIndexAutoLogin
+      description: |
+        Specifies whether SAML-specific auto-login is enabled, that uses the SessionIndex of the AuthnResponse.
+      defaultValue: false
+      version: 7.8.4
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML"]
+    - key: com.openexchange.saml.oauth.tokenEndpoint
+      description: |
+        Specifies the OAuth HTTP token end-point.
+      defaultValue:
+      version: 7.8.4
+      reloadable: true
+      configcascadeAware: true
+      related:
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML","OAuth"]
+    - key: com.openexchange.saml.oauth.clientId
+      description: |
+        Specifies the client id used to authenticate the client against the OAuth token end-point.
+      defaultValue:
+      version: 7.8.4
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.saml.oauth.tokenEndpoint
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML","OAuth"]
+    - key: com.openexchange.saml.oauth.clientSecret
+      description: |
+        Specifies the client secret used to authenticate the client against the OAuth token end-point.
+      defaultValue:
+      version: 7.8.4
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.saml.oauth.tokenEndpoint
+      file: saml.properties
+      packageName: open-xchange-saml-core
+      tags: ["SAML","OAuth"]

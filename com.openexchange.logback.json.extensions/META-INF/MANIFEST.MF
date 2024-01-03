@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Logback JSON extensions
+Bundle-SymbolicName: com.openexchange.logback.json.extensions
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Fragment-Host: ch.qos.logback.classic;bundle-version="[1.0.13,2.0.0)"
+Bundle-ClassPath: .
+Import-Package: ch.qos.logback.classic.spi,
+ ch.qos.logback.contrib.jackson,
+ ch.qos.logback.contrib.json,
+ ch.qos.logback.contrib.json.classic,
+ com.fasterxml.jackson.core,
+ com.openexchange.log,
+ com.openexchange.logback.extensions.json
+Automatic-Module-Name: com.openexchange.logback.json.extensions

@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange push clients bundle
+Bundle-SymbolicName: com.openexchange.push.clients
+Bundle-Version: 8.0.0
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.push.clients
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Activator: com.openexchange.push.clients.osgi.Activator
+Import-Package: com.google.common.cache,
+ com.openexchange.config,
+ com.openexchange.exception,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.server,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Export-Package: com.openexchange.push.clients

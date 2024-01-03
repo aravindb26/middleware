@@ -1,0 +1,174 @@
+{{- $globalContext := . -}}
+{{- if ($globalContext.Values.update.enabled) -}}
+{{- $typedResources := (include "core-mw.typedResources" . | fromYaml) -}}
+{{- $scaling := (include "core-mw.scaling" . | fromYaml) -}}
+{{- $upgradeTypes := (include "core-mw.upgradeTypes" (dict "Context" $globalContext "TypeSpecificBundles" (include "core-mw.typeSpecificBundles" .)) | fromYaml) -}}
+{{- $globalUpgradeConfig := (include "core-mw.globalUpgradeConfig" (dict "Context" $globalContext "UpgradeTypes" $upgradeTypes "Scaling" $scaling "TypedResources" $typedResources)) | fromYaml -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "ox-common.names.fullname" $globalContext }}-update-{{ now | date "2006-01-02-15-04-05" }}
+spec:
+  backoffLimit: 0
+  {{- if $globalContext.Values.update.job.ttlSecondsAfterFinished }}
+  ttlSecondsAfterFinished: {{ $globalContext.Values.update.job.ttlSecondsAfterFinished }}
+  {{- end }}
+  template:
+    {{- if $globalContext.Values.istio.enabled }}
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    {{- end }}
+    spec:
+      restartPolicy: Never
+      {{- with $globalUpgradeConfig.ImagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- $initContainerBanner := false -}}
+      {{- $containerBanner := false -}}
+      {{- with $globalUpgradeConfig.Containers -}}
+      {{- range $container := $globalUpgradeConfig.Containers -}}
+      {{- if eq $container.Type "InitContainer" -}}
+      {{- if not $initContainerBanner }}
+      initContainers:
+        {{ $initContainerBanner = true }}
+      {{- end -}}
+      {{- else -}}
+      {{- if not $containerBanner }}
+      containers:
+        {{ $containerBanner = true }}
+      {{- end -}}
+      {{- end -}}
+      {{- $values := $container.Values -}}
+      {{- $context := $container.PartialContext -}}
+      {{- $imageRoot := $values.image -}}
+      {{- if and $values.update $values.update.image -}}
+      {{-    $imageRoot = merge $values.update.image $imageRoot -}}
+      {{- end -}}
+      {{- $context = set $context "Context" $globalContext }}
+        - name: {{ $container.Name }}
+          image: {{ include "ox-common.images.image" (dict "imageRoot" $imageRoot "global" $ "context" $globalContext ) }}
+          imagePullPolicy: {{ $imageRoot.pullPolicy }}
+          ports:
+            - containerPort: 8009
+              name: http
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: {{ $globalContext.Values.mysql.auth.rootPassword | quote }}
+            {{- include "core-mw.env" $context | nindent 12 }}
+            {{- include "core-mw.env-variables" $context | nindent 12 }}
+            {{- if $context.Values.javaOpts.debug.heapdump.enabled }}
+            - name: OX_JAVA_OPTS_DEBUG_HEAPDUMP_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if $context.Values.javaOpts.debug.gcLogs.enabled }}
+            - name: OX_JAVA_OPTS_DEBUG_GCLOGS_ENABLED
+              value: "true"
+            {{- end }}
+            {{- if $context.Values.remoteDebug.enabled }}
+            - name: JAVA_OPTS_SERVER
+              value: "-server -Djava.awt.headless=true -Xdebug -Xrunjdwp:transport=dt_socket,address={{ $context.Values.remoteDebug.port }},server=y,suspend=n"
+            {{- end }}
+            {{- if not (empty $context.Values.javaOpts.memory.maxHeapSize) }}
+            - name: JAVA_OPTS_MEMORY_MAXHEAP
+              value: "-XX:MaxHeapSize={{ $context.Values.javaOpts.memory.maxHeapSize }}"
+            {{- end }}
+            {{- if not (empty $context.Values.javaOpts.other) }}
+            - name: JAVA_OPTS_OTHER
+              value: "{{ $context.Values.javaOpts.other }}"
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ include "core-mw.resourceName" (dict "DeploymentContext" $context "ResourceName" "mysql-secret") }}
+            {{- include "core-mw.envFrom" $context | nindent 12 }}
+          resources:
+            {{- toYaml $context.Values.resources | nindent 12 }}
+          volumeMounts:
+            {{ include "core-mw.volumeMounts" $context | nindent 12 }}
+            {{- if $context.Values.javaOpts.debug.heapdump.enabled }}
+            - name: heapdump
+              mountPath: /heapdump
+            {{- end }}
+            {{- if (eq ( include "ox-common.java.ssl.enabled" $context ) "true") }}
+            - name: java-ssl-secrets
+              mountPath: /opt/open-xchange/etc/security/
+              readOnly: true
+            {{- end }}
+            {{- if $context.Values.restricted.drive.enabled }}
+            - name: drive-restricted-config
+              mountPath: /opt/open-xchange/etc/pushClientConfig/drive-restricted-config.yaml
+              readOnly: true
+            {{- end }}
+            {{- if $context.Values.restricted.mobileApiFacade.enabled }}
+            - name: mobile-api-facade-restricted-config
+              mountPath: /opt/open-xchange/etc/pushClientConfig/mobile-api-facade-restricted-config.yaml
+              readOnly: true
+            {{- end }}
+      {{- end -}}
+      {{- end -}}
+      {{- with $globalUpgradeConfig.Sidecars -}}
+      {{- if not $containerBanner -}}
+      containers:
+        {{- $containerBanner = true -}}
+      {{- end -}}
+        {{ toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- range $container := $globalUpgradeConfig.Containers -}}
+        {{ $context := $container.PartialContext -}}
+        {{- $context = set $context "Context" $globalContext -}}
+        {{ include "core-mw.volumes" $context | nindent 8 }}
+        {{- end -}}
+        {{- if $globalContext.Values.javaOpts.debug.heapdump.enabled }}
+        - name: heapdump
+          {{- if $globalContext.Values.javaOpts.debug.heapdump.custom }}
+          {{- toYaml $globalContext.Values.javaOpts.debug.heapdump.custom | nindent 10 }}
+          {{- else }}
+          hostPath:
+            path: {{ $globalContext.Values.javaOpts.debug.heapdump.hostPath.dir }}
+            type: Directory
+          {{- end }}
+        {{- end }}
+        {{- if $globalContext.Values.enableInitialization }}
+        - name: oxguardpass
+          secret:
+            secretName: {{ include "ox-common.names.fullname" $globalContext }}-guard-secret
+            defaultMode: 0444
+        {{- end }}
+        {{- if (eq (include "ox-common.java.ssl.enabled" $globalContext) "true") }}
+        - name: java-ssl-secrets
+          secret:
+            secretName: {{ include "ox-common.java.ssl.secretName" $globalContext }}
+            items:
+              - key: {{ include "ox-common.java.ssl.secret.keyStoreKey" $globalContext }}
+                path: java-ssl.ks
+              {{- if eq (include "ox-common.java.ssl.useTrustStore" $globalContext) "true" }}
+              - key: {{ include "ox-common.java.ssl.secret.trustStoreKey" $globalContext }}
+                path: java-ssl.ts
+              {{- end }}
+        {{- end }}
+        - name: drive-restricted-config
+          secret:
+            secretName: drive-restricted-config
+            optional: true
+        - name: mobile-api-facade-restricted-config
+          secret:
+            secretName: mobile-api-facade-restricted-config
+            optional: true
+        {{ with $globalUpgradeConfig.ExtraVolumes -}}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with $globalUpgradeConfig.NodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $globalUpgradeConfig.Affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $globalUpgradeConfig.Tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end -}}

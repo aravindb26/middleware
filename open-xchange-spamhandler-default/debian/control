@@ -1,0 +1,14 @@
+Source: open-xchange-spamhandler-default
+Section: web
+Priority: optional
+Maintainer: Marcus Klein <marcus.klein@open-xchange.com>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.9.8
+Homepage: http://www.open-xchange.com
+
+Package: open-xchange-spamhandler-default
+Architecture: all
+Pre-Depends: open-xchange-core (>= @OXVERSION@)
+Depends: ${misc:Depends}
+Provides: open-xchange-spamhandler
+Description: The Open-Xchange Default Spam Handler

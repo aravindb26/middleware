@@ -1,0 +1,35 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Additional informations
+
+### 4.0.0
+
+- This version introduces new `configuration.redis` and `configuration.sessiond` section which **adds support for** Redis. Please refer to the documentation in `values.yaml`.
+- Changed the default service type from `NodePort` to `ClusterIP` for `http-api`, `sync` and `admin` service.
+- Removed *all* ingress configuration settings.
+- Removed `services.documentconverterHost`, `services.imageconverterHost` and `services.spellcheckHost`.
+Not necessary anymore but it's possible to override them e.g. via `.Values.global.dc.serviceName`
+- Renamed environment variables
+  - `OX_IMAGECONVERTER_URL` &rarr; `IC_SERVER_URL`
+  - `OX_SPELLCHECK_URL` &rarr; `SPELLCHECK_SERVER_URL`
+  - `OX_DOCUMENTCONVERTER_URL` &rarr; `DC_SERVER_URL`
+- Partially or fully override `ox-common.names.fullname` via `nameOverride` or `fullnameOverride`.
+
+## Configuration
+
+The following table lists the configurable parameters of the `App Suite Middleware Core` chart and their default values.
+
+{{ template "chart.valuesTable" . }}

@@ -1,0 +1,61 @@
+/drive?action=updateLink:
+  put:
+    operationId: updateShareLink
+    tags:
+      - Drive
+    summary: Updates a share link
+    security: 
+        - session: []    
+    description: >-
+      Updates a previously created link for a file or folder. This action is
+      only available for items marked as `shareable`.
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+    responses:
+      '200':
+        description: >
+          A JSON object containing details about the share link, including its
+          URL. In case of errors the responsible
+
+          fields in the response are filled.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriveShareLinkResponse'
+    x-ox-examples:
+      - Example1: null
+        description: Basic example
+        example: >
+          ==> PUT
+          http://192.168.32.191/ajax/drive?action=updateLink&session=35d55f0bd2284e78a8eb4dba99b1310b&root=9542
+
+          > Content:
+            {
+              "path": "/",
+              "name": "photo.jpg",
+              "checksum": "bdf3bf1da3405725be763540d6601144",
+              "password": "secret",
+              "expiry_date": 1451606400000
+            }
+
+          <== HTTP 200 OK (341.8978 ms elapsed, 218 bytes received)
+
+          <   Content: 
+              {
+                "data": {
+                  "url": "http://127.0.0.1/ajax/share/17bc4ac00d424e85ef5272dd427342438e7f20b415aba46c/4df04226",
+                  "is_new": false,
+                  "checksum": "bdf3bf1da3405725be763540d6601144",
+                  "password": "secret",
+                  "expiry_date": 1451606400000
+                }
+              }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DriveShareLinkUpdateBody'
+      description: >-
+        A JSON object containing the updated data of the share link as well as
+        the share target. Only modified fields should be set.
+      required: true

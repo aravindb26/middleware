@@ -1,0 +1,35 @@
+/chronos?action=getRecurrence:
+  get:
+    operationId: getRecurrence
+    tags:
+      - Chronos
+    summary: Gets details about a sepcific recurrence of an event series.
+    description: >
+      Looks up details for a specific recurrence from an event series. This includes the series master, as well as the recurrence event,
+      along with information whether it is an overridden and/or re-scheduled occurrence compared to the regular series.
+      <p/>
+      This can either be performed for an event series identifier along with the targeted recurrence id, or for an already overridden
+      instance.
+      <p/>
+      *Note:* Only available for the internal _groupware_ calendar provider.
+    security: 
+        - session: []    
+    parameters:
+      - $ref: '#/components/parameters/QueryParamChronosID'
+      - $ref: '#/components/parameters/QueryParamChronosFolder'
+      - $ref: '#/components/parameters/QueryParamChronosRecurrenceID'
+      - $ref: '#/components/parameters/QueryParamChronosExtendedEntities'
+    responses:
+      '200':
+        description: >
+          A JSON object holding the data for the recurrence and the corresponding series master event, as well as information
+          whether the recurrence denotes an overridden and/or re-scheduled occurrence compared to the regular series.
+          <p/>In case of errors the responsible fields in the response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChronosRecurrenceInfoResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'               

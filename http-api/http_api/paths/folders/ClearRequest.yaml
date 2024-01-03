@@ -1,0 +1,42 @@
+/folders?action=clear:
+  put:
+    operationId: clearFolders
+    tags:
+      - Folders
+    summary: Clears the content of a list of folders.
+    security:
+        - session: []
+        - oauth: 
+          - write_mails
+        - oauth: 
+          - write_tasks
+        - oauth: 
+          - write_calendar
+        - oauth: 
+          - write_contacts             
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamFolderTree'
+      - $ref: '#/components/parameters/gblQueryParamAllowedModules'
+      - in: query
+        name: pushToken
+        description: The client's push token to restrict the generated drive event
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON array containing the IDs of folders that could not be cleared
+          due to a concurrent modification.
+
+          Meaning you receive an empty JSON array if everything worked well. In
+          case of errors the responsible
+
+          fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoldersCleanUpResponse'
+    requestBody:
+      $ref: '#/components/requestBodies/deleteFoldersBody'

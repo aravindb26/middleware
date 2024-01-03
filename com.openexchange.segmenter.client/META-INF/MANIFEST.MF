@@ -1,0 +1,31 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange segmenter service client
+Bundle-SymbolicName: com.openexchange.segmenter.client
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.reflect,
+ com.google.gson,
+ com.openexchange.config,
+ com.openexchange.config.lean,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.rest.client.httpclient,
+ com.openexchange.segment,
+ com.openexchange.server,
+ org.apache.http,
+ org.apache.http.client,
+ org.apache.http.client.methods,
+ org.apache.http.client.utils,
+ org.apache.http.entity,
+ org.apache.http.message,
+ org.json,
+ org.osgi.framework,
+ org.slf4j
+Bundle-Activator: com.openexchange.segmenter.client.osgi.Activator
+Bundle-ClassPath: .
+Automatic-Module-Name: com.openexchange.segmenter.client
+Export-Package: com.openexchange.segmenter.client

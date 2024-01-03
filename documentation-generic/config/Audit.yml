@@ -1,0 +1,112 @@
+feature_name: Audit
+feature_description: |
+  See [[https://documentation.open-xchange.com/{{version}}/middleware/components/auditlogging.html]] 
+  for more informations about audit logging.
+properties:
+    - key: com.openexchange.audit.logging.enabled
+      description: |
+        Enables the audit feature.
+      defaultValue: false
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: audit.properties
+      packageName: open-xchange-audit
+      tags: ["Audit"]
+    - key: com.openexchange.audit.logging.fileAccessLogging
+      description: |
+        Set to true to enable logging of file accesses and downloads.
+      defaultValue: false
+      version:
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: audit.properties
+      packageName: open-xchange-audit
+      tags: ["Audit"]
+    - key: com.openexchange.log.audit.slf4j.enabled
+      description: |
+        Enables/disables audit logging.
+      defaultValue: false
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: slf4j-auditlog.properties
+      packageName: open-xchange-core
+      tags: ["Audit", "Logging"]
+    - key: com.openexchange.log.audit.slf4j.level
+      description: |
+        Specifies the log level to use.
+        Possible values: <code>trace</code>, <code>debug</code>, <code>info</code>, <code>warn</code> or <code>error</code>.
+      defaultValue: info
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: slf4j-auditlog.properties
+      packageName: open-xchange-core
+      tags: ["Audit", "Logging"]
+    - key: com.openexchange.log.audit.slf4j.delimiter
+      description: |
+        Specifies the delimiter to use. Surrounding quotes are removed for real usage.
+      defaultValue: "\", \""
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: slf4j-auditlog.properties
+      packageName: open-xchange-core
+      tags: ["Audit", "Logging"]
+    - key: com.openexchange.log.audit.slf4j.includeAttributeNames
+      description: |
+        Specifies whether attribute names shall be logged.
+      defaultValue: true
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: slf4j-auditlog.properties
+      packageName: open-xchange-core
+      tags: ["Audit", "Logging"]
+    - key: com.openexchange.log.audit.slf4j.date.pattern
+      description: |
+        Specifies the optional date pattern to use.
+        Accepts a pattern according to: [[https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html]]. 
+
+        An empty value means standard ISO-8601 formatting is used and accompanying properties
+        [[com.openexchange.log.audit.slf4j.date.locale]] and [[com.openexchange.log.audit.slf4j.date.timezone]] are ignored.
+        
+        If a pattern is specified for this property the accompanying properties may optionally be used to also define
+        the locale and time zone to use for date formatting.
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: ["com.openexchange.log.audit.slf4j.date.locale", "com.openexchange.log.audit.slf4j.date.timezone"]
+      file: slf4j-auditlog.properties
+      packageName: open-xchange-core
+      tags: ["Audit", "Logging"]
+    - key: com.openexchange.log.audit.slf4j.date.locale
+      description: |
+        Specifies the locale to use for date formatting.
+      defaultValue: en_US
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.log.audit.slf4j.date.pattern
+      file: slf4j-auditlog.properties
+      packageName: open-xchange-core
+      tags: ["Audit", "Logging"]
+    - key: com.openexchange.log.audit.slf4j.date.timezone
+      description: |
+        Specifies the timezone to use for date formatting.
+      defaultValue: GMT
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.log.audit.slf4j.date.pattern
+      file: slf4j-auditlog.properties
+      packageName: open-xchange-core
+      tags: ["Audit", "Logging"]

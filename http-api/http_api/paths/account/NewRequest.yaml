@@ -1,0 +1,32 @@
+/account?action=new:
+  put:
+    operationId: createAccount
+    tags:
+      - Mailaccount
+    summary: Creates a new mail account.
+    security: 
+        - session: []      
+        - oauth:
+          - write_mailaccount    
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MailAccountData'
+      description: A JSON object describing the new account to create.
+      required: true
+    responses:
+      '200':
+        description: >
+          A JSON object containing the data of the inserted mail account. In
+          case of errors the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailAccountUpdateResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'       

@@ -1,0 +1,56 @@
+/export?action=VCARD:
+  get:
+    operationId: exportAsVCard_get_req
+    tags:
+      - Export
+    summary: Exports contact data to a vCard file.
+    security: 
+        - session: []   
+        - oauth: 
+          - read_contacts   
+    parameters:
+      - in: query
+        name: folder
+        description: >-
+          Object ID of the folder whose content shall be exported. This must be
+          a contact folder. Only required if there is no ids parameter
+          submitted.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: export_dlists
+        description: >-
+          Whether distribution lists are exported or not
+        required: false
+        schema:
+          default: false
+          type: boolean
+    responses:
+      '200':
+        description: >-
+          An input stream containing the content of the vCard file with the MIME
+          type `text/x-vcard`.
+        content:
+          application/json:
+            schema:
+              type: string
+  put:
+    operationId: exportAsVCard_put_req
+    tags:
+      - Export
+    summary: Exports a batch of contact data to a vCard file.
+    security: 
+        - session: []    
+    description: Exports a batch of contact data to a vCard file.
+    responses:
+      '200':
+        description: >-
+          An input stream containing the content of the vCard file with the MIME
+          type `text/x-vcard`.
+        content:
+          application/json:
+            schema:
+              type: string
+    requestBody:
+      $ref: '#/components/requestBodies/InfoItemExportArray'

@@ -1,0 +1,110 @@
+/drive?action=updateFile:
+  put:
+    operationId: updateFile
+    tags:
+      - Drive
+    summary: Updates a file's metadata.
+    security: 
+        - session: []    
+    description: >
+      Updates specific metadata of a synchronized file. This currently only
+      includes the object permissions - which in turn is only allowed for files marked as `shareable`.
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+      - $ref: '#/components/parameters/gblQueryParamPath'
+      - in: query
+        name: name
+        description: The name of the file version.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: checksum
+        description: The checksum of the file to update.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >-
+          A JSON object containing the metadata of the requested file version.
+          In case of errors the responsible fields in the response are filled. Problems 
+          that occurrend during notification are included as warnings.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriveFileResponse'
+    x-ox-examples:
+      - Example1: null
+        description: Basic example
+        example: >
+          ==> PUT
+          http://192.168.32.191/ajax/drive?action=updateFile&session=35d55f0bd2284e78a8eb4dba99b1310b&root=9542&path=/&name=test.txt&checksum=8acde36677ebedb9e541f4918015dacc
+
+          > Content:
+            {
+              "file": {
+                "object_permissions": [{
+                  "type": "guest",
+                  "email_address": "otto@example.com",
+                  "display_name": "Otto Example",
+                  "bits": 2
+                }]
+              },
+              "notification": {
+                "message": "Look!"
+              }
+            }
+
+          <== HTTP 200 OK (132.7421 ms elapsed, 11 bytes received)
+
+          <   Content:
+              {
+                "data": {
+                  "name": "test.txt",
+                  "created": 1623400646190,
+                  "modified": 1628673526476,
+                  "created_by": 14,
+                  "modified_by": 14,
+                  "content_type": "text/plain",
+                  "object_permissions": [
+                    {
+                      "entity": 15,
+                      "group": false,
+                      "bits": 2
+                    }
+                  ],
+                  "extended_object_permissions": [
+                    {
+                      "entity": 15,
+                      "bits": 2,
+                      "type": "guest",
+                      "contact": {
+                        "email1": "otto@example.com",
+                        "image1_url": "/ajax/contacts/picture?action=get&user_id=15&timestamp=1620303119498"
+                      }
+                    }
+                  ],
+                  "shared": true,
+                  "shareable": true,
+                  "number_of_versions": 1,
+                  "version": "1",
+                  "jump": [
+                    "permissions",
+                    "version_history"
+                  ],
+                  "path": "/",
+                  "checksum": "8acde36677ebedb9e541f4918015dacc"
+                }
+              }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DriveFileUpdateBody'
+      description: >
+        A JSON object containing the fields `file` and `notification`. The JSON
+        object in field `file` describes the updated file metadata (currently only the property
+        `object_permissions` is considered) and the JSON object `notification` may include a message to notify added permission entities. To notify
+        with a default message, an empty `notification` object should still be added.
+      required: true

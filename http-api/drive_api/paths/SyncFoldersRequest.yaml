@@ -1,0 +1,231 @@
+/drive?action=syncfolders:
+  put:
+    operationId: syncFolders
+    tags:
+      - Drive
+    summary: Synchronizes folders.
+    security: 
+        - session: []    
+    description: >
+      This request performs the synchronization of all folders, resulting in
+      different actions that should be
+
+      executed on the client afterwards. This operation typically serves as an
+      entry point for a synchronization
+
+      cycle.
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+      - $ref: '#/components/parameters/gblQueryApiVersion'
+      - in: query
+        name: version
+        description: >-
+          The current client version (matching the pattern
+          `^[0-9]+(\\.[0-9]+)*$). If not set, the initial version 0 is assumed.
+        required: false
+        schema:
+          type: string
+          default: '0'
+      - in: query
+        name: diagnostics
+        description: >-
+          If set to `true`, an additional diagnostics trace is supplied in the
+          response.
+        required: false
+        schema:
+          type: boolean
+      - in: query
+        name: quota
+        description: >-
+          If set to `true`, additional quota information for the folder is
+          supplied in the response.
+        required: false
+        schema:
+          type: boolean
+      - in: query
+        name: pushToken
+        description: >-
+          The client's push registration token to associate it to generated
+          events.
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array of actions the client should execute
+          for synchronization. If the
+
+          `diagnostics` parameter was set, the array is wrapped into an
+          additional JSON object in the field
+
+          `actions` and the diagnostics trace is provided at `diagnostics`. In
+          case of errors the responsible
+
+          fields in the response are filled.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriveSyncFolderResponse'
+    x-ox-examples:
+      - Example1: null
+        description: Basic example
+        example: >
+          ==> PUT
+          http://192.168.32.191/ajax/drive?action=syncfolders&root=56&session=5d0c1e8eb0964a3095438b450ff6810f
+
+          > Content:
+
+          {
+            "clientVersions" : [{
+                "path" : "/",
+                "checksum" : "7b744b13df4b41006495e1a15327368a"
+              }, {
+                "path" : "/test1",
+                "checksum" : "3ecc97334d7f6bf2b795988092b8137e"
+              }, {
+                "path" : "/test2",
+                "checksum" : "56534fc2ddcb3b7310d3ef889bc5ae18"
+              }, {
+                "path" : "/test2/test3",
+                "checksum" : "c193fae995d9f9431986dcdc3621cd98"
+              }
+            ],
+            "originalVersions" : [{
+                "path" : "/",
+                "checksum" : "7b744b13df4b41006495e1a15327368a"
+              }, {
+                "path" : "/test2/test3",
+                "checksum" : "c193fae995d9f9431986dcdc3621cd98"
+              }, {
+                "path" : "/test2",
+                "checksum" : "35d1b51fdefbee5bf81d7ae8167719b8"
+              }, {
+                "path" : "/test1",
+                "checksum" : "3ecc97334d7f6bf2b795988092b8137e"
+              }
+            ]
+          }
+
+
+          <== HTTP 200 OK (8.0004 ms elapsed, 102 bytes received)
+
+          <   Content: 
+              {
+                "data" : [{
+                    "action" : "sync",
+                    "version" : {
+                      "path" : "/test2",
+                      "checksum" : "56534fc2ddcb3b7310d3ef889bc5ae18"
+                    }
+                  }
+                ]
+              }
+      - Example2: null
+        description: Extended example
+        example: >
+          ==> PUT
+          http://192.168.32.191/ajax/drive?action=syncfolders&root=56&session=5d0c1e8eb0964a3095438b450ff6810f
+            > Content:
+              {
+                "clientVersions" : [{
+                    "path" : "/",
+                    "checksum" : "7b744b13df4b41006495e1a15327368a"
+                  }, {
+                    "path" : "/test1",
+                    "checksum" : "3ecc97334d7f6bf2b795988092b8137e"
+                  }, {
+                    "path" : "/test2",
+                    "checksum" : "56534fc2ddcb3b7310d3ef889bc5ae18"
+                  }, {
+                    "path" : "/test2/test3",
+                    "checksum" : "c193fae995d9f9431986dcdc3621cd98"
+                  }
+                ],
+                "originalVersions" : [{
+                    "path" : "/",
+                    "checksum" : "7b744b13df4b41006495e1a15327368a"
+                  }, {
+                    "path" : "/test2/test3",
+                    "checksum" : "c193fae995d9f9431986dcdc3621cd98"
+                  }, {
+                    "path" : "/test2",
+                    "checksum" : "35d1b51fdefbee5bf81d7ae8167719b8"
+                  }, {
+                    "path" : "/test1",
+                    "checksum" : "3ecc97334d7f6bf2b795988092b8137e"
+                  }
+                ]
+                "fileExclusions" : [{
+                    "path" : "/",
+                    "name" : "excluded.txt",
+                    "type" : "exact"
+                  }
+                ], "directoryExclusions" : [{
+                    "path" : "/temp",
+                    "type" : "exact"
+                  }, {
+                    "path" : "/temp/*",
+                    "type" : "glob"
+                  }
+                ]
+              }
+            
+          <== HTTP 200 OK (8.0004 ms elapsed, 102 bytes received)
+
+          <   Content: 
+              {
+                "data" : [{
+                    "action" : "sync",
+                    "version" : {
+                      "path" : "/test2",
+                      "checksum" : "56534fc2ddcb3b7310d3ef889bc5ae18"
+                    }
+                  }
+                ]
+              }
+      - Example3: null
+        description: Example with error (not synchronizable root folder)
+        example: >
+          ==> PUT
+          http://drive.local.ox/ajax/drive?action=syncfolders&root=41766&session=eb280e1624bd48f3b236b1dc815eb443
+            > Content:
+              {
+                "clientVersions" : [],
+                "originalVersions" : []
+              }
+            
+          <== HTTP 200 OK (4.3595 ms elapsed, 379 bytes received)
+
+          <   Content: 
+              {
+                "data" : [{
+                    "action": "error",
+                    "stop": true,
+                    "quarantine": false,
+                    "error": {
+                      "error": "The directory is no longer accessible. Please select another directory.",
+                      "error_params": [
+                        "41768"
+                      ],
+                      "categories": "USER_INPUT",
+                      "category": 1,
+                      "code": "DRV-0044",
+                      "error_id": "1891144233-6",
+                      "error_desc": "Directory 41768 not accessible."
+                    }
+                  }
+                ]
+              }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DriveSyncFoldersBody'
+      description: >
+        A JSON object containing the fields `clientVersions` and
+        `originalVersions`, both representing JSON arrays.
+
+        Since API version 2, the JSON object may also contain two arrays named
+        `fileExclusions` and `directoryExclusions`.
+      required: true

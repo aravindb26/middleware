@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="lib/common-image-3.8.3.jar" sourcepath="lib/source/common-image-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/common-io-3.8.3.jar" sourcepath="lib/source/common-io-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/common-lang-3.8.3.jar" sourcepath="lib/source/common-lang-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-bmp-3.8.3.jar" sourcepath="lib/source/imageio-bmp-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-clippath-3.8.3.jar" sourcepath="lib/source/imageio-clippath-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-core-3.8.3.jar" sourcepath="lib/source/imageio-core-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-hdr-3.8.3.jar" sourcepath="lib/source/imageio-hdr-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-icns-3.8.3.jar" sourcepath="lib/source/imageio-icns-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-iff-3.8.3.jar" sourcepath="lib/source/imageio-iff-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-jpeg-3.8.3.jar" sourcepath="lib/source/imageio-jpeg-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-metadata-3.8.3.jar" sourcepath="lib/source/imageio-metadata-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-pcx-3.8.3.jar" sourcepath="lib/source/imageio-pcx-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-pict-3.8.3.jar" sourcepath="lib/source/imageio-pict-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-pnm-3.8.3.jar" sourcepath="lib/source/imageio-pnm-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-psd-3.8.3.jar" sourcepath="lib/source/imageio-psd-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-sgi-3.8.3.jar" sourcepath="lib/source/imageio-sgi-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-tga-3.8.3.jar" sourcepath="lib/source/imageio-tga-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-thumbsdb-3.8.3.jar" sourcepath="lib/source/imageio-thumbsdb-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imageio-tiff-3.8.3.jar" sourcepath="lib/source/imageio-tiff-3.8.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/imgscalr-lib-4.2.jar" sourcepath="lib/source/imgscalr-lib-4.2-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

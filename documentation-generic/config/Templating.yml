@@ -1,0 +1,24 @@
+feature_name: Templating
+properties:
+    - key: com.openexchange.templating.path
+      description: |
+        Specifies the templating path.
+      defaultValue: "@templatepath@"
+      version: 
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: templating.properties
+      packageName: open-xchange-core
+      tags: ["Template"]
+    - key: com.openexchange.templating.assets.path
+      description: |
+        Specifies the assets path.
+      defaultValue: "@templatepath@/assets/"
+      version: 
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: templating.properties
+      packageName: open-xchange-core
+      tags: ["Template"]

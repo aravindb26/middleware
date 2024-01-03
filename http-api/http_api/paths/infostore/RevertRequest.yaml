@@ -1,0 +1,43 @@
+/infostore?action=revert:
+  put:
+    operationId: deleteAllInfoItemVersions
+    tags:
+      - Infostore
+    summary: Deletes all versions of an infoitem leaving only the base object.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: id
+        description: The ID of the base object.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: folder
+        description: The folder ID of the base object.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: timestamp
+        description: Timestamp of the last update of the infoitem.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - in: query
+        name: pushToken
+        description: The client's push token to restrict the generated drive event
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          In case of errors the responsible fields in the response are filled
+          (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonResponse'

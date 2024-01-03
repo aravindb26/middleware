@@ -1,0 +1,742 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.ajax.requesthandler.responseRenderers.actions;
+
+import static com.openexchange.java.Strings.isNotEmpty;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.lowerCase;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.openexchange.ajax.container.ByteArrayFileHolder;
+import com.openexchange.ajax.container.FileHolder;
+import com.openexchange.ajax.container.ThresholdFileHolder;
+import com.openexchange.ajax.container.TmpFileFileHolder;
+import com.openexchange.ajax.fileholder.IFileHolder;
+import com.openexchange.ajax.helper.ImageUtils;
+import com.openexchange.ajax.requesthandler.AJAXRequestData;
+import com.openexchange.ajax.requesthandler.AJAXRequestDataTools;
+import com.openexchange.ajax.requesthandler.AJAXRequestResult;
+import com.openexchange.ajax.requesthandler.cache.CachedResource;
+import com.openexchange.ajax.requesthandler.cache.ResourceCache;
+import com.openexchange.ajax.requesthandler.cache.ResourceCaches;
+import com.openexchange.ajax.requesthandler.converters.preview.AbstractPreviewResultConverter;
+import com.openexchange.ajax.requesthandler.responseRenderers.FileResponseRenderer;
+import com.openexchange.ajax.requesthandler.responseRenderers.FileResponseRenderer.FileResponseRendererActionException;
+import com.openexchange.annotation.NonNull;
+import com.openexchange.configuration.ServerConfig;
+import com.openexchange.exception.OXException;
+import com.openexchange.imagetransformation.BasicTransformedImage;
+import com.openexchange.imagetransformation.ImageInformation;
+import com.openexchange.imagetransformation.ImageTransformationConfig;
+import com.openexchange.imagetransformation.ImageTransformationDeniedIOException;
+import com.openexchange.imagetransformation.ImageTransformationService;
+import com.openexchange.imagetransformation.ImageTransformations;
+import com.openexchange.imagetransformation.ScaleType;
+import com.openexchange.imagetransformation.Utility;
+import com.openexchange.java.BoolReference;
+import com.openexchange.java.Streams;
+import com.openexchange.java.Strings;
+import com.openexchange.mail.mime.MimeType2ExtMap;
+import com.openexchange.threadpool.AbstractTask;
+import com.openexchange.threadpool.ThreadPools;
+import com.openexchange.tools.images.ImageTransformationUtility;
+import com.openexchange.tools.servlet.AjaxExceptionCodes;
+import com.openexchange.tools.session.ServerSession;
+
+/**
+ * {@link TransformImageAction} transforms the image if necessary
+ *
+ * Influence the following IDataWrapper attributes:
+ * <ul>
+ * <li>File
+ * </ul>
+ *
+ * @author <a href="mailto:kevin.ruthmann@open-xchange.com">Kevin Ruthmann</a>
+ * @since v7.8.1
+ */
+public class TransformImageAction implements IFileResponseRendererAction {
+
+    /**
+     * {@link TransformedImageInputStreamClosure}
+     *
+     * @author <a href="mailto:kevin.ruthmann@open-xchange.com">Kevin Ruthmann</a>
+     * @since v7.8.1
+     */
+    protected static final class TransformedImageInputStreamClosure implements FileHolder.InputStreamClosure {
+
+        /**
+         * Initializes a new {@link TransformedImageInputStreamClosure}.
+         */
+        TransformedImageInputStreamClosure(BasicTransformedImage transformedImage) {
+            m_transformedImage = transformedImage;
+        }
+
+        @Override
+        public InputStream newStream() throws OXException {
+            return m_transformedImage.getImageStream();
+        }
+
+        // - Members ---------------------------------------------------------------
+
+        /**
+         * m_transformedImage
+         */
+        private final BasicTransformedImage m_transformedImage;
+    }
+
+    /**
+     * Initializes a new {@link TransformImageAction}.
+     */
+    public TransformImageAction() {
+        super();
+    }
+
+    /**
+     * Sets the scaler/image transformation service to use
+     *
+     * @param scaler The scaler
+     */
+    public void setScaler(ImageTransformationService scaler) {
+        m_scalerReference.set(scaler);
+    }
+
+    @Override
+    public void call(final IDataWrapper data) throws Exception {
+        // closing of internal resources will be handled by FileHolder set at DataWrapper
+        final IFileHolder file = transformIfImage(data.getRequestData(), data.getResult(), data.getFile(), data.getDelivery(), ServerConfig.getTmpDir());
+
+        if (null == file) {
+            // Quit with 404
+            throw new FileResponseRenderer.FileResponseRendererActionException(HttpServletResponse.SC_NOT_FOUND, "File not found.");
+        }
+
+        data.setFile(file);
+    }
+
+    /**
+     * @param fileHolder
+     * @param forceCreation
+     * @return
+     * @throws OXException
+     * @throws IOException
+     */
+    protected static @NonNull IFileHolder getRepetitiveFile(@NonNull final IFileHolder fileHolder) throws OXException, IOException {
+        if ((fileHolder instanceof ThresholdFileHolder) || fileHolder.repetitive()) {
+            return fileHolder;
+        }
+
+        // closing of internal resources will be handled by returned FileHolder
+        @SuppressWarnings("resource") ThresholdFileHolder tmpThresholdFileHolder = new ThresholdFileHolder(fileHolder);
+        fileHolder.close();
+        return tmpThresholdFileHolder;
+    }
+
+    /**
+     * @param session
+     * @param request
+     * @param eTag
+     * @param params
+     * @return
+     * @throws OXException
+     */
+    protected String getCacheKey(@NonNull final ServerSession session, @NonNull final AJAXRequestData request, @NonNull final AJAXRequestResult result, @SuppressWarnings("unused") @NonNull final IFileHolder repetitiveFile, @SuppressWarnings("unused") @NonNull final TransformImageParameters xformParams) throws OXException {
+        final ResourceCache cache = ResourceCaches.getResourceCache();
+        final String eTag = result.getHeader("ETag");
+        String cacheKey = null;
+
+        if ((null != cache) && !isEmpty(eTag) && cache.isEnabledFor(session.getContextId(), session.getUserId()) && AJAXRequestDataTools.parseBoolParameter("cache", request, true)) {
+
+            cacheKey = ResourceCaches.generatePreviewCacheKey(eTag, request, AbstractPreviewResultConverter.getUserLanguage(session));
+        }
+
+        return cacheKey;
+    }
+
+    /**
+     * @param cacheKey
+     * @param session
+     * @return
+     * @throws OXException
+     */
+    @SuppressWarnings("static-method")
+    protected IFileHolder getCachedResource(@NonNull final ServerSession session, @NonNull final String cacheKey, @SuppressWarnings("unused") @NonNull final TransformImageParameters xformParams) throws OXException {
+        final ResourceCache cache = ResourceCaches.getResourceCache();
+        IFileHolder ret = null;
+
+        if (isNotEmpty(cacheKey) && (null != cache)) {
+            final CachedResource cachedResource = cache.get(cacheKey, 0, session.getContextId());
+
+            if (null != cachedResource) {
+                // Scaled version already cached
+                // Create appropriate IFileHolder
+                String cachedMimeType = cachedResource.getFileType();
+
+                if (null == cachedMimeType) {
+                    cachedMimeType = "image/jpeg";
+                }
+
+                // if valid. closing of inputStm will be handled by FileHolder
+                final InputStream inputStm = cachedResource.getInputStream();
+
+                if (null == inputStm) {
+                    // closing of internal resouces is handled by FileHolder, no closing needed for ByteArrayFileHolder
+                    @SuppressWarnings("resource") final ByteArrayFileHolder responseFileHolder = new ByteArrayFileHolder(cachedResource.getBytes());
+
+                    responseFileHolder.setContentType(cachedMimeType);
+                    responseFileHolder.setName(cachedResource.getFileName());
+
+                    ret = responseFileHolder;
+                } else {
+                    ret = new FileHolder(inputStm, cachedResource.getSize(), cachedMimeType, cachedResource.getFileName());
+                }
+
+                LOG.debug("Returning cached image (MW)");
+            }
+        }
+
+        return ret;
+    }
+
+    /**
+     * @param session
+     * @param cacheKey
+     * @param targetMimeType
+     * @param transformedImage
+     * @param transformedFile
+     * @param fileName
+     * @param size
+     * @throws OXException
+     * @throws IOException
+     */
+    protected void writeCachedResource(final ServerSession session, final String cacheKey, final String targetMimeType, final BasicTransformedImage transformedImage, final ThresholdFileHolder transformedFile, final String fileName, final long size) throws OXException, IOException {
+
+        final ResourceCache cache = ResourceCaches.getResourceCache();
+
+        if ((null != cache) && isNotEmpty(cacheKey)) {
+
+            File tempFile = (null == transformedFile) ? null : transformedFile.getTempFile();
+
+            if (null != tempFile) {
+                // Copy to avoid preliminary file deletion; self care about file deletion
+                final File newTempFile = TmpFileFileHolder.newTempFile(false);
+                FileUtils.copyFile(tempFile, newTempFile, false);
+                tempFile = newTempFile;
+            }
+
+            final File imgFile = tempFile;
+            final byte[] imageData = (null == imgFile) ? ((null == transformedFile) ? transformedImage.getImageData() : transformedFile.toByteArray()) : null;
+
+            tempFile = null;
+
+            ThreadPools.submitElseExecute(new AbstractTask<Void>() {
+
+                @Override
+                public Void call() {
+                    try {
+                        if (null != imgFile) {
+                            try (final FileInputStream fileInputStm = new FileInputStream(imgFile)) {
+                                cache.save(cacheKey, new CachedResource(fileInputStm, fileName, targetMimeType, size), 0, session.getContextId());
+                            }
+                        } else if (null != imageData) {
+                            cache.save(cacheKey, new CachedResource(imageData, fileName, targetMimeType, size), 0, session.getContextId());
+                        }
+                    } catch (Exception e) {
+                        LOG.warn("Could not cache preview.", e);
+                    } finally {
+                        FileUtils.deleteQuietly(imgFile);
+                    }
+
+                    return null;
+                }
+            });
+        }
+    }
+
+    /**
+     * @param request
+     * @param file
+     * @param delivery
+     * @param tmpDirRef
+     * @return The optional {@link BasicTransformedImage}
+     * @throws ImageTransformationDeniedIOException
+     * @throws IOException
+     */
+    protected Optional<BasicTransformedImage> performTransformImage(@NonNull final ServerSession session, @NonNull final IFileHolder file, @NonNull final TransformImageParameters transformParams, @SuppressWarnings("unused") final String cacheKey, @SuppressWarnings("unused") final String fileName) throws OXException, IOException {
+
+        // existence of return data has been already checked in caller method
+        final ImageTransformationService scaler = m_scalerReference.get();
+        ImageTransformations transformations;
+
+        try {
+            transformations = scaler.transfom(file, session.getSessionID());
+        } catch (ImageTransformationDeniedIOException e) {
+            // Rethrow as ImageTransformationDeniedIOException is specially handled in FileResponseRenderer
+            throw e;
+        }
+
+        // Rotate by default when not delivering as download
+        if (transformParams.isAutoRotate()) {
+            transformations.rotate();
+        }
+
+        if (transformParams.isCropping()) {
+            transformations.crop(transformParams.getCropX(), transformParams.getCropX(), transformParams.getCropWidth(), transformParams.getCropHeight());
+        }
+
+        if (transformParams.isScaling()) {
+            // Get image transformation configuration
+            try {
+                ImageTransformationConfig imgTransConfig = ImageTransformationConfig.getConfig();
+                transformations.scale(imgTransConfig.adjustMaxWidthIfNecessary(transformParams.getWidth()), imgTransConfig.adjustMaxHeightIfNecessary(transformParams.getHeight()), transformParams.getScaleType(), transformParams.isShrinkOnly());
+            } catch (IllegalArgumentException e) {
+                throw AjaxExceptionCodes.BAD_REQUEST_CUSTOM.create(e, e.getMessage());
+            }
+        }
+
+        if (transformParams.isCompress()) {
+            transformations.compress();
+        }
+
+        LOG.debug("Returning transformed image (MW)");
+
+        // return transformed image
+        return transformations.optTransformedImage(transformParams.getImageType().getShortName());
+    }
+
+    /**
+     * @param request
+     * @param result
+     * @param file
+     * @param delivery
+     * @param tmpDir
+     * @return
+     * @throws IOException
+     * @throws OXException
+     * @throws FileResponseRendererActionException
+     */
+    private IFileHolder transformIfImage(final AJAXRequestData request, final AJAXRequestResult result, IFileHolder file, final String delivery, File tmpDir) throws OXException, FileResponseRendererActionException, IOException {
+        final String sourceMimeType = getSourceMimeType(file);
+        final TransformImageParameters xformParams = new TransformImageParameters(getTargetMimeType(sourceMimeType));
+        final boolean isViewDelivery = !IDataWrapper.DOWNLOAD.equalsIgnoreCase(delivery);
+
+        TransformationNeededResult transformationNeededResult = getResultFileIfNoTransformationNeeded(request, file, sourceMimeType, isViewDelivery, xformParams);
+
+        // if no further transformation is possible or needed,
+        // we have a valid file here and can return;
+        // otherwise, carry on with the usual transformation path
+        if (transformationNeededResult.transformationNeeded == false) {
+            LOG.debug("Returning original image (MW)");
+            return transformationNeededResult.fileHolder;
+        }
+
+        // we need a valid server session in order to transform
+        final ServerSession session = request.getSession();
+        if (null == session) {
+            throw AjaxExceptionCodes.MISSING_PARAMETER.create("session");
+        }
+
+        // we need a valid file at following locations
+        file = transformationNeededResult.fileHolder;
+        if (null == file) {
+            throw new FileResponseRenderer.FileResponseRendererActionException(HttpServletResponse.SC_NOT_FOUND, "File not found.");
+        }
+
+        // determine cache key; might be null, in which
+        // case caching should be disabled for this file
+        final IFileHolder repetitiveFile = getRepetitiveFile(file);
+        final String cacheKey = getCacheKey(session, request, result, repetitiveFile, xformParams);
+
+        // try to retrieve cached resource, if cache key is given
+        IFileHolder resultFile = null;
+        if (null != cacheKey) {
+            resultFile = getCachedResource(session, cacheKey, xformParams);
+        }
+
+        // if we got a result from the cache, we have a valid file here and can return;
+        if (null == resultFile) {
+            final String sourceFormatName = lowerCase(Utility.getImageFormat(sourceMimeType));
+
+            // Check for an animated .gif or SVG image, if resultFile is not already valid
+            // and return this, since no valid transformation is possible here
+            if ("svg".equals(sourceFormatName)) {
+                resultFile = repetitiveFile;
+            } else {
+                Boolean animatedGifResult = isAnimatedGif (sourceFormatName, repetitiveFile);
+                if (null == animatedGifResult) {
+                    resultFile = repetitiveFile;
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn("(Possible) Image file misses stream data");
+                    }
+                } else if (animatedGifResult.booleanValue()) {
+                    resultFile = repetitiveFile;
+                }
+            }
+
+            // no result file so far => use cache and transformation path
+            if (null == resultFile) {
+                final String fileName = repetitiveFile.getName();
+                try {
+                    // Image transformation path, if we don't have a valid result by now
+                    try {
+                        Optional<BasicTransformedImage> optTransformedImage = performTransformImage(session, repetitiveFile, xformParams, cacheKey, fileName);
+                        if (optTransformedImage.isEmpty()) {
+                            LOG.debug("Returning original image (MW)");
+                            resultFile = repetitiveFile;
+                            return repetitiveFile;
+                        }
+
+                        BasicTransformedImage transformedImage = optTransformedImage.get();
+                        final IFileHolder transformedImageFile = transformedImage.getImageFile();
+                        final ThresholdFileHolder optImageFileHolder = ((transformedImageFile instanceof ThresholdFileHolder) ? (ThresholdFileHolder) transformedImageFile : null);
+                        final long size = transformedImage.getSize();
+
+                        // writing into cache is only needed if expense is high and
+                        // IC was not able to perform caching on IC server side
+                        if ((transformedImage.getTransformationExpenses() == ImageTransformations.HIGH_EXPENSE) && (null == xformParams.getICCacheKey())) {
+                            writeCachedResource(session, cacheKey, xformParams.getImageMimeType(), transformedImage, optImageFileHolder, fileName, size);
+                        }
+
+                        if (null == optImageFileHolder) {
+                            // Returning  new file holder having image-transformation content
+                            resultFile = new FileHolder(new TransformedImageInputStreamClosure(transformedImage), size, xformParams.getImageMimeType(), fileName);
+                        } else {
+                            // Returning already available result file holder
+                            optImageFileHolder.setName(fileName);
+                            optImageFileHolder.setContentType(xformParams.getImageMimeType());
+                            resultFile = optImageFileHolder;
+                        }
+                    } catch (javax.imageio.IIOException e) {
+                        // Image transformation failed because image could not be read by image reader
+                        resultFile = repetitiveFile;
+                        return resultFile;
+                    } catch (IOException e) {
+                        final String message = e.getMessage();
+
+                        if (null != message) {
+                            if ("Unsupported Image Type".equals(message) || message.indexOf("No image reader available for format") >= 0) {
+                                resultFile = repetitiveFile;
+                                return resultFile;
+                            }
+                        }
+
+                        throw e;
+                    }
+                } catch (RuntimeException e) {
+                    if (LOG.isDebugEnabled()) {
+                        try {
+                            LOG.error("Unable to transform image from {}. Unparseable image file is written to disk at: {}", repetitiveFile.getName(), writeBrokenImage2Disk(repetitiveFile, tmpDir).getPath(), e);
+                        } catch (IOException | OXException excp) {
+                            LOG.error("Unable to transform image from {}", repetitiveFile.getName(), excp);
+                        }
+                    } else {
+                        LOG.error("Unable to transform image from {}", repetitiveFile.getName(), e);
+                    }
+
+                    if (resultFile != repetitiveFile) {
+                        Streams.close(resultFile);
+                        resultFile = repetitiveFile;
+                    }
+                } finally {
+                    if (resultFile != repetitiveFile) {
+                        Streams.close(repetitiveFile);
+                    }
+                }
+            }
+
+            if (resultFile != repetitiveFile) {
+                Streams.close(repetitiveFile);
+            } else {
+                LOG.debug("Returning original image (MW)");
+            }
+        }
+
+        return resultFile;
+    }
+
+    /**
+     * @param request
+     * @param file
+     * @param sourceMimeType
+     * @param delivery
+     * @return
+     * @throws OXException
+     * @throws IOException
+     */
+    private TransformationNeededResult getResultFileIfNoTransformationNeeded(final AJAXRequestData request, @NonNull IFileHolder file, final String sourceMimeType, final boolean isViewDelivery, final TransformImageParameters params) throws OXException, IOException {
+
+        if ((null == sourceMimeType) || !sourceMimeType.startsWith("image/") || (null == m_scalerReference.get())) {
+            return new TransformationNeededResult(false, file);
+        }
+
+        // the optional parameter "transformationNeeded" is set by the PreviewImageResultConverter if no transformation is needed.
+        // This is done if the preview was generated by the com.openexchage.documentpreview.OfficePreviewDocument service
+        Boolean transformationNeeded = request.getParameter("transformationNeeded", Boolean.class, true);
+        if (null != transformationNeeded && !transformationNeeded.booleanValue()) {
+            return new TransformationNeededResult(false, file);
+        }
+
+        {
+            boolean transform = false;
+
+            // rotate (by default if delivery=view)
+            final Boolean rotate = request.isSet("rotate") ? request.getParameter("rotate", Boolean.class) : null;
+            if (null == rotate && isViewDelivery || Boolean.TRUE.equals(rotate)) {
+                params.setAutoRotate(true);
+                transform = true;
+            }
+
+            // crop
+            if (request.isSet("cropWidth") || request.isSet("cropHeight")) {
+                params.setCropX(optIntParameter(request, "cropX"));
+                params.setCropY(optIntParameter(request, "cropY"));
+                params.setCropWidth(optIntParameter(request, "cropWidth"));
+                params.setCropHeight(optIntParameter(request, "cropHeight"));
+                transform = true;
+            }
+
+            if (request.isSet("width") || request.isSet("height")) {
+                params.setWidth(optIntParameter(request, "width"));
+                params.setHeight(optIntParameter(request, "height"));
+                params.setScaleType(ScaleType.getType(request.getParameter("scaleType")));
+                params.setShrinkOnly(request.isSet("shrinkOnly") && Boolean.parseBoolean(request.getParameter("shrinkOnly")));
+                transform = true;
+            }
+
+            if (!transform) {
+                if (!isViewDelivery) {
+                    return new TransformationNeededResult(false, file);
+                }
+
+                // Rotation/compression only required for JPEG
+                String sourceFormatName = lowerCase(Utility.getImageFormat(sourceMimeType));
+                if (!"jpeg".equals(sourceFormatName) && !"jpg".equals(sourceFormatName)) {
+                    return new TransformationNeededResult(false, file);
+                }
+
+                IFileHolder repetitiveFile = getRepetitiveFile(file);
+                InputStream inputStm = repetitiveFile.getStream();
+                if (null == inputStm) {
+                    LOG.warn("(Possible) Image file misses stream data");
+                    return new TransformationNeededResult(false, repetitiveFile);
+                }
+                try {
+                    // Non-null stream
+                    if (!ImageTransformationUtility.requiresRotateTransformation(inputStm)) {
+                        return new TransformationNeededResult(false, repetitiveFile);
+                    }
+                    params.setAutoRotate(true);
+                    file = repetitiveFile;
+                } finally {
+                    Streams.close(inputStm);
+                }
+            }
+        }
+
+        // DOCS-3588: Check for unusual image aspect ratios and return source image as is since an
+        // image scaling operation will render the given image mostly unrecognizable/unreadable
+        IFileHolder repetitiveFile = getRepetitiveFile(file);
+        IFileHolder ret = null;
+        if ((params.getScaleType() == ScaleType.CONTAIN) &&
+            ((params.getWidth() >= SUSPICIOUS_IMAGE_EXTENT_THRESHOLD) || (params.getHeight() >= SUSPICIOUS_IMAGE_EXTENT_THRESHOLD))) {
+
+            boolean validAspectRatios = true;
+
+            ret = repetitiveFile;
+
+            try (final InputStream inputStm = ret.getStream();
+                 final BufferedInputStream bufferedInputStm = ((null != inputStm) ? new BufferedInputStream(inputStm) : null)) {
+
+                if (null == bufferedInputStm) {
+                    LOG.warn("(Possible) Image file misses stream data");
+                } else {
+                    final ImageInformation imageInformation = ImageTransformationUtility.readImageInformation(bufferedInputStm, new BoolReference(false));
+
+                    if ((null != imageInformation) && (imageInformation.height > 0) && (params.getHeight() > 0)) {
+                        final double srcWHRatio = ((double) imageInformation.width) / imageInformation.height;
+                        final double dstWHRatio = ((double) params.getWidth()) / params.getHeight();
+
+                        // perform valid aspect ratio test only in case src image aspect and target image aspect ratios are completely different
+                        if (((srcWHRatio > 1.0) && (dstWHRatio < 1.0)) || ((srcWHRatio < 1.0) && (srcWHRatio > 0.0) && (dstWHRatio > 1.0))) {
+                            if (((srcWHRatio >= 1.0) ? srcWHRatio : (1.0 / srcWHRatio)) >= SUSPICIOUS_IMAGE_ASPECT_THRESHOLD) {
+                                validAspectRatios = false;
+                                LOG.debug("Suspicious source and target image aspect ratios detected");
+                            }
+                        }
+                    }
+                }
+            } finally {
+                if (validAspectRatios) {
+                    ret = null;
+                }
+            }
+        }
+
+        return new TransformationNeededResult(ret == null, repetitiveFile);
+    }
+
+    /**
+     * Optionally parses a specific numerical parameter from the supplied request data.
+     *
+     * @param request The request to get the parameter from
+     * @param name The parameter name
+     * @return The parameter, or <code>0</code> if not set
+     */
+    private static int optIntParameter(AJAXRequestData request, String name) throws OXException {
+        if (request.isSet(name)) {
+            Integer integer = request.getParameter(name, int.class);
+            return null != integer ? integer.intValue() : 0;
+        }
+        return 0;
+    }
+
+    /**
+     * @param fileHolder
+     * @return
+     */
+    private static String getSourceMimeType(final IFileHolder fileHolder) {
+        String sourceMimeType = lowerCase(fileHolder.getContentType());
+
+        if ((null == sourceMimeType) || !sourceMimeType.startsWith("image/")) {
+            String sourceMimeTypeByFileName = FileResponseRenderer.getContentTypeByFileName(fileHolder.getName());
+
+            if (null != sourceMimeTypeByFileName) {
+                sourceMimeType = lowerCase(sourceMimeTypeByFileName);
+            }
+        }
+
+        return sourceMimeType;
+    }
+
+    /**
+     * Gets the target content type to use for a transformed image, based on the type of the source image type.
+     *
+     * @param sourceMimeType The source image's content type file
+     * @return The target content type, falling back to <code>image/jpeg</code> for unknown or mostly unsupported content types
+     */
+    private static String getTargetMimeType(String sourceMimeType) {
+        return (Strings.isNotEmpty(sourceMimeType) && ("image/bmp".equals(sourceMimeType) || "image/gif".equals(sourceMimeType) || "image/png".equals(sourceMimeType))) ? sourceMimeType : "image/jpeg";
+    }
+
+    private static Boolean isAnimatedGif (String sourceFormatName, IFileHolder repetitiveFile) throws IOException, OXException {
+        if (false == "gif".equals(sourceFormatName)) {
+            return Boolean.FALSE;
+        }
+
+        InputStream repetitiveInputStm = repetitiveFile.getStream();
+        if (null == repetitiveInputStm) {
+            return null;
+        }
+
+        try {
+            return ImageUtils.isAnimatedGif (repetitiveInputStm) ? Boolean.TRUE : Boolean.FALSE;
+        } finally {
+            Streams.close(repetitiveInputStm);
+        }
+    }
+
+    /**
+     * @param inputFile
+     * @param tmpDir
+     * @return
+     * @throws IOException
+     * @throws OXException
+     * @throws FileNotFoundException
+     */
+    private static File writeBrokenImage2Disk(final IFileHolder inputFile, File tmpDir) throws IOException, OXException, FileNotFoundException {
+        String suffix = null;
+        final String name = inputFile.getName();
+
+        // determine name
+        if (null != name) {
+            final int pos = name.lastIndexOf('.');
+
+            if (pos > 0 && pos < name.length() - 1) {
+                suffix = name.substring(pos);
+            }
+        }
+
+        // determine suffix
+        if (null == suffix) {
+            final String contentType = inputFile.getContentType();
+
+            if (null != contentType) {
+                suffix = "." + MimeType2ExtMap.getFileExtension(contentType);
+            }
+        }
+
+        // copy file
+        final File retFile = File.createTempFile("brokenimage-", (null == suffix) ? ".tmp" : suffix, tmpDir);
+
+        try (final InputStream inputStm = inputFile.getStream()) {
+            FileUtils.copyInputStreamToFile(inputStm, retFile);
+        }
+
+        return retFile;
+    }
+
+    // - Members ---------------------------------------------------------------
+
+    /**
+     * the scaler Reference
+     */
+    private final AtomicReference<ImageTransformationService> m_scalerReference = new AtomicReference<>();
+
+    // - Static members --------------------------------------------------------
+
+    /** The logger constant */
+    protected final static Logger LOG = LoggerFactory.getLogger(FileResponseRenderer.class);
+
+    /**
+     * The minimum target image extent in one direction to check for suspicious aspect ratios
+     */
+    private final static int SUSPICIOUS_IMAGE_EXTENT_THRESHOLD = 512;
+
+    /**
+     * The minimum source image aspect ratio to check for suspicious aspect ratios
+     */
+    private final static double SUSPICIOUS_IMAGE_ASPECT_THRESHOLD = 2.5;
+
+    // - Helper classes --------------------------------------------------------
+
+    private static class TransformationNeededResult {
+
+        final IFileHolder fileHolder;
+        final boolean transformationNeeded;
+
+        TransformationNeededResult(boolean transformationNeeded, IFileHolder fileHolder) {
+            super();
+            this.transformationNeeded = transformationNeeded;
+            this.fileHolder = fileHolder;
+        }
+    }
+
+}

@@ -1,0 +1,15 @@
+Source: open-xchange-oauth
+Section: web
+Priority: optional
+Maintainer: Steffen Templin <steffen.templin@open-xchange.com>
+Build-Depends: debhelper (>= 7.0.1)
+Standards-Version: 3.9.8
+Homepage: http://www.open-xchange.com
+
+Package: open-xchange-oauth
+Architecture: all
+Pre-Depends: open-xchange-core (>= @OXVERSION@)
+Depends: ${misc:Depends}
+Conflicts: open-xchange-http-deferrer, open-xchange-oauth-json, open-xchange-oauth-linkedin, open-xchange-oauth-msn, open-xchange-oauth-twitter, open-xchange-oauth-yahoo
+Replaces: open-xchange-http-deferrer, open-xchange-oauth-json, open-xchange-oauth-linkedin, open-xchange-oauth-msn, open-xchange-oauth-twitter, open-xchange-oauth-yahoo
+Description: The Open-Xchange OAuth implementation

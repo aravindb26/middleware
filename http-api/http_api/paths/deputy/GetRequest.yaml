@@ -1,0 +1,30 @@
+/deputy?action=get:
+  get:
+    operationId: getDeputyPermission
+    tags:
+      - Deputypermission
+    summary: Gets a deputy permission
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: deputyId
+        description: The identifier for the deputy permission
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object containing all data of the requested deputy permission. In case of errors the responsible fields
+          in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeputyResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized

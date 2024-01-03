@@ -1,0 +1,328 @@
+# Example definitions of contact property <-> LDAP attribute mappings.
+# 
+# This template contains examples and will be overwritten during updates. To use, copy this file to 
+# /opt/open-xchange/etc/contacts-provider-ldap-mappings.yml and configure as needed.
+#
+# Each configured set of mappings can be used for an LDAP contact provider (as defined through separate file contacts-provider-ldap.yml),
+# by using the corresponding identifier used in this .yml file.
+#
+# Generally, contact properties are set based on an entry's value of the mapped LDAP attribute name. Empty mappings are ignored. It's 
+# possible to define a second LDAP attribute name for a property that is used as fall-back if the first one is empty in an LDAP result, 
+# e.g. to define multiple attributes for a display name, or to have multiple mappings for contacts and distribution lists.
+# 
+# For the data-types, each LDAP attribute value is converted/parsed to the type necessary on the server (Strings, Numbers, Booleans). 
+# Dates are assumed to be in UTC and parsed using the pattern 'yyyyMMddHHmmss'. Binary properties may be indicated by appending ';binary' 
+# to the LDAP attribute name. In order to assign the internal user- and context identifier based on attributes yielding the corresponding
+# login information (username / contextname), the special appendix ';logininfo' can be used.
+# Boolean properties may also be set based on a comparison with the LDAP attribute value, which is defined by the syntax 
+# '[LDAP_ATTRIBUTE_NAME]=[EXPECTED_VALUE]', e.g. to set the 'mark_as_distribution_list' property based on a specific 'objectClass' value. 
+# Alternatively, a Boolean value may also be assigned based on the the existence of any attribute value using '*'.  
+#
+# See also https://documentation.open-xchange.com/latest/middleware/contacts/contacts_provider_ldap.html
+# for further details and a complete list of available configuration options.
+# 
+
+# Mappings for a typical Active Directory environment. 
+ad:
+    # == ID Mappings =======================================================
+
+    # The object ID is always required and must be unique for the LDAP server. Will use the DN of the entry unless overridden.
+    # The 'guid' flag can be passed along to properly decode a Microsoft GUID. For 'regular' UUIDs, the flag 'binary' should be used.  
+    objectid              : objectGUID;guid
+
+    # The user and context identifiers can be mapped to certain LDAP attributes to aid resolving contact entries to internal users, e.g. 
+    # in scenarios where the default global addressbook folder is disabled. Will only be considered if an entry's context identifier 
+    # matches the one from the actual session of the requesting operation.
+    # If used, they should be mapped to attributes that provide the matching rules "integerMatch" for "EQUALITY" as well as 
+    # "integerOrderingMatch" for "ORDERING".
+    # Alternatively, if no internal context- or user identifier is available, also attributes yielding the corresponding login 
+    # information (username / contextname) can be used by appending ';logininfo' to the attribute name. 
+    internal_userid       :
+    contextid             :
+
+    # The 'guid' flag can be passed along properly decode a Microsoft GUID. For 'regular' UUIDs in binary format, the flag 'binary' 
+    # should be used.
+    uid                   : objectGUID;guid
+
+
+    # == String Mappings ===================================================
+
+    displayname           : displayName,name
+    file_as               : displayName,name
+    givenname             : givenName
+    surname               : sn
+    email1                : mail
+    department            : department
+    company               : company
+    branches              :
+    business_category     :
+    postal_code_business  : postalCode
+    state_business        : st
+    street_business       : streetAddress
+    telephone_callback    :
+    city_home             :
+    commercial_register   :
+    country_home          :
+    email2                :
+    email3                :
+    employeetype          :
+    fax_business          : facsimileTelehoneNumber
+    fax_home              :
+    fax_other             : otherFacsimileTelephoneNumber
+    instant_messenger1    :
+    instant_messenger2    :
+    telephone_ip          : ipPhone
+    telephone_isdn        : internationaliSDNNumber
+    marital_status        :
+    cellular_telephone1   : mobile
+    cellular_telephone2   :
+    nickname              : mailNicknam
+    number_of_children    :
+    number_of_employee    : employeeNumber
+    note                  : info
+    telephone_pager       : pager
+    telephone_assistant   :
+    telephone_business1   : telephoneNumber
+    telephone_business2   :
+    telephone_car         :
+    telephone_company     :
+    telephone_home1       : homePhone
+    telephone_home2       : otherHomePhone
+    telephone_other       : otherTelephoneNumber
+    postal_code_home      :
+    telephone_radio       :
+    room_number           : physicalDeliveryOfficeName
+    sales_volume          :
+    city_other            :
+    country_other         :
+    middle_name           : middleName
+    postal_code_other     :
+    state_other           :
+    street_other          :
+    spouse_name           :
+    state_home            :
+    street_home           :
+    suffix                :
+    tax_id                :
+    telephone_telex       : telexNumber
+    telephone_ttytdd      :
+    url                   : wWWHomePage
+    userfield01           :
+    userfield02           :
+    userfield03           :
+    userfield04           :
+    userfield05           :
+    userfield06           :
+    userfield07           :
+    userfield08           :
+    userfield09           :
+    userfield10           :   
+    userfield11           :
+    userfield12           :
+    userfield13           :
+    userfield14           :
+    userfield15           :
+    userfield16           :
+    userfield17           :
+    userfield18           :
+    userfield19           :
+    userfield20           :
+    city_business         : l
+    country_business      : co
+    telephone_primary     :
+    categories            :
+    title                 :
+    position              : 
+    profession            : title
+
+
+    # == Date Mappings =====================================================
+
+    birthday              :
+    anniversary           :
+
+    # The last-modified and creation dates are required by the groupware server, therefore an implicit default date is assumed when no 
+    # LDAP property is mapped here, and no results are available for this folder for the 'modified' and 'deleted' API calls. Therefore, 
+    # any synchronization-based usage will not be available.
+    lastmodified          : whenChanged
+    creationdate          : whenCreated
+
+
+    # == Misc Mappings =====================================================
+
+    # Distribution list members are resolved dynamically using the DNs found in the mapped LDAP attribute. Alternatively, if the
+    # attribute value does not denote a DN reference, the value is assumed to be the plain email address of the member.  
+    distributionlist      : member
+
+    # Special mapping where the value is evaluated using a string comparison with, or the existence of the attribute value.
+    markasdistributionlist: objectClass=group
+
+    # The values for the for assistant- and manager name mappings are either used as-is, or get resolved dynamically using the DNs found 
+    # in the mapped LDAP attribute.  
+    assistant_name        : secretary
+    manager_name          : manager
+
+    # Contact image, binary format is expected.
+    image1                : jpegPhoto
+
+    # Special mapping where the value is evaluated using a string comparison with, or the existence of the attribute value.
+    number_of_images      : jpegPhoto=*
+    
+    # Will be set internally if not defined.
+    image_last_modified   : 
+    
+    # Will be set automatically to "image/jpeg" if not defined.
+    image1_content_type   : 
+
+
+# Mappings for a typical OpenLDAP server.
+openldap:
+    # == ID Mappings =======================================================
+
+    # The object ID is always required and must be unique for the LDAP server. Will use the DN of the entry unless overridden.
+    # The 'guid' flag can be passed along to properly decode a Microsoft GUID. For 'regular' UUIDs, the flag 'binary' should be used.  
+    objectid              : uidNumber,gidNumber
+
+    # The user and context identifiers can be mapped to certain LDAP attributes to aid resolving contact entries to internal users, e.g. 
+    # in scenarios where the default global addressbook folder is disabled. Will only be considered if an entry's context identifier 
+    # matches the one from the actual session of the requesting operation.
+    # If used, they should be mapped to attributes that provide the matching rules "integerMatch" for "EQUALITY" as well as 
+    # "integerOrderingMatch" for "ORDERING".
+    # Alternatively, if no internal context- or user identifier is available, also attributes yielding the corresponding login 
+    # information (username / contextname) can be used by appending ';logininfo' to the attribute name. 
+    internal_userid       : 
+    contextid             : 
+
+    # The 'guid' flag can be passed along properly decode a Microsoft GUID. For 'regular' UUIDs in binary format, the flag 'binary' 
+    # should be used.
+    uid                   :
+
+
+    # == String Mappings ===================================================
+
+    displayname           : displayName,name
+    file_as               : displayName,name
+    givenname             : givenName
+    surname               : sn
+    email1                : mail
+    department            : department
+    company               : o
+    branches              :
+    business_category     :
+    postal_code_business  : postalCode
+    state_business        : st
+    street_business       : streetAddress
+    telephone_callback    :
+    city_home             :
+    commercial_register   :
+    country_home          :
+    email2                :
+    email3                :
+    employeetype          :
+    fax_business          : facsimileTelehoneNumber
+    fax_home              :
+    fax_other             :
+    instant_messenger1    :
+    instant_messenger2    :
+    telephone_ip          :
+    telephone_isdn        : internationaliSDNNumber
+    marital_status        :
+    cellular_telephone1   : mobile
+    cellular_telephone2   :
+    nickname              :
+    number_of_children    :
+    number_of_employee    : employeeNumber
+    note                  : description
+    telephone_pager       : pager
+    telephone_assistant   :
+    telephone_business1   : telephoneNumber
+    telephone_business2   :
+    telephone_car         :
+    telephone_company     :
+    telephone_home1       : homePhone
+    telephone_home2       :
+    telephone_other       :
+    postal_code_home      :
+    telephone_radio       :
+    room_number           : roomNumber
+    sales_volume          :
+    city_other            :
+    country_other         :
+    middle_name           : middleName
+    postal_code_other     :
+    state_other           :
+    street_other          :
+    spouse_name           :
+    state_home            :
+    street_home           :
+    suffix                :
+    tax_id                :
+    telephone_telex       : telexNumber
+    telephone_ttytdd      :
+    url                   : wWWHome
+    userfield01           :
+    userfield02           :
+    userfield03           :
+    userfield04           :
+    userfield05           :
+    userfield06           :
+    userfield07           :
+    userfield08           :
+    userfield09           :
+    userfield10           :   
+    userfield11           :
+    userfield12           :
+    userfield13           :
+    userfield14           :
+    userfield15           :
+    userfield16           :
+    userfield17           :
+    userfield18           :
+    userfield19           :
+    userfield20           :
+    city_business         : l
+    country_business      : country
+    telephone_primary     :
+    categories            :
+    title                 : title
+    position              : 
+    profession            :
+
+
+    # == Date Mappings =====================================================
+
+    birthday              :
+    anniversary           :
+
+    # The last-modified and creation dates are required by the groupware server, therefore an implicit default date is assumed when no 
+    # LDAP attribute is mapped here, and no results are available for this folder for the 'modified' and 'deleted' API calls. Therefore, 
+    # any synchronization-based usage will not be available.
+    lastmodified          : modifyTimestamp
+    creationdate          : createTimestamp
+
+
+    # == Misc Mappings =====================================================
+
+    # Distribution list members are resolved dynamically using the DNs found in the mapped LDAP attribute. Alternatively, if the
+    # attribute value does not denote a DN reference, the value is assumed to be the plain email address of the member.  
+    distributionlist      : memberUid
+
+    # Special mapping where the value is evaluated using a string comparison with, or the existence of the attribute value.
+    markasdistributionlist: objectClass=posixGroup
+
+    # The values for the for assistant- and manager name mappings are either used as-is, or get resolved dynamically using the DNs found 
+    # in the mapped LDAP attribute.  
+    assistant_name        : secretary
+    manager_name          : manager
+
+    # Contact image, binary format is expected.
+    image1                : jpegPhoto
+
+    # Special mapping where the value is evaluated using a string comparison with, or the existence of the attribute value.
+    number_of_images      : jpegPhoto=*
+    
+    # Will be set internally if not defined.
+    image_last_modified   : 
+    
+    # Will be set automatically to "image/jpeg" if not defined.
+    image1_content_type   : 

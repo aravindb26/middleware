@@ -1,0 +1,51 @@
+/drive?action=deleteLink:
+  put:
+    operationId: deleteShareLink
+    tags:
+      - Drive
+    summary: Deletes a share link
+    security: 
+        - session: []    
+    description: >-
+      Deletes a previously created link for a file or folder. This action is
+      only available for items marked as `shareable`.
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+    responses:
+      '200':
+        description: >
+          A JSON object containing the (possibly) updated share target. In case
+          of errors the corresponding fields in the response are filled.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriveShareLinkResponse'
+    x-ox-examples:
+      - Example1: null
+        description: Basic example
+        example: >
+          ==> PUT
+          http://192.168.32.191/ajax/drive?action=deleteLink&session=35d55f0bd2284e78a8eb4dba99b1310b&root=9542
+
+          > Content:
+            {
+              "path": "/",
+              "name": "photo.jpg",
+              "checksum": "bdf3bf1da3405725be763540d6601144"
+            }
+
+          <== HTTP 200 OK (149.3251 ms elapsed, 11 bytes received)
+
+          <   Content: 
+              {
+                "data": {}
+              }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DriveShareTargetData'
+      description: >-
+        A JSON object describing the target file- or directory version to delete
+        the link for.
+      required: true

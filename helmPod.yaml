@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: helm
+spec:
+  containers:
+      - name: k8s
+        image: alpine/k8s:1.22.6
+        command:
+          - sleep
+        args:
+          - infinity
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            memory: 256Mi

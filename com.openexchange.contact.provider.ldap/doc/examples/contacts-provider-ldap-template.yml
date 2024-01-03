@@ -1,0 +1,130 @@
+# Example definitions of available LDAP contact providers, together with their corresponding configuration, referenced LDAP client 
+# connection settings and attribute mappings. 
+# 
+# This template contains examples and will be overwritten during updates. To use, copy this file to 
+# /opt/open-xchange/etc/contacts-provider-ldap.yml and configure as needed.
+#
+# Each configured contacts provider can be enabled for users using the corresponding identifier used in this .yml file. For this purpose,
+# the config-cascade-enabled setting "com.openexchange.contacts.provider.ldap" is available.
+# 
+# Besides the provider configuration in this file, also accompanying LDAP client and contact property mappings need to be referenced.   
+#
+# See also https://documentation.open-xchange.com/latest/middleware/contacts/contacts_provider_ldap.html
+# for further details and a complete list of available configuration options.
+# 
+
+# Key will be used as identifier for the contact provider
+example_org:
+
+    # The display name of this contacts provider.
+    name: Example Address Lists
+    
+    # Configures the identifier of the LDAP client configuration settings to use, as defined in 'ldap-client-config.yml'. There, all 
+    # further connection-related properties to access the LDAP server can be specified.  
+    ldapClientId: example_org
+
+    # A reference to the contact property <-> LDAP attribute mapping definitions to use, referencing the corresponding entry in the file
+    # 'contact-provider-ldap-mappings.yml'.
+    mappings: openldap
+
+    # Specifies if support for querying deleted objects is enabled or not. When enabled, deleted objects are identified with the filter 
+    # 'isDeleted=TRUE', which is usually only available in Active Directory (as control with OID 1.2.840.113556.1.4.417). If disabled,
+    # no results are available for folders from this provider for the 'deleted' API call, and therefore no incremental synchronizations
+    # are possible. See also 'usedForSync' folders property. Defaults to "false".
+    isDeletedSupport: false
+
+    # Specifies the requested maximum size for paged results. "0" disables paged results. This should be configured, especially when the 
+    # there are server-side restrictions towards the maximum result size. Defaults to "500".  
+    maxPageSize: 500
+
+    # Optionally enables a local cache that holds certain properties of all of the provider's contacts in memory to speed up access. Can 
+    # only be used if no individual authentication is used to access the LDAP server.
+    cache:
+        useCache: false
+
+    # Definition of addressbook folders of the contacts provider. Different folder modes are possible, each one with its specific 
+    # configuration settings. The template contains examples for all possible modes, however, only the one specified through 'mode' 
+    # property is actually used. 
+    folders:
+
+        # Configures in which mode addressbook folders are provided by the contacts provider. Possible modes are "fixedAttributes" to   
+        # have a common search filter per folder that varies by a fixed set of possible attribute values, "dynamicAttributes" to use a
+        # common filter and retrieve all possible values dynamically, or "static" to have a static search filter associated with each 
+        # contact folder. 
+        # The corresponding mode-specific section needs to be configured as well.
+        mode: static
+
+        # Configures if the addressbook folders can be synchronized to external clients via CardDAV or not. If set to "false", the folders 
+        # are only available in the web client. If set to "true", folders can be activated for synchronization. Should only be enabled if 
+        # attribute mappings for the 'changing_date' and 'uid' contact properties are available, and the LDAP server supports the special 
+        # "LDAP Show Deleted Control" to query tombstone entries via 'isDeleted=TRUE'. The 'protected' flag controls whether the default 
+        # value can be changed by the client or not.
+        usedForSync:
+            protected: true
+            defaultValue: false
+        
+        # Defines whether addressbook folders will be available in the contact picker dialog of App Suite. If enabled, contacts from 
+        # this provider can be looked up through this dialog, otherwise they are hidden. The 'protected' flag controls whether the 
+        # default value can be changed by the client or not.
+        usedInPicker:
+            protected: false
+            defaultValue: true
+        
+        # Defines whether addressbook folders will be shown as 'subscribed' folders in the tree or not. If enabled, the folders will 
+        # appear in the contacts module of App Suite as regular, subscribed folder. Otherwise, they're treated as hidden, unsubscribed 
+        # folders. The 'protected' flag controls whether the default value can be changed by the client or not.
+        shownInTree:
+            protected: false
+            defaultValue: true
+
+        # In "static" folder mode, a fixed list of folder definitions is used, each one with its own contact filter and name (the names 
+        # must be unique). Additionally, a "commonContactFilter" needs to be defined, which is used for operations that are not bound to
+        # a specific folder, like lookups across all visible folders. 
+        # The filter's search scopes relative to the LDAP client's 'baseDN' can be configured as "one" (only immediate subordinates) or 
+        # "sub" (base entry itself and any subordinate entries to any depth), and all default to "sub" unless specified otherwise.  
+        static:
+            commonContactFilter: (|(objectClass=person)(objectClass=groupOfNames))
+            commonContactSearchScope: sub
+            folders:
+                - name: Cupertino
+                  contactFilter: (&(|(objectClass=person)(objectClass=groupOfNames))(l=Cupertino))
+                  contactSearchScope: sub
+                - name: San Mateo
+                  contactFilter: (&(|(objectClass=person)(objectClass=groupOfNames))(l=San Mateo))
+                  contactSearchScope: sub
+                - name: Redwood Shores
+                  contactFilter: (&(|(objectClass=person)(objectClass=groupOfNames))(l=Redwood Shores))
+                  contactSearchScope: sub
+                - name: Armonk
+                  contactFilter: (&(|(objectClass=person)(objectClass=groupOfNames))(l=Armonk))
+                  contactSearchScope: sub
+
+        # With mode "dynamic attributes", all possible values for one attribute are fetched periodically and serve as folders.
+        # The list of values is fetched by querying all entries that match the "contactFilterTemplate" (with the wildcard "*" as value)
+        # and "contactSearchScope" ("one"/"sub"). Then, the folders are derived based on all distinct attribute values found, with the 
+        # value as name.
+        # Depending on the configured authentication mode, this is either done per user individually, or globally. Therefore, per-user 
+        # authentication is not recommend in this mode.
+        # The "refreshInterval" determines how often the list of attributes is refreshed, and can be defined using units of measurement: 
+        # "D" (=days), "W" (=weeks), "H" (=hours) and "m" (=minutes). Defaults to "1h". The optional "sortOrder" allows to sort the 
+        # attributes lexicographically, either "ascending" or "descending".
+        dynamicAttributes: 
+            attributeName: l
+            contactFilterTemplate: (&(|(objectClass=person)(objectClass=groupOfNames))(l=[value]))
+            contactSearchScope: sub
+            refreshInterval: 1h
+            sortOrder: ascending
+
+        # With mode "fixed attributes", all entries matching a filter and having an attribute set to one of the defined values do form a 
+        # folder. Works similar to "dynamic attributes", but with a static list of possible values.
+        # All items defined in the "attributeValues" array are used as folder (with the value as name). When listing the contents of a 
+        # specific folder, this folder's specific attribute value is inserted in the configured "contactFilterTemplate", using the 
+        # "contactSearchScope" ("one"/"sub").   
+        fixedAttributes: 
+            contactFilterTemplate: (&(|(objectClass=person)(objectClass=groupOfNames))(ou=[value]))
+            contactSearchScope: sub
+            attributeValues:  
+                - Janitorial
+                - Product Development
+                - Management
+                - Human Resources

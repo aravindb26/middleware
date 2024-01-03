@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: XML Pull Parser
+Bundle-SymbolicName: org.xmlpull
+Automatic-Module-Name: org.xmlpull
+Bundle-Version: 1.0.0
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: org.kxml2.io;version="2.3.0",
+ org.kxml2.wap;version="2.3.0",
+ org.xmlpull.v1;version="1.2.0"
+Bundle-ClassPath: lib/kxml2-2.3.0.jar

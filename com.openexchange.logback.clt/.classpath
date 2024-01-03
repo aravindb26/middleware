@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.global"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.logging"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/commons-cli-1.5.0.jar" sourcepath="/com.openexchange.bundles/source/commons-cli-1.5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.apache.commons.lang_2.6.0.v201404270220.jar" sourcepath="/com.openexchange.bundles/source/org.apache.commons.lang.source_2.6.0.v201404270220.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/logback-classic-1.2.11.jar" sourcepath="/com.openexchange.bundles/source/logback-classic-1.2.11-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/logback-core-1.2.11.jar" sourcepath="/com.openexchange.bundles/source/logback-core-1.2.11-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/slf4j-api-1.7.36.jar" sourcepath="/com.openexchange.bundles/source/slf4j-api-1.7.36-sources.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

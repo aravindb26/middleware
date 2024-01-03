@@ -1,0 +1,147 @@
+feature_name: Subscribe
+properties:
+    - key: com.openexchange.subscribe.autorun
+      description: |
+        Defines whether subscriptions should be run automatically on login, if a given interval has elapsed.
+        The intervals default to one day, but can be configured individually by subscription type
+        in the subscription source specific configuration files.
+      defaultValue: false
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: subscribe.properties
+      packageName: open-xchange-core
+      tags: ["Subscribe"]
+    - key: com.openexchange.subscribe.mslive.contact.autorunInterval
+      description: |
+        Defines the subscription refresh autorun interval for MS Live.
+      defaultValue: 1d
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: mslivesubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["MS Live Connect", "Contact", "Subscribe"]
+    - key: com.openexchange.subscribe.socialplugin.yahoo
+      description: |
+        Enable/disable Yahoo subscribe service.
+      defaultValue: true
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: yahoosubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Yahoo", "Contact", "Subscribe"]
+    - key: com.openexchange.subscribe.socialplugin.yahoo.autorunInterval
+      description: |
+        Defines the subscription refresh autorun interval for Yahoo.
+      defaultValue: 1d
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: yahoosubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Yahoo", "Contact", "Subscribe"]
+    - key: com.openexchange.subscribe.socialplugin.xing
+      description: |
+        Enable/disable XING subscribe service.
+      defaultValue: true
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: xingsubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Xing", "Contact", "Subscribe"]
+    - key: com.openexchange.subscribe.socialplugin.xing.autorunInterval
+      description: |
+        Defines the subscription refresh autorun interval for XING.
+      defaultValue: 1d
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: xingsubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Xing", "Contact", "Subscribe"]
+    - key: com.openexchange.subscribe.dav.gmx.de
+      description: |
+        The on/off configuration switch for gmx.de subscription
+      defaultValue: true
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: gmxdesubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Contact", "Subscribe"]
+    - key: com.openexchange.subscribe.dav.tonline.de
+      description: |
+        The on/off configuration switch for T-Online.de subscription
+      defaultValue: true
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: tonlinedesubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Contact", "Subscribe"]
+    - key: com.openexchange.subscribe.dav.web.de
+      description: |
+        The on/off configuration switch for web.de subscription
+      defaultValue: true
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: webdesubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Contact", "Subscribe"]
+    - key: com.openexchange.oauth.google.contact
+      description: |
+        The on/off configuration switch for Google subscription
+      defaultValue: true
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: googlesubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Contact", "Subscribe"]
+    - key: com.openexchange.oauth.microsoft.graph.contact
+      description: |
+        The on/off configuration switch for MS Live subscription
+      defaultValue: true
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: mslivesubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Contact", "Subscribe"]
+    - key: com.openexchange.subscribe.xing
+      description: |
+        The on/off configuration switch for XING subscription
+      defaultValue: true
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: xingsubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Contact", "Subscribe"]
+    - key: com.openexchange.subscribe.socialplugin.yahoo
+      description: |
+        The on/off configuration switch for Yahoo subscription
+      defaultValue: true
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: yahoosubscribe.properties
+      packageName: open-xchange-subscribe
+      tags: ["Contact", "Subscribe"]

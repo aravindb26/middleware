@@ -1,0 +1,75 @@
+/infostore?action=updates:
+  get:
+    operationId: getInfoItemUpdates
+    tags:
+      - Infostore
+    summary: 'Gets the new, modified and deleted infoitems.'
+    security: 
+        - session: []    
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamInfostoreFolder'
+      - $ref: '#/components/parameters/gblQueryParamInfostoreColumns'
+      - in: query
+        name: timestamp
+        description: Timestamp of the last update of the requested infoitems.
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - in: query
+        name: ignore
+        description: >-
+          Which kinds of updates should be ignored. Currently, the only valid
+          value – "deleted" – causes deleted object IDs not to be returned.
+        required: false
+        schema:
+          type: string
+          enum:
+            - deleted
+      - in: query
+        name: sort
+        description: >-
+          The identifier of a column which determines the sort order of the
+          response. If this parameter is specified, then the parameter order
+          must be also specified.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: order
+        description: >-
+          "asc" if the response entities should be sorted in the ascending
+          order, "desc" if the response entries should be sorted in the
+          descending order. If this parameter is specified, then the parameter
+          sort must be also specified.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: pregenerate_previews
+        description: >-
+          If set to "true" preview generation is triggered in the background for
+          all files in request result
+        required: false
+        schema:
+          type: boolean
+    responses:
+      '200':
+        description: >
+          An array with new, modified and deleted infoitems. New and modified
+          infoitems are represented by arrays. The
+
+          elements of each array contain the information specified by the
+          corresponding identifiers in the `columns`
+
+          parameter. Deleted infoitems would be identified by their object IDs
+          as string, without being part of
+
+          a nested array. In case of errors the responsible fields in the
+          response are filled (see
+
+          [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InfoItemUpdatesResponse'

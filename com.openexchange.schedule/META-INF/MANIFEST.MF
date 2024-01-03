@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange configuration schedule parsing bundle
+Bundle-SymbolicName: com.openexchange.schedule
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.collect,
+ com.openexchange.java,
+ com.openexchange.server,
+ com.openexchange.timer,
+ org.slf4j
+Export-Package: com.openexchange.schedule
+Automatic-Module-Name: com.openexchange.config.schedule

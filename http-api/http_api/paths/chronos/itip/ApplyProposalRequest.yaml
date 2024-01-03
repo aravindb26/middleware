@@ -1,0 +1,29 @@
+/chronos/itip?action=apply_proposal:
+  put:
+    operationId: apply_proposal
+    tags:
+      - Chronos
+    summary: Applies a counter proposal based on an iMIP mail to the calendar.
+    security: 
+        - session: []
+    description: >-
+      Updates an event based on an iMIP COUNTER mail containing proposed changes by an attendee.
+    parameters:
+      - in: query
+        name: timezone
+        description: The timezone to show the resulting events in.
+        required: false
+        schema:
+          type: string
+          default: UTC
+    responses:
+      '200':
+        description: >
+          A JSON object containing containing the result of the update. In case
+          of errors the responsible fields in the response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChronosCalendarResultResponse'
+    requestBody:
+      $ref: '#/components/requestBodies/ConversionDataSource'

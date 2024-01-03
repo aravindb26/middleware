@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="com.openexchange.hostname.ldap overrides" basedir=".">
+
+    <description>
+        Inserts the path to the configuration files into the configuration properties files.
+    </description>
+
+    <import file="build-project.xml"/>
+
+    <target name="installConf" description="Patches ldaphostname.properties before installing it.">
+        <antcall target="patchConf"/>
+        <copy todir="${destDir}/${confInstallDir}">
+            <fileset dir="${tmpDir}/${confDir}"/>
+        </copy>
+    </target>
+
+    <target name="patchConf">
+        <mkdir dir="${tmpDir}/${confDir}"/>
+        <copy todir="${tmpDir}/${confDir}" overwrite="true">
+            <fileset dir="${confDir}"/>
+        </copy>
+        <move tofile="${tmpDir}/${confDir}/ldaphostname.properties" file="${tmpDir}/${confDir}/ldaphostname.properties.in" overwrite="true"/>
+        <replace file="${tmpDir}/${confDir}/ldaphostname.properties">
+            <replacefilter token="@confDir@" value="${confInstallDir}"/>
+        </replace>
+    </target>
+
+</project>

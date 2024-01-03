@@ -1,0 +1,49 @@
+/export?action=ICAL:
+  get:
+    operationId: exportAsICal_get_req
+    tags:
+      - Export
+    summary: Exports appointment and task data to an iCalendar file.
+    security: 
+        - session: []   
+        - oauth: 
+          - read_calendar    
+        - oauth: 
+          - read_tasks  
+    parameters:
+      - in: query
+        name: folder
+        description: >-
+          Object ID of the folder whose content shall be exported. This must be
+          a calendar folder.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >-
+          An input stream containing the content of the iCal file with the MIME
+          type `text/calendar`.
+        content:
+          application/json:
+            schema:
+              type: string
+  put:
+    operationId: exportAsICal
+    tags:
+      - Export
+    summary: Exports a batch of appointments and tasks data to a iCalendar file.
+    security: 
+        - session: []    
+    description: Exports a batch of appointments and tasks data to a iCalendar file.
+    responses:
+      '200':
+        description: >-
+          An input stream containing the content of the vCard file with the MIME
+          type `text/calendar`.
+        content:
+          application/json:
+            schema:
+              type: string
+    requestBody:
+      $ref: '#/components/requestBodies/InfoItemExportArray'

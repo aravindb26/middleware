@@ -1,0 +1,117 @@
+feature_name: Drive Client Windows
+properties:
+    - key: com.openexchange.drive.client.windows.branding
+      description: |
+        The name of the drive branding identifier which will be used to find the drive client manifest.
+      defaultValue: generic
+      version: 
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: drive-client-windows.properties
+      packageName: open-xchange-drive-client-windows
+      tags: ["Drive Client Windows"]
+    - key: com.openexchange.drive.client.windows.templating.updater.file
+      description: |
+        The name of the drive updater template file.
+      defaultValue: oxdrive_update.tmpl
+      version: 
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: drive-client-windows.properties
+      packageName: open-xchange-drive-client-windows
+      tags: ["Drive Client Windows"]
+    - key: com.openexchange.drive.client.windows.external.manifestUrl
+      description: |
+        The url which will be used to fetch drive client manifests when running in EXTERNAL cluster mode. See [[com.openexchange.drive.client.windows.mode]]. 
+        The placeholder [branding] will be replaced with the configured branding taken from [[com.openexchange.drive.client.windows.branding]]
+      defaultValue: https://drive.example.com/appsuite/[branding]/drive/client/windows/manifest.json
+      version: 
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: drive-client-windows.properties
+      packageName: open-xchange-drive-client-windows
+      tags: ["Drive Client Windows"]
+    - key: com.openexchange.drive.client.windows.kubernetes.manifestUrl
+      description: |
+        The url which will be used to fetch drive client manifests when running in {@link ClusterMode#KUBERNETES}. See [[com.openexchange.drive.client.windows.mode]].
+        By default this will result in an URL which look like http://<servicename>.<namespace>.svc.cluster.local/manifest.json
+      defaultValue: http://[svc_host]/[svc_manifest_path]
+      version: 
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: drive-client-windows.properties
+      packageName: open-xchange-drive-client-windows
+      tags: ["Drive Client Windows"]
+    - key: com.openexchange.drive.client.windows.mode
+      description: |
+        The cluster mode which will be used to determine where to find valid drive client services.. Currently two modes are supported ["EXTERNAL", "KUBERNETES"] 
+        <pre>
+        com.openexchange.drive.client.windows.mode=EXTERNAL
+        # Will configure the middleware to fetch manifests from a the configured external uri  
+        # e.g: https://drive.example.com/appsuite/windows/drive/client/xo/manifest.json 
+        </pre>
+        <pre>
+        com.openexchange.drive.client.windows.mode=KUBERNETES 
+        # Will configure the middleware to first call kubernetes API to find available drive client services using a label selector 
+        # and fetch the manifest from the service endpoint  
+        # e.g: http://[servicename].[namespace].svc.cluster.local/manifest.json
+        </pre>
+      defaultValue: KUBERNETES
+      version: 
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: drive-client-windows.properties
+      packageName: open-xchange-drive-client-windows
+      tags: ["Drive Client Windows"]
+    - key: com.openexchange.drive.client.windows.kubernetes.drive.service.label
+      description: |
+        The label selector used to find available drive client services when running in the cluster mode KUBERNETES
+      defaultValue: drive-client
+      version: 
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: drive-client-windows.properties
+      packageName: open-xchange-drive-client-windows
+      tags: ["Drive Client Windows"]
+    - key: com.openexchange.drive.client.windows.kubernetes.drive.service.namespace
+      description: |
+        The namespace selector used to find available drive client services when running in the cluster mode KUBERNETES. 
+        In case it differs from the namepace the mw pod is running in a proper RBAC configuration is needed which allows access to this namespace. 
+        <pre>
+        # e.g.:
+        # kind: ClusterRole
+        # apiVersion: rbac.authorization.k8s.io/v1
+        # metadata:
+        #   namespace: <the-namespace>
+        #   name: service-reader
+        # rules:
+        # - apiGroups: [""] # "" indicates the core API group
+        #   resources: ["services"]
+        #   verbs: ["get", "list"]
+        </pre>
+      defaultValue: ""
+      version: 
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: drive-client-windows.properties
+      packageName: open-xchange-drive-client-windows
+      tags: ["Drive Client Windows"]
+    - key: com.openexchange.drive.client.windows.kubernetes.namespace.env.variable.name
+      description: |
+        The environment variable containing the pod namespace.  Restrict the list of returned drive client services in case of running in cluster mode KUBERNETES.
+        Will be used as fallback if [[com.openexchange.drive.client.windows.kubernetes.drive.service.namespace]] is empty / not configured.
+      defaultValue: "POD_NAMESPACE"
+      version: 
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: drive-client-windows.properties
+      packageName: open-xchange-drive-client-windows
+      tags: ["Drive Client Windows"]

@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Osgi
+Bundle-SymbolicName: com.openexchange.osgi.annotation
+Bundle-Version: 8
+Bundle-Vendor: Open-Xchange Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: com.openexchange.osgi.annotation
+Automatic-Module-Name: com.openexchange.osgi.annotation

@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Bundle For External Accounts
+Bundle-SymbolicName: com.openexchange.external.account
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.external.account
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.annotation,
+ com.openexchange.auth,
+ com.openexchange.exception,
+ com.openexchange.i18n,
+ com.openexchange.osgi.annotation
+Export-Package: com.openexchange.external.account

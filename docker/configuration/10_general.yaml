@@ -1,0 +1,60 @@
+# Server
+/opt/open-xchange/etc/system.properties:
+  SERVER_NAME: "{{ env `SERVER_NAME` }}"
+
+# Database
+/opt/open-xchange/etc/configdb.properties:
+  readUrl: "jdbc:mysql://{{ env `MYSQL_READ_HOST` }}:{{ env `MYSQL_READ_PORT` }}/{{ env `MYSQL_READ_DATABASE` }}"
+  writeUrl: "jdbc:mysql://{{ env `MYSQL_WRITE_HOST` }}:{{ env `MYSQL_WRITE_PORT` }}/{{ env `MYSQL_WRITE_DATABASE` }}"
+  readProperty.1: "user={{ env `MYSQL_READ_USER` }}"
+  readProperty.2: "password={{ env `MYSQL_READ_PASSWORD` }}"
+  writeProperty.1: "user={{ env `MYSQL_WRITE_USER` }}"
+  writeProperty.2: "password={{ env `MYSQL_WRITE_PASSWORD` }}"
+
+/opt/open-xchange/etc/server.properties:
+  com.openexchange.dispatcher.prefix: {{ printf "%s/api/" (env "OX_APPSUITE_APPROOT") }}
+  com.openexchange.guard.oxBackendPath: {{ printf "%s/api/" (env "OX_APPSUITE_APPROOT") }}
+  com.openexchange.UIWebPath: {{ printf "%s/" (env "OX_APPSUITE_APPROOT") }}
+  com.openexchange.rest.services.basic-auth.login: "{{ env `OX_BASIC_AUTH_LOGIN` }}"
+  com.openexchange.rest.services.basic-auth.password: "{{ env `OX_BASIC_AUTH_PASSWORD` }}"
+  com.openexchange.cookie.hash.salt: "{{ env `COOKIE_HASH_SALT` }}"
+
+/opt/open-xchange/etc/hazelcast.properties:
+  com.openexchange.hazelcast.group.name: "{{ env `HZ_GROUP_NAME` }}"
+  com.openexchange.hazelcast.network.portAutoIncrement: "false"
+  com.openexchange.hazelcast.group.password: "{{ env `HZ_GROUP_PASSWORD` }}"
+  com.openexchange.hazelcast.network.join: "kubernetes"
+  com.openexchange.hazelcast.network.join.k8s.serviceDNS: "{{ env `HZ_SERVICE_DNS` }}"
+  com.openexchange.hazelcast.network.interfaces: "{{ env `POD_IP` }}"
+  com.openexchange.hazelcast.socket.bindAny: "false"
+  com.openexchange.hazelcast.network.portOffset: "0"
+  com.openexchange.hazelcast.liteMember: "{{ env `HZ_LITE_MEMBER` }}"
+
+/opt/open-xchange/etc/share.properties:
+  com.openexchange.share.cryptKey: "{{ env `SHARE_CRYPT_KEY` }}"
+
+/opt/open-xchange/etc/jolokia.properties:
+  com.openexchange.jolokia.user: "{{ env `JOLOKIA_LOGIN` }}"
+  com.openexchange.jolokia.password: "{{ env `JOLOKIA_PASSWORD` }}"
+
+/opt/open-xchange/etc/sessiond.properties:
+  com.openexchange.sessiond.encryptionKey: "{{ env `SESSIOND_ENCRYPTION_KEY` }}"
+
+# Documents
+/opt/open-xchange/etc/documents-collaboration-client.properties:
+  com.openexchange.dcs.client.discoveryStrategy: "dns"
+  com.openexchange.dcs.client.serviceName: "{{ env `DCS_SERVICENAME` }}"
+  com.openexchange.dcs.client.ssl.enabled: "{{ env `DCS_USESSL` }}"
+{{- if and (eq (env "DCS_USESSL") "true") (not (eq (env "DCS_USEINTERNALCERTS") "true" )) }}
+  com.openexchange.dcs.client.ssl.keystore.password: "{{ env `DCS_SSL_CLIENT_KEYSTORE_PASSWORD` }}"
+  com.openexchange.dcs.client.ssl.keystore.path: "{{ env `DCS_SSL_CLIENT_KEYSTORE_PATH` }}"
+  {{- if (not (eq "" (env "DCS_SSL_CLIENT_TRUSTSTORE_PASSWORD"))) }}
+  com.openexchange.dcs.client.ssl.truststore.password: "{{ env `DCS_SSL_CLIENT_TRUSTSTORE_PASSWORD` }}"
+  com.openexchange.dcs.client.ssl.truststore.path: "{{ env `DCS_SSL_CLIENT_TRUSTSTORE_PATH` }}"
+  {{- end }}
+{{- end }}
+
+{{- if (eq (env "EAS_DEBUG") "true") }}
+/opt/open-xchange/etc/eas.properties:
+  com.openexchange.usm.eas.debug_log: {{ printf "%s/eas-%s.log" (env "EAS_LOG_PATH") (env "POD_NAME") }}
+{{- end }}

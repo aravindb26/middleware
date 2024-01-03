@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="sim"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="/org.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.google.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.annotation"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.google.guava"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.sql"/>
+	<classpathentry exported="true" kind="lib" path="testlib/powermock-api-mockito2-2.0.9.jar" sourcepath="testlib/source/powermock-api-mockito2-2.0.9-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/mockito-core-3.11.2.jar" sourcepath="testlib/source/mockito-core-3.11.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/reflections-0.9.12.jar" sourcepath="testlib/source/reflections-0.9.12-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/powermock-module-junit4-2.0.9.jar" sourcepath="testlib/source/powermock-module-junit4-2.0.9-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/powermock-module-junit4-common-2.0.9.jar" sourcepath="testlib/source/powermock-module-junit4-common-2.0.9-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/powermock-classloading-objenesis-2.0.9.jar" sourcepath="testlib/source/powermock-classloading-objenesis-2.0.9-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/powermock-classloading-base-2.0.9.jar" sourcepath="testlib/source/powermock-classloading-base-2.0.9-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/powermock-api-support-2.0.9.jar" sourcepath="testlib/source/powermock-api-support-2.0.9-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/powermock-core-2.0.9.jar" sourcepath="testlib/source/powermock-core-2.0.9-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/javassist-3.29.2-GA.jar" sourcepath="testlib/source/javassist-3.29.2-GA-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/jchronic-0.2.8.jar" sourcepath="testlib/source/jchronic-0.2.8-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/powermock-reflect-2.0.9.jar" sourcepath="testlib/source/powermock-reflect-2.0.9-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/junit-addons-1.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/junit-4.13.2.jar" sourcepath="testlib/source/junit-4.13.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/dumbster-1.7.1.jar" sourcepath="testlib/source/dumbster-1.7.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/system-rules-1.12.0.jar" sourcepath="system-rules-1.12.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/awaitility-4.1.0.jar" sourcepath="testlib/source/awaitility-4.1.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/assertj-guava-3.4.0.jar" sourcepath="testlib/source/assertj-guava-3.4.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/assertj-db-2.0.2.jar" sourcepath="testlib/source/assertj-db-2.0.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/assertj-core-3.20.2.jar" sourcepath="testlib/source/assertj-core-3.20.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/json-path-assert-2.6.0.jar" sourcepath="testlib/source/json-path-assert-2.6.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/byte-buddy-1.11.3.jar" sourcepath="testlib/source/byte-buddy-1.11.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/byte-buddy-agent-1.11.3.jar" sourcepath="testlib/source/byte-buddy-agent-1.11.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/objenesis-3.2.jar" sourcepath="testlib/source/objenesis-3.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/hamcrest-core-1.3.jar" sourcepath="testlib/source/hamcrest-core-1.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/xercesImpl-2.12.0.jar" sourcepath="testlib/source/xercesImpl-2.12.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/json-path-2.6.0.jar" sourcepath="testlib/source/json-path-2.6.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/slf4j-api-1.7.30.jar" sourcepath="testlib/source/slf4j-api-1.7.30-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/hamcrest-2.2.jar" sourcepath="testlib/source/hamcrest-2.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/hamcrest-date-2.0.7.jar" sourcepath="testlib/source/hamcrest-date-2.0.7-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/jakarta.xml.bind-api-2.3.3.jar" sourcepath="testlib/source/jakarta.xml.bind-api-2.3.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/jakarta.servlet-api-4.0.3.jar" sourcepath="testlib/source/jakarta.servlet-api-4.0.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/jakarta.activation-api-1.2.2.jar" sourcepath="testlib/source/jakarta.activation-api-1.2.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/jakarta.ws.rs-api-2.1.6.jar" sourcepath="testlib/source/jakarta.ws.rs-api-2.1.6-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/jakarta.annotation-api-1.3.5.jar" sourcepath="testlib/source/jakarta.annotation-api-1.3.5-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/jakarta.inject-2.6.1.jar" sourcepath="testlib/source/jakarta.inject-2.6.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/jakarta.validation-api-2.0.2.jar" sourcepath="testlib/source/jakarta.validation-api-2.0.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/osgi-resource-locator-1.0.3.jar" sourcepath="testlib/source/osgi-resource-locator-1.0.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/json-smart-2.4.11.jar" sourcepath="testlib/source/json-smart-2.4.11-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/accessors-smart-2.4.11.jar" sourcepath="testlib/source/accessors-smart-2.4.11-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/asm-9.1.jar" sourcepath="testlib/source/asm-9.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/junit-jupiter-api-5.10.0.jar" sourcepath="testlib/source/junit-jupiter-api-5.10.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/junit-jupiter-engine-5.10.0.jar" sourcepath="testlib/source/junit-jupiter-engine-5.10.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/junit-jupiter-params-5.10.0.jar" sourcepath="testlib/source/junit-jupiter-params-5.10.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/junit-platform-commons-1.10.0.jar" sourcepath="testlib/source/junit-platform-commons-1.10.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/junit-platform-engine-1.10.0.jar" sourcepath="testlib/source/junit-platform-engine-1.10.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/junit-vintage-engine-5.10.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlib/opentest4j-1.2.0.jar"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

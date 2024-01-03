@@ -1,0 +1,68 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.file.storage;
+
+import java.util.List;
+import com.openexchange.exception.OXException;
+import com.openexchange.file.storage.File.Field;
+import com.openexchange.file.storage.search.SearchTerm;
+import com.openexchange.tools.iterator.SearchIterator;
+
+/**
+ * {@link FileStorageAdvancedSearchFileAccess}.
+ *
+ * @author <a href="mailto:tobias.friedrich@open-xchange.com">Tobias Friedrich</a>
+ */
+public interface FileStorageAdvancedSearchFileAccess extends FileStorageFileAccess {
+
+    /**
+     * Searches for a given file.
+     *
+     * @param folderIds The optional folder identifiers
+     * @param searchTerm The search term
+     * @param fields The fields to load
+     * @param sort Which field to sort by. May be <code>null</code>.
+     * @param order The order in which to sort
+     * @param start A start index (inclusive) for the search results. Useful for paging.
+     * @param end An end index (exclusive) for the search results. Useful for paging.
+     * @return The search results
+     * @throws OXException If operation fails
+     */
+    SearchIterator<File> search(List<String> folderIds, SearchTerm<?> searchTerm, List<Field> fields, File.Field sort, SortDirection order, int start, int end) throws OXException;
+
+    /**
+     * Searches for a given file.
+     *
+     * @param folderId The identifier of the folder to search in
+     * @param includeSubfolders <code>true</code> to include subfolders, <code>false</code>, otherwise
+     * @param searchTerm The search term
+     * @param fields The fields to load
+     * @param sort Which field to sort by. May be <code>null</code>.
+     * @param order The order in which to sort
+     * @param start A start index (inclusive) for the search results. Useful for paging.
+     * @param end An end index (exclusive) for the search results. Useful for paging.
+     * @return The search results
+     * @throws OXException If operation fails
+     */
+    SearchIterator<File> search(String folderId, boolean includeSubfolders, SearchTerm<?> searchTerm, List<Field> fields, File.Field sort, SortDirection order, int start, int end) throws OXException;
+
+}

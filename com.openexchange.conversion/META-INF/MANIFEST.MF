@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Conversion
+Bundle-SymbolicName: com.openexchange.conversion
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.exception,
+ com.openexchange.groupware,
+ com.openexchange.i18n,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.session,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.slf4j
+Export-Package: com.openexchange.conversion
+Bundle-Activator: com.openexchange.conversion.osgi.ConversionActivator
+Automatic-Module-Name: com.openexchange.conversion

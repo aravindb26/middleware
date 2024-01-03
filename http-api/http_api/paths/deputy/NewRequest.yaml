@@ -1,0 +1,26 @@
+'/deputy?action=new':
+  put:
+    operationId: newDeputyPermission
+    tags:
+      - Deputypermission
+    summary: Grant a deputy permission
+    description: Grants a new deputy permission to a certain user
+    security: 
+        - session: []    
+    responses:
+      '200':
+        description: The JSON representation of the newly created deputy permission
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeputyResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+    requestBody:
+      description: A JSON object describing the deputy permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DeputyPermission'

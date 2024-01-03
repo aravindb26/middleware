@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- *************************************************************************************
+    Hints:
+       - changeSet id has to be unique as it is used as primary key for DATABASECHANGELOG table
+ ************************************************************************************* -->
+
+<databaseChangeLog xmlns="urn:liquibase"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:liquibase /liquibase/dbchangelog-3.0.xsd"
+    logicalFilePath="globaldbChangeLog">
+
+    <!-- ******************************************************* -->
+    <!-- ************** Release 7.8.0 starts here ************** -->
+    <!-- ******************************************************* -->
+
+    <changeSet id="7.8.0:replicationMonitor:create" author="tobias.friedrich@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="replicationMonitor" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'replicationMonitor' for master/slave replication.
+        </comment>
+        <sql>
+            CREATE TABLE replicationMonitor (
+                cid int(10) unsigned NOT NULL,
+                transaction bigint(20) NOT NULL,
+                PRIMARY KEY (cid)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+            INSERT INTO replicationMonitor (cid,transaction) VALUES (0,0);
+        </sql>
+        <rollback>
+            <dropTable tableName="replicationMonitor" />
+        </rollback>
+    </changeSet>
+
+    <changeSet id="7.8.0:guest:create" author="martin.schneider@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="guest" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'guest' to save known login addresses and associated groups (brandings) of guest users.
+        </comment>
+        <sql>
+            CREATE TABLE guest (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                gid VARCHAR(255) NOT NULL,
+                mail_address VARCHAR(255) NOT NULL,
+                PRIMARY KEY (id),
+                INDEX (mail_address)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="guest" />
+        </rollback>
+    </changeSet>
+
+    <changeSet id="7.8.0:guest2context:create" author="martin.schneider@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="guest2context" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'guest2context' to save mappings from guests to context and users.
+        </comment>
+        <sql>
+            CREATE TABLE guest2context (
+                guest_id BIGINT UNSIGNED NOT NULL,
+                cid INT4 UNSIGNED NOT NULL,
+                uid INT4 UNSIGNED NOT NULL,
+                password VARCHAR(128) DEFAULT NULL,
+                passwordMech VARCHAR(32) NOT NULL,
+                PRIMARY KEY(`guest_id`, `cid`,`uid`),
+                FOREIGN KEY(`guest_id`) REFERENCES guest (`id`),
+                INDEX(guest_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="guest2context" />
+        </rollback>
+    </changeSet>
+
+    <changeSet id="7.8.0:oauth_client:create" author="steffen.templin@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="oauth_client" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'oauth_client' to persist OAuth 2.0 client registrations
+        </comment>
+        <sql>
+            CREATE TABLE oauth_client (
+                id VARCHAR(255) NOT NULL,
+                gid VARCHAR(255) NOT NULL,
+                secret VARCHAR(255) NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                description TEXT NOT NULL,
+                icon MEDIUMBLOB NOT NULL,
+                icon_mime_type VARCHAR(32) NOT NULL,
+                default_scope VARCHAR(767) NOT NULL,
+                contact_address VARCHAR(255) NOT NULL,
+                website VARCHAR(255) NOT NULL,
+                enabled TINYINT UNSIGNED NOT NULL,
+                registration_date BIGINT(64) UNSIGNED NOT NULL,
+                PRIMARY KEY (`id`, `gid`),
+                UNIQUE KEY `gid_name` (`gid`, `name`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="oauth_client"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="7.8.0:oauth_client_uri:create" author="steffen.templin@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="oauth_client_uri" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'oauth_client_uri' to persist OAuth 2.0 client redirect URIs
+        </comment>
+        <sql>
+            CREATE TABLE oauth_client_uri (
+                id INT4 NOT NULL AUTO_INCREMENT,
+                client VARCHAR(255) NOT NULL,
+                uri VARCHAR(767) NOT NULL,
+                PRIMARY KEY (`id`),
+                INDEX `client_index` (`client`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="oauth_client_uri"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="7.8.0-milestone" author="martin.schneider@open-xchange.com">
+        <tagDatabase tag="7.8.0-milestone" />
+    </changeSet>
+    
+    <changeSet id="7.8.4:feedback:create" author="kevin.ruthmann@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="feedback" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'feedback' to save feedback metadata.
+        </comment>
+        <sql>
+            CREATE TABLE feedback (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                groupId VARCHAR(255) NOT NULL,
+                type VARCHAR(255) NOT NULL,
+                date BIGINT(20) UNSIGNED NOT NULL, 
+                cid INT(10) UNSIGNED NOT NULL, 
+                user INT(10) UNSIGNED NOT NULL,
+                login_name VARCHAR(255) NOT NULL,
+                typeId BIGINT UNSIGNED NOT NULL,
+                client_version VARCHAR(127) NOT NULL,
+                server_version VARCHAR(127) NOT NULL,
+                PRIMARY KEY (id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="feedback" />
+        </rollback>
+    </changeSet>
+    
+    <changeSet id="7.8.4:feedback_star_rating_v1:create" author="kevin.ruthmann@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="feedback_star_rating_v1" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'feedback_star_rating_v1' to save feedback data.
+        </comment>
+        <sql>
+            CREATE TABLE feedback_star_rating_v1 (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                data BLOB NOT NULL,
+                PRIMARY KEY (id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="feedback_star_rating_v1" />
+        </rollback>
+    </changeSet>
+
+    <changeSet id="7.10.0:replicationMonitor:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+        <preConditions onFail="CONTINUE">
+            <changeSetExecuted id="7.8.0:replicationMonitor:create" author="tobias.friedrich@open-xchange.com" changeLogFile="globaldbChangeLog" />
+        </preConditions>
+        <comment>Converts the table/column definition to support utf8mb4</comment>
+        <customChange class="com.openexchange.database.internal.change.utf8mb4.globaldb.ReplicationMonitorToUtf8mb4Change" />
+    </changeSet>
+
+    <changeSet id="7.10.0:guest2context:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+        <preConditions onFail="CONTINUE">
+            <changeSetExecuted id="7.8.0:guest2context:create" author="martin.schneider@open-xchange.com" changeLogFile="globaldbChangeLog" />
+        </preConditions>
+        <comment>Converts the table/column definition to support utf8mb4</comment>
+        <customChange class="com.openexchange.database.internal.change.utf8mb4.globaldb.Guest2ContextToUtf8mb4Change" />
+    </changeSet>
+
+    <changeSet id="7.10.0:oauth_client:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+        <preConditions onFail="CONTINUE">
+            <changeSetExecuted id="7.8.0:oauth_client:create" author="steffen.templin@open-xchange.com" changeLogFile="globaldbChangeLog" />
+        </preConditions>
+        <comment>Converts the table/column definition to support utf8mb4</comment>
+        <customChange class="com.openexchange.database.internal.change.utf8mb4.globaldb.OAuthClientToUtf8mb4Change" />
+    </changeSet>
+
+    <changeSet id="7.10.0:feedback:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+        <preConditions onFail="CONTINUE">
+            <changeSetExecuted id="7.8.4:feedback:create" author="kevin.ruthmann@open-xchange.com" changeLogFile="globaldbChangeLog" />
+        </preConditions>
+        <comment>Converts the table/column definition to support utf8mb4</comment>
+        <customChange class="com.openexchange.database.internal.change.utf8mb4.globaldb.FeedbackToUtf8mb4Change" />
+    </changeSet>
+
+    <changeSet id="7.10.0:feedback_star_rating_v1:toUtf8Mb4" author="martin.schneider@open-xchange.com" failOnError="false">
+        <preConditions onFail="CONTINUE">
+            <changeSetExecuted id="7.8.4:feedback_star_rating_v1:create" author="kevin.ruthmann@open-xchange.com" changeLogFile="globaldbChangeLog" />
+        </preConditions>
+        <comment>Converts the table/column definition to support utf8mb4</comment>
+        <customChange class="com.openexchange.database.internal.change.utf8mb4.globaldb.FeedbackStarRatingV1ToUtf8mb4Change" />
+    </changeSet>
+
+    <changeSet id="7.10.0:oauth_client_uri:toUtf8Mb4_v2" author="martin.schneider@open-xchange.com" failOnError="false">
+        <preConditions onFail="CONTINUE">
+            <changeSetExecuted id="7.8.0:oauth_client_uri:create" author="steffen.templin@open-xchange.com" changeLogFile="globaldbChangeLog" />
+        </preConditions>
+        <comment>Converts the table/column definition to support utf8mb4</comment>
+        <customChange class="com.openexchange.database.internal.change.utf8mb4.globaldb.OAuthClientUriToUtf8mb4ChangeV2" />
+    </changeSet>
+
+    <changeSet id="7.10.0:guest:toUtf8Mb4_v2" author="martin.schneider@open-xchange.com" failOnError="false">
+        <preConditions onFail="CONTINUE">
+            <changeSetExecuted id="7.8.0:guest:create" author="martin.schneider@open-xchange.com" changeLogFile="globaldbChangeLog" />
+        </preConditions>
+        <comment>Converts the table/column definition to support utf8mb4</comment>
+        <customChange class="com.openexchange.database.internal.change.utf8mb4.globaldb.GuestToUtf8mb4ChangeV2" />
+    </changeSet>
+
+    <!-- ******************************************************** -->
+    <!-- ************** Release 7.10.2 starts here ************** -->
+    <!-- ******************************************************** -->
+
+    <!-- has been released with 7.10.2 but was already executed with wrong version id -->
+    <changeSet id="7.10.1:guest2context:addSalt" author="martin.schneider@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="guest2context" columnName="salt" />
+            </not>
+        </preConditions>
+        <comment>
+            Add column 'salt' to table guest2context.
+        </comment>
+        <sql>
+            ALTER TABLE guest2context ADD salt VARBINARY(128) DEFAULT NULL;
+        </sql>
+        <rollback>
+            <dropColumn tableName="guest2context" columnName="salt" />
+        </rollback>
+    </changeSet>
+    
+    <!-- ******************************************************** -->
+    <!-- ************** Release 7.10.3 starts here ************** -->
+    <!-- ******************************************************** -->   
+    <changeSet id="7.10.3:ip_blocks:drop" author="ioannis.chouklis@open-xchange.com" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="ip_blocks" />
+        </preConditions>
+         <dropTable tableName="ip_blocks"/>
+        <comment>Drops the MaxMind's ip_blocks table</comment>
+    </changeSet>
+	<changeSet id="7.10.3:ipv6_blocks:drop" author="ioannis.chouklis@open-xchange.com" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="ipv6_blocks" />
+        </preConditions>
+         <dropTable tableName="ipv6_blocks"/>
+        <comment>Drops the MaxMind's ipv6_blocks table</comment>
+    </changeSet>
+    <changeSet id="7.10.3:ip_locations:drop" author="ioannis.chouklis@open-xchange.com" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="ip_locations" />
+        </preConditions>
+         <dropTable tableName="ip_locations"/>
+        <comment>Drops the MaxMind's ip_locations table</comment>
+    </changeSet>
+    <changeSet id="7.10.3:ip2location:drop" author="ioannis.chouklis@open-xchange.com" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="ip2location" />
+        </preConditions>
+         <dropTable tableName="ip2location"/>
+        <comment>Drops the Ip2Location's ip2location table</comment>
+    </changeSet>
+
+    <changeSet id="7.10.3:dataExportTask:create" author="thorben.betten@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataExportTask" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'dataExportTask' to manage requested data export tasks.
+        </comment>
+        <sql>
+            CREATE TABLE dataExportTask (
+                uuid binary(16) NOT NULL,
+                cid INT4 UNSIGNED NOT NULL,
+                user INT4 UNSIGNED NOT NULL,
+                timestamp BIGINT(20) DEFAULT NULL,
+                creationTime BIGINT(20) NOT NULL,
+                startTime BIGINT(20) DEFAULT NULL,
+                duration BIGINT(20) DEFAULT NULL,
+                notificationSent TINYINT(1) NOT NULL DEFAULT 0,
+                status VARCHAR(32) NOT NULL,
+                filestore INT(10) unsigned NOT NULL,
+                arguments TEXT DEFAULT NULL,
+                PRIMARY KEY (uuid),
+                UNIQUE KEY `user_key` (cid,user)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="dataExportTask" />
+        </rollback>
+    </changeSet>
+    <changeSet id="7.10.3:dataExportTaskWorklist:create" author="thorben.betten@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataExportTaskWorklist" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'dataExportTaskWorklist' to manage task-associated work items.
+        </comment>
+        <sql>
+            CREATE TABLE dataExportTaskWorklist (
+                cid INT4 UNSIGNED NOT NULL,
+                uuid binary(16) NOT NULL,
+                taskId binary(16) NOT NULL,
+            	id VARCHAR(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+            	status VARCHAR(32) NOT NULL,
+            	info TEXT DEFAULT NULL,
+            	savepoint TEXT DEFAULT NULL,
+            	filestoreLocation VARCHAR(255) DEFAULT NULL,
+            	failCount INT4 UNSIGNED NOT NULL DEFAULT 0,
+            	PRIMARY KEY (uuid),
+            	UNIQUE KEY `task_key` (taskId, id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="dataExportTaskWorklist" />
+        </rollback>
+    </changeSet>
+    <changeSet id="7.10.3:dataExportFilestoreLocation:create" author="thorben.betten@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataExportFilestoreLocation" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'dataExportFilestoreLocation' to store result files of completed data export tasks.
+        </comment>
+        <sql>
+            CREATE TABLE dataExportFilestoreLocation (
+                cid INT4 UNSIGNED NOT NULL,
+                taskId binary(16) NOT NULL,
+                num INT(10) unsigned NOT NULL,
+                filestoreLocation VARCHAR(255) NOT NULL,
+                size BIGINT(20) NOT NULL,
+                PRIMARY KEY (taskId, num)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="dataExportFilestoreLocation" />
+        </rollback>
+    </changeSet>
+    <changeSet id="7.10.3:dataExportReport:create" author="thorben.betten@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataExportReport" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'dataExportReport' to store report of running/paused data export tasks.
+        </comment>
+        <sql>
+            CREATE TABLE dataExportReport (
+                cid INT4 UNSIGNED NOT NULL,
+                messageId binary(16) NOT NULL,
+                taskId binary(16) NOT NULL,
+                message TEXT NOT NULL,
+                timeStamp BIGINT(20) NOT NULL,
+                moduleId VARCHAR(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+                PRIMARY KEY (messageId),
+                KEY `task_key` (taskId)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="dataExportReport" />
+        </rollback>
+    </changeSet>
+    <changeSet id="7.10.3:dataExportTaskWorklist:addFailCount" author="thorben.betten@open-xchange.com">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="dataExportTaskWorklist" columnName="failCount" />
+            </not>
+        </preConditions>
+        <comment>
+            Add column 'failCount' to table dataExportTaskWorklist.
+        </comment>
+        <sql>
+            ALTER TABLE dataExportTaskWorklist ADD failCount INT4 UNSIGNED NOT NULL DEFAULT 0;
+        </sql>
+        <rollback>
+            <dropColumn tableName="dataExportTaskWorklist" columnName="failCount" />
+        </rollback>
+    </changeSet>
+
+
+    <changeSet id="7.10.4:feedback_nps_v1:create" author="martin.schneider@open-xchange.com" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="feedback_nps_v1" />
+            </not>
+        </preConditions>
+        <comment>
+            Add table 'feedback_nps_v1' to save feedback data.
+        </comment>
+        <sql>
+            CREATE TABLE feedback_nps_v1 (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                data BLOB NOT NULL,
+                PRIMARY KEY (id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        </sql>
+        <rollback>
+            <dropTable tableName="feedback_nps_v1" />
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

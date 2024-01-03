@@ -1,0 +1,3 @@
+/opt/open-xchange/etc/hazelcast/oidcAuthInfos.properties
+/opt/open-xchange/etc/hazelcast/oidcLogoutInfos.properties
+/opt/open-xchange/etc/hazelcast/oidcSessionInfos.properties

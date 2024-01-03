@@ -1,0 +1,29 @@
+feature_name: Cryptography
+properties:
+  - key: com.openexchange.crypto.argon.memory
+    description: |
+      Defines the memory allocation (in bytes) per hashing process.
+    defaultValue: 15360
+    version: 8.0.0
+    reloadable: true
+    file: crypto.properties
+    packageName: open-xchange-core
+    tags: ["Cryptography", "Argon2"]
+  - key: com.openexchange.crypto.argon.iterations
+    description: |
+      Defines the amount of iterations per hashing process.
+    defaultValue: 2
+    version: 8.0.0
+    reloadable: true
+    file: crypto.properties
+    packageName: open-xchange-core
+    tags: ["Cryptography", "Argon2"]
+  - key: com.openexchange.crypto.argon.lanes
+    description: |
+      Defines the amount of threads per hashing process. (Main thread pool from middleware is not involved)
+    defaultValue: 1
+    version: 8.0.0
+    reloadable: true
+    file: crypto.properties
+    packageName: open-xchange-core
+    tags: ["Cryptography", "Argon2"]

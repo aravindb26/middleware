@@ -1,0 +1,18 @@
+Source: open-xchange-authentication-database
+Section: web
+Priority: optional
+Maintainer: Marcus Klein <marcus.klein@open-xchange.com>
+Build-Depends: debhelper (>= 7.0.1)
+Standards-Version: 3.9.8
+Homepage: http://www.open-xchange.com
+
+Package: open-xchange-authentication-database
+Architecture: all
+Pre-Depends: open-xchange-core (>= @OXVERSION@)
+Depends: ${misc:Depends}
+Provides: open-xchange-authentication
+Description: Module for authenticating users using the password stored in MySQL
+ This package installs the OSGi bundle implementing the OSGi AuthenticationService for the backend. The implementation uses the user object
+ stored in the MySQL database to authenticate login requests. Therefore the login is separated at the @ character into context specific
+ login and user specific login information. Both informations are used to resolve context and user. Afterwards the password of the login
+ request is verified with the stored password of the user.

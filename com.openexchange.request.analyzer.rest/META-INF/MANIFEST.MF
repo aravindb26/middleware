@@ -1,0 +1,36 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Request Analyzer Rest Servlet
+Bundle-SymbolicName: com.openexchange.request.analyzer.rest
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Activator: com.openexchange.request.analyzer.rest.osgi.Activator
+Import-Package: com.google.gson,
+ com.google.gson.annotations,
+ com.google.gson.stream,
+ com.openexchange.ajax.writer,
+ com.openexchange.annotation,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.java.util,
+ com.openexchange.net,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.request.analyzer,
+ com.openexchange.rest.services,
+ com.openexchange.rest.services.annotation,
+ com.openexchange.segment,
+ com.openexchange.server,
+ com.openexchange.servlet,
+ com.openexchange.session,
+ com.openexchange.sessiond,
+ com.openexchange.tools.functions,
+ javax.ws.rs,
+ javax.ws.rs.core,
+ org.apache.http,
+ org.apache.http.client.utils,
+ org.json,
+ org.osgi.framework,
+ org.slf4j
+Automatic-Module-Name: com.openexchange.request.analyzer.rest

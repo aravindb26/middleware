@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Pre-Upgrade Demo
+Bundle-SymbolicName: com.openexchange.preupgrade.demo
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.preupgrade.demo
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.common.progress,
+ com.openexchange.exception,
+ com.openexchange.osgi,
+ com.openexchange.preupgrade,
+ org.osgi.framework;version="1.10.0",
+ org.slf4j
+Bundle-Activator: com.openexchange.preupgrade.demo.osgi.PreUpgradeDemoActivator

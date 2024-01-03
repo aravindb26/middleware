@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange drive events APN2 utility bundle
+Bundle-SymbolicName: com.openexchange.drive.events.apn2.util
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.drive.events.apn2.util
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Export-Package: com.openexchange.drive.events.apn2.util
+Import-Package: com.eatthepath.pushy.apns,
+ com.eatthepath.pushy.apns.auth,
+ com.eatthepath.pushy.apns.proxy,
+ com.eatthepath.pushy.apns.util,
+ com.eatthepath.pushy.apns.util.concurrent,
+ com.fasterxml.jackson.core,
+ com.fasterxml.jackson.databind,
+ com.google.common.cache,
+ com.openexchange.apn.common,
+ com.openexchange.drive,
+ com.openexchange.drive.events,
+ com.openexchange.drive.events.subscribe,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.server,
+ com.openexchange.threadpool,
+ org.slf4j

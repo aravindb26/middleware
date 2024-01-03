@@ -1,0 +1,69 @@
+/snippet?action=attach:
+  post:
+    operationId: addSnippetAttachment
+    tags:
+      - Snippet
+    summary: Attaches one or more files to an existing snippet.
+    security: 
+        - session: []
+        - oauth: 
+          - write_userconfig
+    description: >
+      It can be uploaded multiple files at once. Each file must be specified in
+      an own form field
+
+      (the form field name is arbitrary).
+    parameters:
+      - in: query
+        name: id
+        description: The identifier of the snippet.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: type
+        description: >-
+          The file type filter to define which file types are allowed during
+          upload. Currently supported filters are: file (for all), text (for
+          `text/*`), media (for image, audio or video), image (for `image/*`),
+          audio (for `audio/*`), video (for `video/*`) and application (for
+          `application/*`).
+        required: true
+        schema:
+          type: string
+          enum:
+            - file
+            - text
+            - media
+            - image
+            - audio
+            - video
+            - application
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            title: addSnippetAttachmentBody
+            properties:
+              file:
+                description: The attachment file.
+                type: string
+                format: binary
+            required:
+              - file            
+    responses:
+      '200':
+        description: >
+          A HTML page as described in [File uploads](#file-uploads) containing a
+          JSON object with the ID of
+
+          the updated snippet or errors if some occurred.
+        content:
+          text/html:
+            schema:
+              type: string
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

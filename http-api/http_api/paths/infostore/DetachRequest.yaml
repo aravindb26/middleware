@@ -1,0 +1,59 @@
+/infostore?action=detach:
+  put:
+    operationId: deleteInfoItemVersions
+    tags:
+      - Infostore
+    summary: Deletes versions of an infoitem.
+    security: 
+        - session: []    
+    description: >
+      #### Note
+
+      When the current version of a document is deleted the new current version
+      will be the latest version.
+    parameters:
+      - in: query
+        name: id
+        description: The ID of the base object.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: folder
+        description: The folder ID of the base object.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: timestamp
+        description: Timestamp of the last update of the infoitem.
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - in: query
+        name: pushToken
+        description: The client's push token to restrict the generated drive event
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object with an empty array of version numbers that were not
+          deleted. In case of errors the responsible fields in the
+
+          response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InfoItemDetachResponse'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: integer
+      description: A JSON array of version numbers to detach.
+      required: true

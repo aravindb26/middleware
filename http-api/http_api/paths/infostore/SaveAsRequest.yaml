@@ -1,0 +1,52 @@
+/infostore?action=saveAs:
+  put:
+    operationId: importAttachment
+    tags:
+      - Infostore
+    summary: Saves an attachment in the infostore.
+    security: 
+        - session: []    
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamAttached'
+      - $ref: '#/components/parameters/gblQueryParamAttachmentsFolder'
+      - $ref: '#/components/parameters/gblQueryParamAttachmentsModule'
+      - in: query
+        name: attachment
+        description: The ID of the attachment to save.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: pushToken
+        description: The client's push token to restrict the generated drive event
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object with the object ID of the newly created infoitem. In
+          case of errors the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InfoItemUpdateResponse'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/InfoItemBody'
+      description: >
+        A JSON object describing the attachment's infoitem. The field `id`is not
+        included. The fields in
+
+        this infoitem object override values from the attachment. The folder_id
+        must be given. It is possible to
+
+        let added object permission entities be notified about newly shared
+        files. In that case add a "notification" object.
+      required: true

@@ -1,0 +1,27 @@
+/messaging/service?action=get:
+  get:
+    operationId: getMessagingService
+    tags:
+      - Messaging
+    summary: Gets a messaging service.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: id
+        description: The ID of the messaging service to load.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object containing the data of the messaging service. In case of
+          errors the responsible
+
+          fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessagingServiceResponse'

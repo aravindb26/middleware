@@ -1,0 +1,12 @@
+dependencies:
+- name: ox-common
+  repository: oci://registry.open-xchange.com/appsuite-core-internal/charts
+  version: 1.0.33
+- name: gotenberg
+  repository: oci://registry.open-xchange.com/appsuite-core-internal/charts/3rdparty
+  version: 0.4.2
+- name: collabora-online
+  repository: oci://registry.open-xchange.com/appsuite-core-internal/charts/3rdparty
+  version: 1.0.5
+digest: sha256:0cb4510eefe69965c4f215b3db1dd36f8570f1a2e18eb82b78eff2b0cc85d41c
+generated: "2023-06-26T10:52:23.535324+03:00"

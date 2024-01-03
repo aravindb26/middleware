@@ -1,0 +1,76 @@
+def COMMON_BRANCH = 'main'
+
+pipeline {
+    agent {
+        kubernetes {
+          yaml '''
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              name: middleware-core-gradle
+            spec:
+              securityContext:
+                  runAsNonRoot: true
+                  runAsUser: 1000
+              containers:
+                - name: jnlp
+                  env:
+                  - name: JAVA_OPTS
+                    value: "-XX:MaxRAMPercentage=50"
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 512Mi
+                    limits:
+                      memory: 1Gi
+                  securityContext:
+                    allowPrivilegeEscalation: false
+                    capabilities:
+                      drop:
+                        - all
+                  volumeMounts:
+                    - name: git-mirror
+                      mountPath: /git-mirror
+              volumes:
+                - name: git-mirror
+                  persistentVolumeClaim:
+                    claimName: middleware-core-pvc
+            '''
+        }
+    }
+    options {
+        disableConcurrentBuilds()
+    }
+    parameters {
+        string(name: 'CORE_TEST_BRANCH', defaultValue: 'hetzner', description: 'Sets the core-test branch to a different value than hetzner')
+        string(name: 'CORE_INTERNAL_BRANCH', defaultValue: COMMON_BRANCH, description: 'Sets the core-internal branch to a different value than main')
+        string(name: 'GUARD_BRANCH', defaultValue: COMMON_BRANCH, description: 'Sets the guard branch to a different value than main')
+    }
+    stages {
+        stage('Core-test') {
+            steps {
+                script {
+                    git status = build job: "Middleware/Core-test/${params.CORE_TEST_BRANCH}", wait: true,
+                    parameters: [
+                        text(name: 'OVERWRITE_COMPONENTS', value: "[{\"name\":\"backend\",\"branch\":\"${getBranchName()}\",\"commit\":\"${env.GIT_COMMIT}\"}," +
+                        "{\"name\":\"core-internal\",\"branch\":\"${params.CORE_INTERNAL_BRANCH}\"}," +
+                        "{\"name\":\"guard\",\"branch\":\"${params.GUARD_BRANCH}\"}]")
+                    ]
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
+
+String getBranchName() {
+    def branchName = env.BRANCH_NAME
+    if (branchName.startsWith("MR-")) {
+        branchName = env.CHANGE_BRANCH
+    }
+    return branchName
+}

@@ -1,0 +1,50 @@
+{{- $globalContext := . -}}
+{{- $scaling := (include "core-mw.scaling" . | fromYaml) -}}
+{{- range $typeName, $typeConfig := $scaling -}}
+{{- $values := ( include "core-mw.computeValuesFor" (dict "Context" $globalContext "Roles" $typeConfig.roles "TypeConfig" $typeConfig) | fromYaml ) -}}
+{{- range $role := $typeConfig.roles -}}
+{{- if (and (get $globalContext.Values.roles $role) (get (get $globalContext.Values.roles $role) "services")) -}}
+{{- range $service := (get (get $globalContext.Values.roles $role) "services") -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ox-common.names.fullname" $globalContext }}-{{ $service.name | default $role }}
+  labels:
+    {{- include "ox-common.labels.standard" $globalContext | nindent 4 }}
+    roles.middleware.open-xchange.com/{{ $typeName }}: "true"
+spec:
+  type: {{ $service.type | default "ClusterIP" }}
+  {{- if $service.headless }}
+  clusterIP: None
+  {{- end }}
+  ports:  {{ toYaml $service.ports | nindent 4 }}
+  selector:
+    {{- include "ox-common.labels.matchLabels" $globalContext | nindent 4 }}
+    roles.middleware.open-xchange.com/{{ $role }}: "true"
+---
+{{ end -}}
+{{ end -}}
+{{ end -}}
+{{ end -}}
+
+{{- if .Values.remoteDebug.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ox-common.names.fullname" . }}-remote-debug
+  labels:
+    {{- include "ox-common.labels.standard" . | nindent 4 }}
+spec:
+  type: NodePort
+  selector:
+    {{- include "ox-common.labels.matchLabels" . | nindent 4 }}
+    middleware.open-xchange.com/debug: "true"
+  ports:
+    - port: {{ .Values.remoteDebug.port }}
+      targetPort: {{ .Values.remoteDebug.port }}
+      protocol: TCP
+      {{- if .Values.remoteDebug.nodePort }}
+      nodePort: {{ .Values.remoteDebug.nodePort }}
+      {{- end }}
+      name: remote-debug
+{{- end }}

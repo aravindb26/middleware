@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.groupware.tools"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.soap.common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.chronos.common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.chronos.scheduling.common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.oauth.provider.soap"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.contact.provider"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.admin.soap.user"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.admin.soap.resource"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.admin.soap.group"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.admin.soap.context"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.socketio"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.sms.sipgate"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.metrics.dropwizard"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.metrics"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/net.fortuna.ical4j"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.multifactor"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.principalusecount"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.sms.tools"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.http.client"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.chronos.ical.ical4j"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.chronos.ical"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.google.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.chronos.provider"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.chronos.provider.ical"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.session.management.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.config.lean"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.chronos"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.cluster.timer.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.admin.rest.passwordchange.history"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.passwordchange.history"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.password.mechanism"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.chronos.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.session.management"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.advertisement.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.rest.services"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.userfeedback.rest"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.google.guava"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.http.grizzly"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.mail.autoconfig"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.net.ssl.config.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.net.ssl.config"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.net.ssl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.admin.reseller.rmi"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.templating.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.mail.categories"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.mail.autoconfig.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.mail.autoconfig.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.imagetransformation.java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.imagetransformation"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.sms"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.client.onboarding"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.oauth.provider.rmi"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.share.notification"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.share.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.drive.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.drive"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.database.migration"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.oauth.provider.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.oauth.provider"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.cluster.timer"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.sessionstorage"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.filestore.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.filestore"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.file.storage.composition"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.file.storage.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.test"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.google.api.client"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.oauth"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.oauth.google"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.share.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.share"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.google.gdata"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.google.api.client"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.config.cascade"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.ctc.wstx"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.control.clt"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.xing"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.search"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.apache.felix.eventadmin"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.contactcollector.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.file.storage"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.admin.rmi"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.capabilities"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.capabilities.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.tokenlogin"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/javax.mail"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.quota"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.database"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.caching.events"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.version"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.jcharset"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.unifiedinbox"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.contact.storage.rdb"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.tasks.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.contacts.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.calendar.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.jslob"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.osgi"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.importexport"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.folder.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.tx"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.html"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.messaging.rss"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.sql"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.datatypes.genericonf.storage"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.messaging.generic"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.messaging"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.templating"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.user.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.threadpool"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.subscribe.json"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.subscribe"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.datatypes.genericonf"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.logging"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.external.account"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.monitoring"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.gdpr.dataexport"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.push"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.charset"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/com.openexchange.server"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.configread"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.caching"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.groupware.settings.extensions"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.contactcollector"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.control"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/com.openexchange.xml"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.sessiond.rmi"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.sessiond"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.spamhandler.spamassassin"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.spamhandler.default"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.push.udp"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.smtp"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.imap"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.i18n"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.data.conversion.ical.ical4j"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.conversion.engine"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.conversion"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.annotation"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.advertisement"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.admin.soap.util"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.admin.plugin.hosting"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.global"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.config.cascade.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.request.analyzer"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.request.analyzer.rest"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jersey-test-framework-provider-grizzly2-2.32.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-media-multipart-2.32.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-media-json-jackson-2.32.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-apache-connector-2.32.jar" sourcepath="lib/source/jersey-apache-connector-2.32-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-client-2.32.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-common-2.32.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-hk2-2.32.jar" sourcepath="lib/source/jersey-hk2-2.32-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-server-2.32.jar" sourcepath="lib/source/jersey-server-2.32-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-test-framework-core-2.32.jar" sourcepath="lib/source/jersey-test-framework-core-2.32-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/commons-codec-1.15.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/commons-io-2.11.0.jar" sourcepath="/com.openexchange.bundles/jars/commons-io-2.11.0.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/commons-validator-1.6.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/httpcore-osgi-4.4.16.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/javax.servlet-api-4.0.0.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/joda-time-2.10.5.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.apache.commons.lang_2.6.0.v201404270220.jar" sourcepath="/com.openexchange.bundles/source/org.apache.commons.lang.source_2.6.0.v201404270220.jar"/>
+	<classpathentry kind="lib" path="lib/cardme-0.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar" sourcepath="lib/source/commons-httpclient-3.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackrabbit-webdav-2.3.3.jar" sourcepath="lib/source/jackrabbit-webdav-2.3.3-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-datatype-joda-2.11.0.jar"/>
+	<classpathentry kind="lib" path="lib/js.jar"/>
+	<classpathentry kind="lib" path="lib/jvyaml-0.2.jar"/>
+	<classpathentry kind="lib" path="lib/tempus-fugit-1.2-20140129.191141-5.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/libs/http-api.jar" sourcepath="/http-api/http_api/build/libs/http-api-sources.jar"/>
+	<classpathentry kind="lib" path="/http-api/rest_api/build/libs/rest-api.jar" sourcepath="/http-api/rest_api/build/libs/rest-api-sources.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/jackson-annotations-2.10.3.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/jackson-core-2.10.3.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/jackson-databind-2.10.3.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/jsr305-3.0.2.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/kotlin-stdlib-1.6.20.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/commons-collections-3.2.2.jar"/>
+	<classpathentry kind="lib" path="lib/hk2-utils-2.5.0-b42.jar" sourcepath="lib/source/hk2-utils-2.5.0-b42-sources.jar"/>
+	<classpathentry kind="lib" path="lib/hk2-api-2.5.0-b42.jar" sourcepath="lib/source/hk2-api-2.5.0-b42-sources.jar"/>
+	<classpathentry kind="lib" path="lib/hk2-locator-2.5.0-b42.jar" sourcepath="lib/source/hk2-locator-2.5.0-b42-sources.jar"/>
+	<classpathentry kind="lib" path="lib/javax.ws.rs-api-2.1.1.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/commons-lang3-3.10.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/gson-fire-1.8.4.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/okio-jvm-3.2.0.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/swagger-annotations-1.5.24.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-entity-filtering-2.32.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-module-jaxb-annotations-2.11.3.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/stax2-api-4.2.1.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/bcprov-ext-jdk15on-1.69.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/jsoup-1.16.1.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/apache-mime4j-core-0.8.7.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/apache-mime4j-dom-0.8.7.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/apache-mime4j-storage-0.8.7.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/httpclient-osgi-4.5.14.jar"/>
+	<classpathentry kind="lib" path="lib/xmlwise-1_2.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/gson-2.10.1.jar" sourcepath="/com.openexchange.bundles/source/gson-2.10.1-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.eclipse.osgi_3.18.400.v20230509-2241.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.eclipse.osgi.services_3.11.100.v20221006-1531.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.eclipse.osgi.util_3.7.200.v20230103-1101.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/jcl-over-slf4j-1.7.36.jar" sourcepath="/com.openexchange.bundles/source/jcl-over-slf4j-1.7.36-sources.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/okhttp-urlconnection-4.11.0.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/logging-interceptor-4.11.0.jar"/>
+	<classpathentry kind="lib" path="/http-api/http_api/build/dependencies/okhttp-4.11.0.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/trove-3.0.3.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/rfc5545-datetime-0.3.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.mail.exportpdf.impl/lib/pdfbox-2.0.27.jar" sourcepath="/com.openexchange.mail.export.impl/lib/sources/pdfbox-2.0.27-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.mail.exportpdf.impl/lib/pdfbox-tools-2.0.27.jar" sourcepath="/com.openexchange.mail.export.impl/lib/sources/pdfbox-tools-2.0.27-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.annotation.bundle_2.0.0.202202082230.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.annotation.versioning_1.1.2.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.cm_1.6.1.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.component_1.5.1.202212101352.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.device_1.1.1.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.event_1.4.1.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.metatype_1.4.1.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.provisioning_1.2.0.201505202024.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.upnp_1.2.1.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.useradmin_1.1.1.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.wireadmin_1.0.2.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.util.function_1.2.0.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.util.measurement_1.0.2.201802012109.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.util.position_1.0.1.201505202026.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.util.promise_1.3.0.202212101352.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.util.xml_1.0.2.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.metatype.annotations_1.4.1.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.prefs_1.1.2.202109301733.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/org.osgi.service.repository_1.1.0.201505202024.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-guava-2.25.1.jar" sourcepath="lib/source/jersey-guava-2.25.1-sources.jar"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

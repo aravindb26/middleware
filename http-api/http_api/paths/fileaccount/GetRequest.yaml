@@ -1,0 +1,33 @@
+/fileaccount?action=get:
+  get:
+    operationId: getFileAccount
+    tags:
+      - Filestorage
+    summary: Gets a file storage account.
+    security: 
+        - session: []    
+        - oauth:
+          - read_files 
+    parameters:
+      - in: query
+        name: filestorageService
+        description: The identifier of the file storage service the account belongs to.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: id
+        description: The ID of the requested account.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >-
+          A JSON object containing the data of the file storage account. In case
+          of errors the responsible fields in the response are filled (see
+          [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileAccountResponse'

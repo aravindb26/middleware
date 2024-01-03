@@ -1,0 +1,63 @@
+feature_name: General database configuration
+properties:
+    - key: com.openexchange.database.cleanup.enabled
+      description: |
+        Enables or disables all database cleanup tasks
+      defaultValue: true
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: false
+      related:
+      file: database.properties
+      packageName: open-xchange-core
+      tags: ["Database", "Cleanup"]
+    - key: com.openexchange.database.cleanup.schedule
+      description: |
+        The pattern specifying when to execute database clean-up jobs. The default time zone of the Java virtual machine is assumed,
+        which is typically the system's default time zone; unless the <code>user.timezone</code> property is set otherwise.
+        A semicolon-separated listing of tokens, while a token consists of a weekday and an optional time range
+        A weekday is one of: Mon, Tue, Wed, Thu, Fri, Sat and Sun. It also accepts ranges e.g. "Mon-Fri"
+        A time range is a hour of day range of the 24h clock. E.g. "0-6" for 0 to 6 in the morning or "22:30-24" for 22:30h until 24h in the evening. Also accepts comma-separated pairs; e.g. "0-6,22:30-24"
+        A more complex example: "Mon 0:12-6:45; Tue-Thu 0-7:15; Fri 0-6,22:30-24; Sat,Sun 0-8"
+      defaultValue: "Mon-Sun"
+      version: 8.0.0
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: database.properties
+      packageName: open-xchange-core
+      tags: ["Database", "Cleanup"]
+    - key: com.openexchange.database.cleanup.frequency
+      description: |
+        The frequency in milliseconds when to check for new job executions within configured schedule.
+      defaultValue: 600000
+      version: 8.0.0
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: database.properties
+      packageName: open-xchange-core
+      tags: ["Database", "Cleanup"]
+    - key: com.openexchange.database.cleanup.concurrencylevel
+      description: |
+        The concurrency level for job executions specifying how many jobs may be executed concurrently.
+      defaultValue: 4
+      version: 8.0.0
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: database.properties
+      packageName: open-xchange-core
+      tags: ["Database", "Cleanup"]
+    - key: com.openexchange.database.cleanup.abortRunningGeneralJobs
+      description: |
+        The boolean option to enable abortion of running clean-up jobs of general type when specified schedule is elapsed;
+        otherwise continuing their executions is allowed.
+      defaultValue: false
+      version: 8.0.0
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: database.properties
+      packageName: open-xchange-core
+      tags: ["Database", "Cleanup"]

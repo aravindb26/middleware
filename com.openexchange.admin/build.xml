@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="com.openexchange.admin overrides">
+
+    <description>
+        Patches path into configuration files and installs the scripts for the CLTs.
+    </description>
+
+    <import file="build-project.xml"/>
+
+    <!-- Constants -->
+    <property name="patchConfDir" value="${tmpDir}/${confDir}"/>
+
+    <target name="installConf" depends="patchConfig">
+        <copy todir="${destDir}/${confInstallDir}">
+            <fileset dir="${patchConfDir}"/>
+        </copy>
+        <copy todir="${destDir}/${confInstallDir}">
+            <fileset dir="${confDir}">
+                <include name="**"/>
+                <exclude name="*.in"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="patchConfig">
+        <mkdir dir="${patchConfDir}"/>
+        <copy todir="${patchConfDir}" overwrite="true">
+            <fileset dir="${confDir}">
+                <include name="*.in"/>
+            </fileset>
+        </copy>
+        <antcall target="patchConfigFiles"/>
+    </target>
+
+    <target name="patchConfigFiles">
+        <antcall target="patchPathInProperties"/>
+    </target>
+
+    <target name="patchPathInProperties">
+        <move todir="${patchConfDir}">
+            <fileset dir="${patchConfDir}">
+                <include name="*.in"/>
+            </fileset>
+            <mapper type="glob" from="*.in" to="*"/>
+        </move>
+        <replace dir="${patchConfDir}" includes="*.properties">
+            <replacefilter token="@confDir@" value="${confInstallDir}"/>
+            <replacefilter token="@oxconfdir@" value="${confSubstPatch}"/>
+        </replace>
+    </target>
+
+    <target name="postClean">
+        <delete dir="${tmpDir}"/>
+    </target>
+
+</project>

@@ -1,0 +1,11 @@
+# Guard
+/opt/open-xchange/etc/guard-api.properties:
+  com.openexchange.guard.endpoint: "http://localhost:8009"
+
+/opt/open-xchange/etc/guard-core.properties:
+  com.openexchange.guard.oxGuardShardDatabase: "{{ env `MYSQL_HOST` }}"
+  com.openexchange.guard.oxGuardDatabaseHostname: "{{ env `MYSQL_HOST` }}"
+  com.openexchange.guard.databaseUsername: "{{ env `MYSQL_USER` }}"
+  com.openexchange.guard.databasePassword: "{{ env `MYSQL_PASSWORD` }}"
+  com.openexchange.guard.restApiPassword: "{{ env `OX_BASIC_AUTH_PASSWORD` }}"
+  com.openexchange.guard.restApiUsername: "{{ env `OX_BASIC_AUTH_LOGIN` }}"

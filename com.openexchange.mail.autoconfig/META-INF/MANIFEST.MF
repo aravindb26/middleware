@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Provides the basic classes for auto-config service
+Bundle-SymbolicName: com.openexchange.mail.autoconfig
+Automatic-Module-Name: com.openexchange.mail.autoconfig
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.exception,
+ com.openexchange.i18n,
+ com.openexchange.osgi.annotation,
+ org.xmlpull.v1
+Export-Package: com.openexchange.mail.autoconfig

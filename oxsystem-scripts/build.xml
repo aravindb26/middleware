@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="open-xchange-system overrides" basedir=".">
+
+    <description>
+        This build file uses the postInstall target to install script files used in start scripts.
+    </description>
+
+    <!-- Customizable values -->
+    <!-- This values must be changed for defining other installation places -->
+
+    <!-- Constants -->
+    <property name="sbinDir" value="sbin"/>
+
+    <import file="build-project.xml"/>
+
+    <target name="postInstall">
+        <property name="libInstallDir" value="${destDir}/${prefix}/${libDir}"/>
+        <copy todir="${libInstallDir}" overwrite="true">
+            <fileset dir="${libDir}"/>
+        </copy>
+        <property name="sbinInstallDir" value="${destDir}/${prefix}/${sbinDir}"/>
+        <copy todir="${sbinInstallDir}" overwrite="true">
+            <fileset dir="${sbinDir}"/>
+        </copy>
+        <chmod perm="755" file="${sbinInstallDir}/insufficientjava"/>
+    </target>
+
+</project>

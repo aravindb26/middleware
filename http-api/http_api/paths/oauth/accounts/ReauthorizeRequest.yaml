@@ -1,0 +1,30 @@
+/oauth/accounts?action=reauthorize:
+  put:
+    operationId: reauthorizeOAuthAccount
+    tags:
+      - OAuth
+    summary: Reauthorises the specified OAuth account
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: id
+        description: >-
+          The account identifier. May also be provided in request body's JSON
+          object by field `id`.
+        required: true
+        schema:
+          type: integer
+      - in: query
+        name: serviceId
+        description: >-
+          The service meta data identifier, e.g.
+          "com.openexchange.oauth.google".
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/gblQueryParamScopes'
+    responses:
+      '200':
+        description: |
+          The boolean value true if the account was successfully re-authorised.

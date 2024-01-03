@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RDB Storage for sms multifactor devices
+Bundle-SymbolicName: com.openexchange.multifactor.provider.sms.storage.rdb
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.multifactor.provider.sms.storage
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.database,
+ com.openexchange.exception,
+ com.openexchange.groupware.update,
+ com.openexchange.java,
+ com.openexchange.multifactor.provider.sms,
+ com.openexchange.multifactor.provider.sms.storage,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ org.osgi.framework,
+ org.slf4j
+Require-Bundle: com.openexchange.multifactor
+Bundle-Activator: com.openexchange.multifactor.provider.sms.storage.rdb.osgi.RdbSMSMultifactorStorageActivator

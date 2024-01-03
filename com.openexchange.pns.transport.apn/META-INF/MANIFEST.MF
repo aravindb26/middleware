@@ -1,0 +1,31 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: The implementation for APN-backed transport of push notifcations
+Bundle-SymbolicName: com.openexchange.pns.transport.apn
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.annotations,
+ com.google.common.base,
+ com.google.common.cache,
+ com.openexchange.apn.common,
+ com.openexchange.config,
+ com.openexchange.config.cascade,
+ com.openexchange.configuration,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.keystore,
+ com.openexchange.osgi,
+ com.openexchange.osgi.util,
+ com.openexchange.pns,
+ com.openexchange.pns.transport.apns_http2.util,
+ com.openexchange.push.clients,
+ com.openexchange.server,
+ com.openexchange.tools.arrays,
+ com.openexchange.tools.strings,
+ org.apache.commons.io,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.pns.transport.apn.osgi.ApnPushNotificationTransportActivator
+Automatic-Module-Name: com.openexchange.pns.transport.apn

@@ -1,0 +1,33 @@
+/deputy?action=delete:
+  delete:
+    operationId: deleteDeputyPermission
+    tags:
+      - Deputypermission
+    summary: Gets a deputy permission
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: deputyId
+        description: The identifier for the deputy permission
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: A JSON object containing the success status.
+        content:
+          application/json:
+            schema:
+              type: object
+              title: deleteDeputyPermissionByIdResponse
+              properties:
+                success:
+                  type: boolean
+                  description: >-
+                    True if such a deputy permission has been successfully
+                    deleted; false otherwise
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized

@@ -1,0 +1,32 @@
+/mail?action=resolve_share_reference:
+  put:
+    operationId: resolveShareReference
+    tags:
+      - Mail
+    summary: Resolves a given share reference
+    security: 
+        - session: []      
+        - oauth:
+          - read_mail 
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResolveShareReferenceElement'
+      description: A JSON object providing the share reference to resolve
+      required: true             
+    responses:
+      '200':
+        description: >
+          'The JSON representation for the resolved share reference. In case of
+          errors the responsible fields in the
+
+          response are filled (see [Error handling](#error-handling)).'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveShareReferenceResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

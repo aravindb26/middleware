@@ -1,0 +1,45 @@
+
+LIBPATH=@libDir@
+PROPERTIESDIR=@propertiesdir@
+OSGIPATH=@oxgroupwaresysconfdir@/osgi
+
+# Define the Java options for the groupware Java virtual machine.
+JAVA_OPTS_GC="${JAVA_OPTS_GC:--XX:+UseParNewGC}"
+JAVA_OPTS_LOG="${JAVA_OPTS_LOG:--Dlogback.threadlocal.put.duplicate=false -XX:-OmitStackTraceInFastThrow}"
+JAVA_OPTS_MEM="${JAVA_OPTS_MEM:--XX:MaxHeapSize=512M -XX:+UseTLAB}"
+JAVA_OPTS_NET="${JAVA_OPTS_NET:--Dsun.net.inetaddr.ttl=3600 -Dnetworkaddress.cache.ttl=3600 -Dnetworkaddress.cache.negative.ttl=10}"
+JAVA_OPTS_OSGI="${JAVA_OPTS_OSGI:--Dosgi.compatibility.bootdelegation=false}"
+JAVA_OPTS_SERVER="${JAVA_OPTS_SERVER:--server -Djava.awt.headless=true}"
+JAVA_OPTS_OPENS="--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.management/javax.management.openmbean=ALL-UNNAMED --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.management/javax.management=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-modules=jdk.unsupported"
+JAVA_OPTS_HAZELCAST_OPENS="--add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.management/sun.management=ALL-UNNAMED --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED --add-exports=java.base/jdk.internal.ref=ALL-UNNAMED --add-modules=java.se"
+
+# Define options for debugging the groupware Java virtual machine.
+if [ "$OX_JAVA_OPTS_DEBUG_HEAPDUMP_ENABLED" = true ] ; then
+  JAVA_OPTS_DEBUG_HEAPDUMP_ENABLED="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/heapdump/${POD_NAME} -XX:+CrashOnOutOfMemoryError"
+fi
+if [ "$OX_JAVA_OPTS_DEBUG_GCLOGS_ENABLED" = true ] ; then
+  JAVA_OPTS_DEBUG_GCLOGS_ENABLED="-Xlog:gc*=debug,gc+heap=trace,age*=trace,safepoint:file=/var/log/open-xchange/gc.log"
+fi
+
+# Configures the domain used
+JAVA_OPTS_RMI="${JAVA_OPTS_RMI:--Djava.rmi.server.hostname=${OX_DOMAIN:-127.0.0.1}}"
+
+# Defines the Java options for all command line tools. CLTs need much less memory compared to the groupware process.
+JAVA_OXCMD_OPTS="${JAVA_OXCMD_OPTS:--Djava.net.preferIPv4Stack=true}"
+
+# Maximum number of open Files for the groupware. This value will only be
+# applied when using sysv init. For systemd have a look at the drop-in configs
+# at /etc/systemd/system/open-xchange.service.d
+NRFILES="${NRFILES:-65536}"
+
+# Maximum number of processes or more precisely threads for the groupware. This
+# value will only be applied when using sysv init. For systemd have a look at
+# the drop-in configs at /etc/systemd/system/open-xchange.service.d
+NPROC="${NPROC:-65536}"
+
+# Specify the umask of file permissions to be created by ox, e.g. in the
+# filestore.
+# BEWARE: setting a nonsense value like 666 will make open-xchange stop working!
+#         useful values are 006 or 066
+UMASK="${UMASK:-066}"
+

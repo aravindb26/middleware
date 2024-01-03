@@ -1,0 +1,33 @@
+/request-analysis/v1/analyze:
+    post:
+      operationId: analyzeRequest
+      security:
+        - basicAuth: []
+      tags:
+        - Request-Analysis
+      summary: Analyzes the request
+      description: |
+        Analyzes the request data and maps it to a marker if possible
+      requestBody:
+        $ref: '#/components/requestBodies/analysisRequestData'
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResult'
+        "400":
+          description: In case a required field is missing
+        "404":
+          description: Returned in case no marker could be found for the given request
+        "422":
+          description: The body is required to determine the marker for the given request
+        "500":
+          description: |
+            In case of internal server error that might have
+            multiple reasons. Response contains error message.
+          content:
+            application/json:
+              schema:
+                type: string

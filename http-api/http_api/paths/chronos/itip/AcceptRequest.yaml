@@ -1,0 +1,31 @@
+/chronos/itip?action=accept:
+  put:
+    operationId: accept
+    tags:
+      - Chronos
+    summary: Accepts an itip invitation.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: message
+        description: The comment the attendee wants to transmit
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: timezone
+        description: The timezone to show the resulting events in.
+        required: false
+        schema:
+          type: string
+          default: UTC
+    responses:
+      '200':
+        description: An array of Events that were newly created or changed.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionResponse'
+    requestBody:
+      $ref: '#/components/requestBodies/ConversionDataSource'

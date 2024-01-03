@@ -1,0 +1,35 @@
+/usecount?action=increment:
+  put:
+    operationId: incrementUseCount
+    tags:
+      - Usecount
+    summary: Increments an entity's use-count. If entity is identifier through an E-Mail address, that E-Mail address is collected as contact as well (if not already present)
+    security: 
+        - session: []    
+    responses:
+      '200':
+        description: A JSON object containing the success status.
+        content:
+          application/json:
+            schema:
+              type: object
+              title: incrementUseCountResponse
+              properties:
+                data:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      description: >-
+                        True if use-count has been successfully
+                        incremented; false otherwise
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+    requestBody:
+      description: A JSON object providing the use-count incrementation arguments.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UseCountIncrement'

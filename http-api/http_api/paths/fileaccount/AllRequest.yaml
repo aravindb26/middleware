@@ -1,0 +1,40 @@
+/fileaccount?action=all:
+  get:
+    operationId: getAllFileAccounts
+    tags:
+      - Filestorage
+    summary: Gets all file storage accounts.
+    security: 
+        - session: [] 
+        - oauth:
+          - read_files    
+    parameters:
+      - in: query
+        name: filestorageService
+        description: >-
+          The identifier of a file storage service to list only those accounts
+          that belong to that file storage service.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: connectionCheck
+        description: >-
+          If set to true, a connection check is performed for each queried file storage account.
+          In case the connection check failed, the hasError flag is set to true in the returned response object,
+          and also an error object describing the cause of the failure is included.
+        required: false
+        schema:
+          type: boolean
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with JSON objects each describing
+          one file storage account. In case
+
+          of errors the responsible fields in the response are filled (see
+          [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileAccountsResponse'

@@ -1,0 +1,336 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+
+package com.openexchange.hazelcast.osgi;
+
+import static com.openexchange.java.Autoboxing.L;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastInstanceNotActiveException;
+import com.hazelcast.core.OutOfMemoryHandler;
+import com.hazelcast.instance.impl.OutOfMemoryErrorDispatcher;
+import com.openexchange.exception.ExceptionUtils;
+import com.openexchange.hazelcast.HazelcastMBean;
+import com.openexchange.hazelcast.HazelcastMBeanImpl;
+import com.openexchange.hazelcast.configuration.HazelcastConfigurationService;
+import com.openexchange.hazelcast.configuration.KnownNetworkJoin;
+import com.openexchange.java.Strings;
+import com.openexchange.management.ManagementService;
+import com.openexchange.management.osgi.HousekeepingManagementTracker;
+import com.openexchange.osgi.Tools;
+
+/**
+ * {@link HazelcastActivator} - The activator for Hazelcast bundle (registers a {@link HazelcastInstance} for this JVM)
+ * <p>
+ * When should you add node?<br>
+ * 1. You reached the limits of your CPU or RAM.<br>
+ * 2. You reached the limits of GC. You started seeing full-GC
+ * <p>
+ * When should you stop adding nodes? Should you have 10, 30, 50, 100, or 1000 nodes?<br>
+ * 1. You reached the limits of your network. Your switch is not able to handle the amount of data passed around.<br>
+ * 2. You reached the limits of the way application utilizing Hazelcast.<br>
+ * Adding node is not increasing your total throughput and not reducing the latency.
+ *
+ * @author <a href="mailto:francisco.laguna@open-xchange.com">Francisco Laguna</a>
+ * @author <a href="mailto:thorben.betten@open-xchange.com">Thorben Betten</a>
+ */
+public class HazelcastActivator implements BundleActivator {
+
+    /** The logger */
+    static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(HazelcastActivator.class);
+
+    private boolean stopped; // Guarded by synchronized
+
+    ServiceTracker<HazelcastConfigurationService, HazelcastConfigurationService> configTracker;
+    ServiceTracker<HazelcastInstanceNotActiveException, HazelcastInstanceNotActiveException> inactiveTracker;
+    ServiceTracker<ManagementService, ManagementService> managementTracker;
+    ServiceRegistration<HazelcastInstance> serviceRegistration;
+    HazelcastInstance hazelcastInstance;
+
+    /**
+     * Initializes a new {@link HazelcastActivator}.
+     */
+    public HazelcastActivator() {
+        super();
+        stopped = false;
+    }
+
+    @Override
+    public synchronized void start(final BundleContext context) throws Exception {
+        /*
+         * track HazelcastConfigurationService
+         */
+        stopped = false;
+        final HazelcastActivator hzActivator = this;
+        ServiceTrackerCustomizer<HazelcastConfigurationService, HazelcastConfigurationService> customizer =
+            new ServiceTrackerCustomizer<HazelcastConfigurationService, HazelcastConfigurationService>() {
+
+            @Override
+            public HazelcastConfigurationService addingService(ServiceReference<HazelcastConfigurationService> reference) {
+                HazelcastConfigurationService configService = context.getService(reference);
+                try {
+                    if (configService.isEnabled()) {
+                        synchronized (hzActivator) {
+                            HazelcastInstance hazelcast = startHazelcastInstance(configService);
+                            // hazelcast = new InactiveAwareHazelcastInstance(hazelcast, HazelcastActivator.this);
+                            if (null != hazelcast) {
+                                serviceRegistration = context.registerService(HazelcastInstance.class, hazelcast, null);
+                                hazelcastInstance = hazelcast;
+                                HazelcastMBeanImpl.setHazelcastInstance(hazelcast);
+                            }
+                        }
+                    } else {
+                        String lf = Strings.getLineSeparator();
+                        LOG.info("{}Hazelcast:{}    Startup of Hazelcast clustering and data distribution platform denied per configuration.{}", lf, lf, lf);
+                    }
+                } catch (Exception e) {
+                    String msg = "Error starting \"com.openexchange.hazelcast\"";
+                    LOG.error(msg, e);
+                    throw new IllegalStateException(msg, new BundleException(msg, BundleException.ACTIVATOR_ERROR, e));
+                }
+                return configService;
+            }
+
+            @Override
+            public void modifiedService(ServiceReference<HazelcastConfigurationService> reference, HazelcastConfigurationService service) {
+                // nothing to do
+            }
+
+            @Override
+            public void removedService(ServiceReference<HazelcastConfigurationService> reference, HazelcastConfigurationService service) {
+                Tools.ungetServiceSafe(reference, context);
+                stop();
+            }
+        };
+        ServiceTracker<HazelcastConfigurationService, HazelcastConfigurationService> configTracker = new ServiceTracker<HazelcastConfigurationService, HazelcastConfigurationService>(context, HazelcastConfigurationService.class, customizer);
+        this.configTracker = configTracker;
+        configTracker.open();
+        /*
+         * track HazelcastInstanceNotActiveException
+         */
+        ServiceTrackerCustomizer<HazelcastInstanceNotActiveException, HazelcastInstanceNotActiveException> stc =
+            new ServiceTrackerCustomizer<HazelcastInstanceNotActiveException, HazelcastInstanceNotActiveException>() {
+
+            @Override
+            public void removedService(ServiceReference<HazelcastInstanceNotActiveException> reference, HazelcastInstanceNotActiveException service) {
+                Tools.ungetServiceSafe(reference, context);
+            }
+
+            @Override
+            public void modifiedService(ServiceReference<HazelcastInstanceNotActiveException> reference, HazelcastInstanceNotActiveException service) {
+                // Nothing to do
+            }
+
+            @Override
+            public HazelcastInstanceNotActiveException addingService(ServiceReference<HazelcastInstanceNotActiveException> reference) {
+                HazelcastInstanceNotActiveException notActiveException = context.getService(reference);
+
+                String lf = Strings.getLineSeparator();
+                LOG.warn("{}Hazelcast:{}    Detected a {}. Hazelcast is going to be shut-down!{}", lf, lf, HazelcastInstanceNotActiveException.class.getSimpleName(), lf);
+
+                stop();
+                return notActiveException;
+            }
+        };
+        ServiceTracker<HazelcastInstanceNotActiveException, HazelcastInstanceNotActiveException> inactiveTracker = new ServiceTracker<HazelcastInstanceNotActiveException, HazelcastInstanceNotActiveException>(context, HazelcastInstanceNotActiveException.class, stc);
+        this.inactiveTracker = inactiveTracker;
+        inactiveTracker.open();
+        /*
+         * track ManagementService
+         */
+        ServiceTracker<ManagementService, ManagementService> managementTracker = new ServiceTracker<ManagementService, ManagementService>(context, ManagementService.class, new HousekeepingManagementTracker(context, HazelcastMBean.NAME, HazelcastMBean.DOMAIN, new HazelcastMBeanImpl()));
+        this.managementTracker = managementTracker;
+        managementTracker.open();
+    }
+
+    @Override
+    public void stop(BundleContext bundleContext) throws Exception {
+        stop();
+    }
+
+    /**
+     * Stops Hazelcast.
+     */
+    protected synchronized void stop() {
+        if (stopped) {
+            return;
+        }
+
+        stopped = true;
+        ServiceRegistration<HazelcastInstance> serviceRegistration = this.serviceRegistration;
+        if (null != serviceRegistration) {
+            serviceRegistration.unregister();
+            this.serviceRegistration = null;
+        }
+        closeTrackers();
+        stopHazelcastInstance();
+    }
+
+    /**
+     * Closes all opened service trackers.
+     */
+    void closeTrackers() {
+        ServiceTracker<HazelcastConfigurationService, HazelcastConfigurationService> tracker = this.configTracker;
+        if (null != tracker) {
+            this.configTracker = null;
+            closeTrackerSafe(tracker);
+        }
+        ServiceTracker<HazelcastInstanceNotActiveException, HazelcastInstanceNotActiveException> inactiveTracker = this.inactiveTracker;
+        if (null != inactiveTracker) {
+            this.inactiveTracker = null;
+            closeTrackerSafe(inactiveTracker);
+        }
+        ServiceTracker<ManagementService, ManagementService> managementTracker = this.managementTracker;
+        if (null != managementTracker) {
+            this.managementTracker = null;
+            closeTrackerSafe(managementTracker);
+        }
+    }
+
+    private <S, T> void closeTrackerSafe(ServiceTracker<S, T> tracker) {
+        if (null != tracker) {
+            try {
+                tracker.close();
+            } catch (java.lang.IllegalStateException e) {
+                // Apparently already closed, since BundleContext is no longer valid
+            }
+        }
+    }
+
+    void stopHazelcastInstance() {
+        HazelcastInstance hazelcast = this.hazelcastInstance;
+        if (null != hazelcast) {
+            this.hazelcastInstance = null;
+            HazelcastMBeanImpl.setHazelcastInstance(null);
+
+            // Do shut-down
+            String lf = Strings.getLineSeparator();
+            long start = System.currentTimeMillis();
+            Future<Void> shutDownTask = initiateShutDown(hazelcast);
+            try {
+                LOG.info("{}Hazelcast:{}    Awaiting graceful Hazelcast shut-down...{}", lf, lf, lf);
+                shutDownTask.get(10L, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.warn("{}Hazelcast:{}    Awaiting graceful Hazecast shut-down was interrupted{}", lf, lf, lf, e);
+            } catch (ExecutionException e) {
+                LOG.error("{}Hazelcast:{}    Failed to await graceful Hazecast shut-down{}", lf, lf, lf, e.getCause());
+            } catch (TimeoutException x) {
+                LOG.info("{}Hazelcast:{}    Timed out while awaiting graceful Hazecast shut-down. Forcing immediate shut-down...{}", lf, lf, lf);
+                shutDownTask.cancel(true);
+                hazelcast.getLifecycleService().terminate();
+            }
+            LOG.info("{}Hazelcast:{}    Shutdown completed after {} msec.{}", lf, lf, L(System.currentTimeMillis() - start), lf);
+        }
+    }
+
+    HazelcastInstance startHazelcastInstance(HazelcastConfigurationService configService) throws Exception {
+        String lf = Strings.getLineSeparator();
+        LOG.info("{}Hazelcast:{}    Starting...{}", lf, lf, lf);
+        if (false == configService.isEnabled()) {
+            LOG.info("{}Hazelcast:{}    Startup of Hazelcast clustering and data distribution platform denied per configuration.{}", lf, lf, lf);
+            return null;
+        }
+
+        // Create Hazelcast instance from configuration
+        Config config = configService.getConfig();
+        {
+            LOG.info("{}Hazelcast:{}    Creating new hazelcast instance...{}", lf, lf, lf);
+            KnownNetworkJoin join = KnownNetworkJoin.networkJoinFor(config.getProperty("com.openexchange.hazelcast.network.join"));
+            if (join != null) {
+                switch (join) {
+                    case MULTICAST:
+                        LOG.info("{}Hazelcast:{}    Using network join: {}{}", lf, lf, config.getNetworkConfig().getJoin().getMulticastConfig(), lf);
+                        break;
+                    case STATIC:
+                        LOG.info("{}Hazelcast:{}    Using network join: {}{}", lf, lf, config.getNetworkConfig().getJoin().getTcpIpConfig(), lf);
+                        break;
+                    case DNS:
+                        LOG.info("{}Hazelcast:{}    Using DNS-based network join: {}{}", lf, lf, config.getNetworkConfig().getJoin().getTcpIpConfig(), lf);
+                        break;
+                    case KUBERNETES:
+                        LOG.info("{}Hazelcast:{}    Using kubernetes network join: {}{}", lf, lf, config.getNetworkConfig().getJoin().getKubernetesConfig(), lf);
+                        break;
+                    case AWS:
+                        LOG.info("{}Hazelcast:{}    Using AWS network join: {}{}", lf, lf, config.getNetworkConfig().getJoin().getAwsConfig(), lf);
+                        break;
+                    case EMPTY:
+                        LOG.info("{}Hazelcast:{}    Using empty network join{}", lf, lf, lf);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        // Custom OutOfMemoryHandler implementation
+        final boolean shutdownOnOutOfMemory = configService.shutdownOnOutOfMemory();
+        OutOfMemoryHandler handler = new OutOfMemoryHandler() {
+
+            @Override
+            public void onOutOfMemory(OutOfMemoryError oom, HazelcastInstance[] hazelcastInstances) {
+                if (shutdownOnOutOfMemory) {
+                    try {
+                        stop();
+                    } catch (Exception e) {
+                        LOG.error("Failed to shut-down Hazelcast", e);
+                    }
+                }
+                ExceptionUtils.handleOOM(oom);
+            }
+        };
+        OutOfMemoryErrorDispatcher.setServerHandler(handler);
+        long hzStart = System.currentTimeMillis();
+        HazelcastInstance hazelcast = Hazelcast.newHazelcastInstance(config);
+        LOG.info("{}Hazelcast:{}    New hazelcast instance (v{}) successfully created in {} msec.{}", lf, lf, hazelcast.getCluster().getClusterVersion(), L(System.currentTimeMillis() - hzStart), lf);
+        this.hazelcastInstance = hazelcast;
+        return hazelcast;
+    }
+
+    private Future<Void> initiateShutDown(final HazelcastInstance hzInstance) {
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                // Graceful shut-down
+                hzInstance.shutdown();
+            }
+        };
+        FutureTask<Void> ft = new FutureTask<Void>(r, null);
+        new Thread(ft, "Hazelcast Shut-Down Performer").start();
+        return ft;
+    }
+
+}

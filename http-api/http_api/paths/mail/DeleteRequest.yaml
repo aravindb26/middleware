@@ -1,0 +1,57 @@
+/mail?action=delete:
+  put:
+    operationId: deleteMails
+    tags:
+      - Mail
+    summary: Deletes mails.
+    security: 
+        - session: []
+        - oauth:
+          - write_mail    
+    parameters:
+      - in: query
+        name: timestamp
+        description: 'Not IMAP: timestamp of the last update of the deleted mails.'
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - in: query
+        name: harddelete
+        description: 'Flag to hard delete the messages, meaning not to create a backup copy of each message in default trash if set to `true`.'
+        required: false
+        schema:
+          type: boolean
+      - in: query
+        name: returnAffectedFolders
+        description: 'Flag to generate an JSON response as described below. If set to `false` just an empty JSON Array is returned.'
+        required: false
+        schema:
+          type: boolean
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/MailListElement'
+      description: A JSON array of JSON objects with the id and folder of the mails.
+      required: true          
+    responses:
+      '200':
+        description: >
+          Not IMAP: A JSON array with object IDs of mails which were modified
+          after the specified timestamp and
+
+          were therefore not deleted. In case of errors the responsible fields
+          in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailsCleanUpResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

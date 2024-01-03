@@ -1,0 +1,8 @@
+title: OX Drive API
+description: |
+  The drive http api.
+contact:
+  name: Open-Xchange GmbH
+  email: info@open-xchange.com
+  url: 'https://www.open-xchange.com/'
+$ref: ../../../com.openexchange.version/version.txt

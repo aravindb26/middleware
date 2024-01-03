@@ -1,0 +1,48 @@
+type: object
+properties:
+  identifier:
+    type: string
+    description: >-
+      The qualified identifier of the entity associated with this permission. Should be used to associate the entry 
+      with its 'extended' permission version equivalent.
+  entity:
+    type: integer
+    description: Internal identifier of the permission entity (i.e. user-, group- or guest-ID).
+  bits:
+    type: integer
+    description: 'A number as described in [Permission flags](#permission-flags).'
+  type:
+    type: string
+    description: >-
+      Set "user" for an internal user, "group" for a group, "guest" for a guest,
+      or "anonymous" for an anonymous permission entity.
+  display_name:
+    type: string
+    description: A display name for the permission entity.
+  contact:
+    type: object
+    description: >-
+      A (reduced) set of [Detailed contact data](#detailed-contact-data) for
+      "user" and "guest" entities.
+  share_url:
+    type: string
+    description: The share link for "anonymous" entities.
+  password:
+    type: string
+    description: The optionally set password for "anonymous" entities.
+  expiry_date:
+    type: integer
+    format: int64
+    description: The optionally set expiry date for "anonymous" entities.
+  includeSubfolders:
+    type: boolean
+    description: The optionally set "include subfolders" option for "anonymous" entities.
+  isInherited:
+    type: boolean
+    description: >-
+      A flag indicating whether the permissions is inherited from the parent
+      folder or not. The client must not allow the user to delete or update
+      inherited permissions.
+  isInheritedFrom:
+    type: integer
+    description: If this permission is handed down from a parent folder (isInherited is set to `true`) this field contains the id of the sharing folder.

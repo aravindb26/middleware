@@ -1,0 +1,37 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: The REST service for session handling
+Bundle-SymbolicName: com.openexchange.rest.services.session
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.ajax.requesthandler,
+ com.openexchange.ajax.requesthandler.crypto,
+ com.openexchange.config,
+ com.openexchange.exception,
+ com.openexchange.groupware.contexts.impl,
+ com.openexchange.groupware.ldap,
+ com.openexchange.java.util,
+ com.openexchange.osgi,
+ com.openexchange.rest.services,
+ com.openexchange.rest.services.annotation,
+ com.openexchange.server,
+ com.openexchange.session,
+ com.openexchange.sessiond,
+ com.openexchange.sessionstorage,
+ com.openexchange.tools.servlet,
+ com.openexchange.tools.session,
+ com.openexchange.user,
+ javax.inject,
+ javax.ws.rs;version="[2.0.0,3.0.0)",
+ javax.ws.rs.core;version="[2.0.0,3.0.0)",
+ jersey.repackaged.com.google.common.base;version="[2.3.0,3.0.0)",
+ org.glassfish.hk2.utilities;version="2.4.0",
+ org.glassfish.hk2.utilities.cache;version="2.4.0",
+ org.glassfish.jersey;version="[2.3.0,3.0.0)",
+ org.json,
+ org.jvnet.hk2.external.generator;version="2.4.0",
+ org.osgi.framework,
+ org.osgi.service.http
+Bundle-Activator: com.openexchange.rest.services.session.osgi.SessionRESTActivator
+Automatic-Module-Name: com.openexchange.rest.services.session

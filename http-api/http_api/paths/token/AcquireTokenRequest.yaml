@@ -1,0 +1,26 @@
+/token?action=acquireToken:
+  get:
+    operationId: acquireToken
+    tags:
+      - Token
+    summary: Gets a login token
+    security: 
+        - session: []    
+    description: >
+      With a valid session it is possible to acquire a secret. Using this secret
+      another system is able to
+
+      generate a valid session (see
+      [login?action=redeemToken](#operation--login-action-redeemToken-post)).
+    responses:
+      '200':
+        description: >
+          A JSON object with the timestamp of the creation date and a token
+          which can be used to create a new
+
+          session. In case of errors the responsible fields in the response are
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcquireTokenResponse'

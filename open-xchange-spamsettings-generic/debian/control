@@ -1,0 +1,13 @@
+Source: open-xchange-spamsettings-generic
+Section: web
+Priority: optional
+Maintainer: Dennis Sieben <dennis.sieben@open-xchange.com>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.9.8
+Homepage: http://www.open-xchange.com
+
+Package: open-xchange-spamsettings-generic
+Architecture: all
+Pre-Depends: open-xchange-core (>= @OXVERSION@)
+Depends: ${misc:Depends}
+Description: This bundle provides a generic interface for spam settings

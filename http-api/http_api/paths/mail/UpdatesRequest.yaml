@@ -1,0 +1,47 @@
+/mail?action=updates:
+  get:
+    operationId: getMailUpdates
+    tags:
+      - Mail
+    summary: Gets updated mails.
+    security: 
+        - session: []      
+        - oauth:
+          - read_mail    
+    description: >
+      Provides a list of updated mails. 
+
+
+      **Attention**:
+
+      This does **not** work for IMAP mail accounts. In case of imap accounts an
+      empty list is returned. 
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamMailFolder'
+      - $ref: '#/components/parameters/gblQueryParamMailColumns'
+      - $ref: '#/components/parameters/gblQueryParamMailHeaders'
+      - in: query
+        name: ignore
+        description: >-
+          The type of updates which should be ignored. Currently known values
+          are 'deleted' and 'changed'. E.g. if you only want to retrieve deleted
+          mails you use 'ignore=changed'.
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          Just an empty JSON array is going to be returned since this action
+          cannot be applied to IMAP. In case of errors the responsible fields in
+          the
+
+          response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailsResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

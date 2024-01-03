@@ -1,0 +1,15 @@
+putAdvertisementByNameBody:
+  content:
+    application/json:
+      schema:
+        type: string
+  description: JSONObject describing the advertisement configuration
+  required: true
+
+analysisRequestData:
+  required: true
+  description: A json object describing the request
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/RequestData'

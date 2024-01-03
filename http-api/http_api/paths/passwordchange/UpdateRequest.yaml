@@ -1,0 +1,29 @@
+/passwordchange?action=update:
+  put:
+    operationId: updatePassword
+    tags:
+      - Passwordchange
+    summary: Updates or changes the password of the current use
+    security: 
+        - session: []    
+    description: >
+      #### Note
+
+      The new password will be set without any checks. The client must ensure
+      that it is the password the user wants to set.
+    responses:
+      '200':
+        description: >-
+          In case of errors the responsible fields in the response are filled
+          (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonResponse'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PasswordChangeBody'
+      description: A JSON object containing the old and the new password.
+      required: true

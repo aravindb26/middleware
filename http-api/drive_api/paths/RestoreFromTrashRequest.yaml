@@ -1,0 +1,28 @@
+/drive?action=restoreFromTrash:
+  put:
+    operationId: restoreFromTrash
+    tags:
+      - Drive
+    summary: Restores the given files and folders from trash.
+    security: 
+        - session: []    
+    description: >
+      Restores the given files and folders from trash. The files and folders are
+      moved back to its original location if possible.
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+    responses:
+      '200':
+        description: |
+          Returns the files and folders and their new paths.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrashFolderResponse'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TrashTargetsBody'
+      description: A JSON object describing the target files- and directories to restore.
+      required: true

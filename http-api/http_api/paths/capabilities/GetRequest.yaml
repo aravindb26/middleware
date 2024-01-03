@@ -1,0 +1,27 @@
+/capabilities?action=get:
+  get:
+    operationId: getCapability
+    tags:
+      - Capabilities
+    summary: Gets a capability.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: id
+        description: The identifier of the capability
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object containing the data of the capability or an empty
+          result, if capability not available. In case of errors the responsible
+          fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CapabilityResponse'

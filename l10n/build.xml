@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="com.openexchange.i18n overrides" basedir=".">
+
+    <description>
+        Installs the localization files.
+    </description>
+
+    <!-- Constants -->
+    <property name="i18nDir" value="${prefix}/i18n"/>
+    <property name="languages" value="cs_CZ,da_DK,de_DE,en_GB,es_ES,es_MX,fi_FI,fr_CA,fr_FR,hu_HU,it_IT,ja_JP,lv_LV,nl_NL,pl_PL,pt_BR,ro_RO,ru_RU,sk_SK,sv_SE,zh_CN,zh_TW"/>
+    <property name="community_languages" value="ca_ES,el_GR,et_EE,eu_ES,gl_ES,he_HE,hi_IN,ko_KO,nb_NO,pt_PT,th_TH,tr_TR,vi_VI"/>
+
+    <import file="build-project.xml"/>
+
+    <target name="postInstall" description="Installs the language files.">
+        <antcall target="installLanguage"/>
+    </target>
+
+    <!-- This target is only for easier installation of all languages. Packaging only needs the installLanguage target. -->
+    <target name="installLanguages">
+        <foreach list="${languages}" target="installLanguage" param="language" inheritAll="true"/>
+        <foreach list="${community_languages}" target="installLanguage" param="language" inheritAll="true"/>
+    </target>
+
+    <target name="installLanguage">
+        <mkdir dir="${destDir}/${i18nDir}"/>
+        <copy todir="${destDir}/${i18nDir}">
+            <fileset dir="${basedir}">
+                <include name="backend.${language}.po"/>
+                <include name="client-onboarding-scenarios.${language}.po"/>
+            </fileset>
+        </copy>
+    </target>
+
+</project>

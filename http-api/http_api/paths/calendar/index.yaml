@@ -1,0 +1,16 @@
+requests: 
+  - AllRequest.yaml
+  - ConfirmRequest.yaml
+  - CopyRequest.yaml
+  - DeleteRequest.yaml
+  - FreebusyRequest.yaml
+  - GetChangeExceptionsRequest.yaml
+  - GetRequest.yaml
+  - HasRequest.yaml
+  - ListRequest.yaml
+  - NewRequest.yaml
+  - NewappointmentsRequest.yaml
+  - ResolveuidRequest.yaml
+  - SearchRequest.yaml
+  - UpdateRequest.yaml
+  - UpdatesRequest.yaml

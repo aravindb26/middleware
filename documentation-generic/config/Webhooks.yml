@@ -1,0 +1,15 @@
+feature_name: Webhooks
+feature_description: |
+  See [[https://documentation.open-xchange.com/{{version}}/middleware/components/webhooks.html]] for mor informations.
+properties:
+    - key: com.openexchange.webhooks.enabledIds
+      description: |
+        Specifies a comma-separated list of Webhook identifiers that are considered as enabled
+      defaultValue: 
+      version: 8.17.0
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: webhooks.properties
+      packageName: open-xchange-core
+      tags: ["Webhooks"]

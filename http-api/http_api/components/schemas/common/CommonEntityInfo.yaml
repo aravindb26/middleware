@@ -1,0 +1,33 @@
+type: object
+description: Detailed information about creator/modifier of an object
+properties:
+  identifier:
+    type: string
+    description: Identifier of the entity information
+  type:
+    type: string
+    description: Type of the entity information. Possible values are 'user', 'group', 'guest' and 'anonymous'
+  display_name:
+    type: string
+    description: display name of the entity information
+  entity:
+    type: integer
+    description: Internal object identifier for the entity information if available, '-1' otherwise
+  contact:
+    type: object
+    properties:
+      title:
+        type: string
+        description: Optional title of the contact information
+      first_name:
+        type: string
+        description: Optional first name of the contact information
+      last_name:
+        type: string
+        description: Optional last name of the contact information
+      email1:
+        type: string
+        description: Optional email address of the contact information
+      image1_url:
+        type: string
+        description: Optional URL to contact image

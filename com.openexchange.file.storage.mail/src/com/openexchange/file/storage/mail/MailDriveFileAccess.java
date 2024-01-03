@@ -1,0 +1,1044 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.file.storage.mail;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.mail.FetchProfile;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.UIDFolder;
+import javax.mail.search.SubjectTerm;
+import com.openexchange.exception.OXException;
+import com.openexchange.file.storage.File;
+import com.openexchange.file.storage.File.Field;
+import com.openexchange.file.storage.FileDelta;
+import com.openexchange.file.storage.FileStorageAccountAccess;
+import com.openexchange.file.storage.FileStorageCaseInsensitiveAccess;
+import com.openexchange.file.storage.FileStorageExceptionCodes;
+import com.openexchange.file.storage.FileStorageFileAccess;
+import com.openexchange.file.storage.FileStorageFolderAccess;
+import com.openexchange.file.storage.FileStorageMailAttachments;
+import com.openexchange.file.storage.FileStorageRangeFileAccess;
+import com.openexchange.file.storage.FileStorageReadOnly;
+import com.openexchange.file.storage.FileStorageSequenceNumberProvider;
+import com.openexchange.file.storage.FileTimedResult;
+import com.openexchange.file.storage.Range;
+import com.openexchange.file.storage.mail.FullName.Type;
+import com.openexchange.file.storage.mail.accesscontrol.AccessControl;
+import com.openexchange.file.storage.mail.sort.MailDriveSortUtility;
+import com.openexchange.groupware.results.Delta;
+import com.openexchange.groupware.results.TimedResult;
+import com.openexchange.imap.IMAPMessageStorage;
+import com.openexchange.java.BoolReference;
+import com.openexchange.mail.MailExceptionCode;
+import com.openexchange.mail.api.IMailFolderStorage;
+import com.openexchange.mail.api.IMailMessageStorage;
+import com.openexchange.mail.api.MailAccess;
+import com.openexchange.mail.mime.utils.MimeStorageUtility;
+import com.openexchange.session.Session;
+import com.openexchange.tools.iterator.SearchIterator;
+import com.openexchange.tools.iterator.SearchIteratorAdapter;
+import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.IMAPMessage;
+import com.sun.mail.imap.IMAPStore;
+import com.sun.mail.imap.SortTerm;
+
+/**
+ * {@link MailDriveFileAccess}
+ *
+ * @author <a href="mailto:thorben.betten@open-xchange.com">Thorben Betten</a>
+ * @since v7.8.2
+ */
+public class MailDriveFileAccess extends AbstractMailDriveResourceAccess implements FileStorageFileAccess, FileStorageSequenceNumberProvider, FileStorageReadOnly, FileStorageMailAttachments, FileStorageRangeFileAccess, FileStorageCaseInsensitiveAccess {
+
+    /** The fetch profile for a virtual folder */
+    public static final FetchProfile FETCH_PROFILE_VIRTUAL = new FetchProfile() {
+        // Unnamed block
+        {
+            add(IMAPFolder.FetchProfileItem.INTERNALDATE);
+            add(FetchProfile.Item.SIZE);
+            add(FetchProfile.Item.CONTENT_INFO);
+            add(IMAPFolder.FetchProfileItem.HEADERS);
+            add(UIDFolder.FetchProfileItem.UID);
+            add(MimeStorageUtility.ORIGINAL_MAILBOX);
+            add(MimeStorageUtility.ORIGINAL_UID);
+        }
+    };
+
+    // -----------------------------------------------------------------------------------------------------------------------------------
+
+    private final MailDriveAccountAccess accountAccess;
+    final int userId;
+
+    /**
+     * Initializes a new {@link MailDriveFileAccess}.
+     *
+     * @param fullNameCollection The full name collection
+     * @param session The session The account access
+     * @param accountAccess The account access
+     * @throws OXException If initialization fails
+     */
+    public MailDriveFileAccess(FullNameCollection fullNameCollection, Session session, MailDriveAccountAccess accountAccess) throws OXException {
+        super(fullNameCollection, session);
+        this.accountAccess = accountAccess;
+        this.userId = session.getUserId();
+    }
+
+    @Override
+    public void startTransaction() throws OXException {
+        // Nope
+    }
+
+    @Override
+    public void commit() throws OXException {
+        // Nope
+    }
+
+    @Override
+    public void rollback() throws OXException {
+        // Nope
+    }
+
+    @Override
+    public void finish() throws OXException {
+        // Nope
+    }
+
+    @Override
+    public void setTransactional(final boolean transactional) {
+        // Nope
+    }
+
+    @Override
+    public void setRequestTransactional(final boolean transactional) {
+        // Nope
+    }
+
+    @Override
+    public void setCommitsTransaction(final boolean commits) {
+        // Nope
+    }
+
+    @Override
+    public boolean exists(String folderId, final String id, String version) throws OXException {
+        if (FileStorageFileAccess.CURRENT_VERSION != version) {
+            return false;
+        }
+
+        final FullName fullName = checkFolderId(folderId);
+
+        return perform(new MailDriveClosure<Boolean>() {
+
+            @Override
+            protected Boolean doPerform(IMAPStore imapStore, MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess) throws OXException, MessagingException, IOException {
+                IMAPFolder folder = getIMAPFolderFor(fullName, imapStore);
+                folder.open(Folder.READ_ONLY);
+                try {
+                    long uid = parseUnsignedLong(id);
+                    return uid < 0 ? Boolean.FALSE : Boolean.valueOf(null != folder.getMessageByUID(uid));
+                } finally {
+                    folder.close(false);
+                }
+            }
+        }).booleanValue();
+    }
+
+    @Override
+    public File getFileMetadata(final String folderId, final String id, final String version) throws OXException {
+        if (CURRENT_VERSION != version) {
+            throw FileStorageExceptionCodes.VERSIONING_NOT_SUPPORTED.create(MailDriveConstants.ID);
+        }
+
+        final FullName fullName = checkFolderId(folderId);
+
+        return perform(new MailDriveClosure<File>() {
+
+            @Override
+            protected File doPerform(IMAPStore imapStore, MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess) throws OXException, MessagingException, IOException {
+                IMAPFolder folder = getIMAPFolderFor(fullName, imapStore);
+                folder.open(Folder.READ_ONLY);
+                try {
+                    long uid = parseUnsignedLong(id);
+                    folder.fetch(null, new long[] { uid }, FETCH_PROFILE_VIRTUAL, null);
+                    IMAPMessage message = (IMAPMessage) folder.getMessageByUID(uid);
+                    if (null == message) {
+                        throw FileStorageExceptionCodes.FILE_NOT_FOUND.create(id, folderId);
+                    }
+
+                    MailDriveFileImpl mailDriveFileImpl = MailDriveFileImpl.parse(message, folderId, id, userId, getRootFolderId());
+                    if (null == mailDriveFileImpl) {
+                        throw FileStorageExceptionCodes.FILE_NOT_FOUND.create(id, folderId);
+                    }
+                    return mailDriveFileImpl;
+                } finally {
+                    folder.close(false);
+                }
+            }
+        });
+    }
+
+    @Override
+    public IDTuple saveFileMetadata(File file, long sequenceNumber) throws OXException {
+        return saveFileMetadata(file, sequenceNumber, null);
+    }
+
+    @Override
+    public IDTuple saveFileMetadata(final File file, final long sequenceNumber, final List<Field> modifiedFields) throws OXException {
+        // Read only...
+        throw FileStorageExceptionCodes.OPERATION_NOT_SUPPORTED.create(MailDriveConstants.ID);
+    }
+
+    @Override
+    public IDTuple copy(final IDTuple source, String version, final String destFolder, final File update, final InputStream newFile, final List<Field> modifiedFields) throws OXException {
+        // Read only...
+        throw FileStorageExceptionCodes.OPERATION_NOT_SUPPORTED.create(MailDriveConstants.ID);
+    }
+
+    @Override
+    public IDTuple move(final IDTuple source, final String destFolder, long sequenceNumber, final File update, final List<File.Field> modifiedFields) throws OXException {
+        // Read only...
+        throw FileStorageExceptionCodes.OPERATION_NOT_SUPPORTED.create(MailDriveConstants.ID);
+    }
+
+    @Override
+    public InputStream getDocument(final String folderId, final String id, final String version) throws OXException {
+        if (CURRENT_VERSION != version) {
+            throw FileStorageExceptionCodes.VERSIONING_NOT_SUPPORTED.create(MailDriveConstants.ID);
+        }
+
+        FullName fullName = checkFolderId(folderId);
+
+        AccessControl accessControl = AccessControl.getAccessControl(session);
+        try {
+            accessControl.acquireGrant();
+
+            return getResourceReleasingStream(folderId, id, fullName, accessControl);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw MailExceptionCode.INTERRUPT_ERROR.create(e);
+        }
+    }
+
+    private InputStream getResourceReleasingStream(final String folderId, final String id, FullName fullName, AccessControl accessControl) throws OXException {
+        MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess = null;
+        IMAPFolder imapFolder = null;
+        boolean error = true;
+        try {
+            mailAccess = MailAccess.getInstance(session);
+            mailAccess.connect();
+
+            imapFolder = (IMAPFolder) com.openexchange.imap.IMAPAccess.getIMAPStoreFrom(mailAccess).getFolder(fullName.getFullName());
+            imapFolder.open(Folder.READ_ONLY);
+
+            IMAPMessage message = (IMAPMessage) imapFolder.getMessageByUID(parseUnsignedLong(id));
+            if (null == message) {
+                throw FileStorageExceptionCodes.FILE_NOT_FOUND.create(id, folderId);
+            }
+
+            InputStream in = new ResourceReleasingInputStream(message.getInputStream(), imapFolder, mailAccess, accessControl);
+            error = false;
+            return in;
+        } catch (IOException e) {
+            throw FileStorageExceptionCodes.IO_ERROR.create(e, e.getMessage());
+        } catch (MessagingException e) {
+            throw com.openexchange.imap.IMAPAccess.getImapMessageStorageFrom(mailAccess).handleMessagingException(fullName.getFullName(), e);
+        } catch (RuntimeException e) {
+            throw FileStorageExceptionCodes.UNEXPECTED_ERROR.create(e, e.getMessage());
+        } finally {
+            if (error) {
+                closeSafe(imapFolder);
+                MailAccess.closeInstance(mailAccess);
+                accessControl.close();
+            }
+        }
+    }
+
+    @Override
+    public IDTuple saveDocument(File file, InputStream data, long sequenceNumber) throws OXException {
+        return saveDocument(file, data, sequenceNumber, null);
+    }
+
+    @Override
+    public IDTuple saveDocument(final File file, final InputStream data, final long sequenceNumber, final List<Field> modifiedFields) throws OXException {
+        // Read only...
+        throw FileStorageExceptionCodes.OPERATION_NOT_SUPPORTED.create(MailDriveConstants.ID);
+    }
+
+    @Override
+    public void removeDocument(final String folderId, long sequenceNumber) throws OXException {
+        // Read only...
+        throw FileStorageExceptionCodes.OPERATION_NOT_SUPPORTED.create(MailDriveConstants.ID);
+    }
+
+    @Override
+    public List<IDTuple> removeDocument(List<IDTuple> ids, long sequenceNumber) throws OXException {
+        return removeDocument(ids, sequenceNumber, false);
+    }
+
+    @Override
+    public List<IDTuple> removeDocument(final List<IDTuple> ids, long sequenceNumber, final boolean hardDelete) throws OXException {
+        // Read only...
+        throw FileStorageExceptionCodes.OPERATION_NOT_SUPPORTED.create(MailDriveConstants.ID);
+    }
+
+    @Override
+    public void touch(String folderId, String id) throws OXException {
+        exists(folderId, id, CURRENT_VERSION);
+    }
+
+    @Override
+    public TimedResult<File> getDocuments(final String folderId) throws OXException {
+        final FullName fullName = checkFolderId(folderId);
+
+        List<File> files = perform(new MailDriveClosure<List<File>>() {
+
+            @Override
+            protected List<File> doPerform(IMAPStore imapStore, MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess) throws OXException, MessagingException, IOException {
+                IMAPFolder folder = getIMAPFolderFor(fullName, imapStore);
+                folder.open(Folder.READ_ONLY);
+                try {
+                    int messageCount = folder.getMessageCount();
+                    if (messageCount <= 0) {
+                        return Collections.<File> emptyList();
+                    }
+
+                    List<File> files = new LinkedList<>();
+                    int limit = 100;
+                    int offset = 1;
+
+                    do {
+                        int end = offset + limit;
+                        if (end > messageCount) {
+                            end = messageCount;
+                        }
+
+                        // Get & fetch messages
+                        Message[] messages = folder.getMessages(offset, end);
+                        folder.fetch(messages, FETCH_PROFILE_VIRTUAL);
+
+                        // Iterate messages
+                        int i = 0;
+                        for (int k = messages.length; k-- > 0;) {
+                            IMAPMessage message = (IMAPMessage) messages[i++];
+                            long uid = message.getUID();
+                            if (uid < 0) {
+                                uid = folder.getUID(message);
+                            }
+                            MailDriveFileImpl mailDriveFileImpl = MailDriveFileImpl.parse(message, folderId, Long.toString(uid), userId, getRootFolderId());
+                            if (null != mailDriveFileImpl && isAccepted(mailDriveFileImpl)) {
+                                files.add(mailDriveFileImpl);
+                            }
+                        }
+
+                        // Clear folder's message cache
+                        IMAPMessageStorage.clearCache(folder);
+
+                        offset = end + 1;
+                    } while (offset <= messageCount);
+
+                    return files;
+                } finally {
+                    folder.close(false);
+                }
+            }
+        });
+
+        return new FileTimedResult(files);
+    }
+
+    @Override
+    public TimedResult<File> getDocuments(final String folderId, final List<Field> fields) throws OXException {
+        return getDocuments(folderId);
+    }
+
+    @Override
+    public TimedResult<File> getDocuments(final String folderId, final List<Field> fields, final Field sort, final SortDirection order, final Range range) throws OXException {
+        final FullName fullName = checkFolderId(folderId);
+
+        final BoolReference doSort = new BoolReference(true);
+        List<File> files = perform(new MailDriveClosure<List<File>>() {
+
+            @Override
+            protected List<File> doPerform(IMAPStore imapStore, MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess) throws OXException, MessagingException, IOException {
+                IMAPFolder folder = getIMAPFolderFor(fullName, imapStore);
+                folder.open(Folder.READ_ONLY);
+                try {
+                    int messageCount = folder.getMessageCount();
+                    if (messageCount <= 0) {
+                        return Collections.<File> emptyList();
+                    }
+
+                    boolean hasEsort;
+                    {
+                        IMAPMessageStorage messageStorage = com.openexchange.imap.IMAPAccess.getImapMessageStorageFrom(mailAccess);
+                        Map<String, String> caps = messageStorage.getImapConfig().asMap();
+                        hasEsort = (caps.containsKey("ESORT") && (caps.containsKey("CONTEXT=SEARCH") || caps.containsKey("CONTEXT=SORT")));
+                    }
+
+                    if (hasEsort) {
+                        SortTerm[] sortTerms = MailDriveSortUtility.getSortTerms(sort, order);
+                        int[] seqNums = null == sortTerms ? null : MailDriveSortUtility.performEsortAndGetSeqNums(sortTerms, null, range.from, range.to, folder);
+                        if (null != seqNums) {
+                            List<File> files = new ArrayList<>(seqNums.length);
+                            boolean closeMailAccess = false;
+                            int i = 0;
+                            try {
+                                Message[] messages = folder.getMessages(seqNums);
+                                folder.fetch(messages, FETCH_PROFILE_VIRTUAL);
+
+                                while (i < messages.length) {
+                                    IMAPMessage message = (IMAPMessage) messages[i];
+                                    long uid = message.getUID();
+                                    if (uid < 0) {
+                                        uid = folder.getUID(message);
+                                    }
+                                    MailDriveFileImpl mailDriveFileImpl = MailDriveFileImpl.parse(message, folderId, Long.toString(uid), userId, getRootFolderId(), fields);
+                                    if (null != mailDriveFileImpl && isAccepted(mailDriveFileImpl)) {
+                                        files.add(mailDriveFileImpl);
+                                    }
+                                    i++;
+                                }
+                            } catch (javax.mail.FolderClosedException e) {
+                                // Need to reconnect. Close existing...
+                                closeFolder(folder);
+                                MailAccess.closeInstance(mailAccess, false);
+                                closeMailAccess = true;
+
+                                // ... and re-connect them
+                                mailAccess = MailAccess.getInstance(session);
+                                mailAccess.connect();
+                                imapStore = com.openexchange.imap.IMAPAccess.getIMAPStoreFrom(mailAccess);
+                                folder = getIMAPFolderFor(fullName, imapStore);
+                                folder.open(Folder.READ_ONLY);
+
+                                seqNums = Arrays.copyOfRange(seqNums, i, seqNums.length);
+                                Message[] messages = folder.getMessages(seqNums);
+                                folder.fetch(messages, FETCH_PROFILE_VIRTUAL);
+
+                                while (i < messages.length) {
+                                    IMAPMessage message = (IMAPMessage) messages[i];
+                                    long uid = message.getUID();
+                                    if (uid < 0) {
+                                        uid = folder.getUID(message);
+                                    }
+                                    MailDriveFileImpl mailDriveFileImpl = MailDriveFileImpl.parse(message, folderId, Long.toString(uid), userId, getRootFolderId(), fields);
+                                    if (null != mailDriveFileImpl && isAccepted(mailDriveFileImpl)) {
+                                        files.add(mailDriveFileImpl);
+                                    }
+                                    i++;
+                                }
+                            } finally {
+                                if (closeMailAccess) {
+                                    MailAccess.closeInstance(mailAccess);
+                                }
+                            }
+
+                            // Clear folder's message cache
+                            IMAPMessageStorage.clearCache(folder);
+
+                            // Mark as already sorted & return files
+                            doSort.setValue(false);
+                            return files;
+                        }
+                    }
+
+                    // Manual chunk-wise fetch & sort in-app
+                    List<File> files = new LinkedList<>();
+                    int limit = 100;
+                    int offset = 1;
+
+                    do {
+                        int end = offset + limit;
+                        if (end > messageCount) {
+                            end = messageCount;
+                        }
+
+                        // Get & fetch messages
+                        Message[] messages = folder.getMessages(offset, end);
+                        folder.fetch(messages, FETCH_PROFILE_VIRTUAL);
+
+                        // Iterate messages
+                        int i = 0;
+                        for (int k = messages.length; k-- > 0;) {
+                            IMAPMessage message = (IMAPMessage) messages[i++];
+                            long uid = message.getUID();
+                            if (uid < 0) {
+                                uid = folder.getUID(message);
+                            }
+
+                            MailDriveFileImpl mailDriveFileImpl = MailDriveFileImpl.parse(message, folderId, Long.toString(uid), userId, getRootFolderId(), fields);
+                            if (null != mailDriveFileImpl && isAccepted(mailDriveFileImpl)) {
+                                files.add(mailDriveFileImpl);
+                            }
+                        }
+
+                        // Clear folder's message cache
+                        IMAPMessageStorage.clearCache(folder);
+
+                        offset = end + 1;
+                    } while (offset <= messageCount);
+
+                    return files;
+                } finally {
+                    folder.close(false);
+                }
+            }
+        });
+
+        // Sort collection if needed
+        if (doSort.getValue()) {
+            sort(files, sort, order);
+        }
+
+        return new FileTimedResult(files);
+    }
+
+    @Override
+    public TimedResult<File> getDocuments(final String folderId, final List<Field> fields, final Field sort, final SortDirection order) throws OXException {
+        final FullName fullName = checkFolderId(folderId);
+
+        List<File> files = perform(new MailDriveClosure<List<File>>() {
+
+            @Override
+            protected List<File> doPerform(IMAPStore imapStore, MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess) throws OXException, MessagingException, IOException {
+                IMAPFolder folder = getIMAPFolderFor(fullName, imapStore);
+                folder.open(Folder.READ_ONLY);
+                try {
+                    int messageCount = folder.getMessageCount();
+                    if (messageCount <= 0) {
+                        return Collections.<File> emptyList();
+                    }
+
+                    List<File> files = new LinkedList<>();
+                    int limit = 100;
+                    int offset = 1;
+
+                    do {
+                        int end = offset + limit;
+                        if (end > messageCount) {
+                            end = messageCount;
+                        }
+
+                        // Get & fetch messages
+                        Message[] messages = folder.getMessages(offset, end);
+                        folder.fetch(messages, FETCH_PROFILE_VIRTUAL);
+
+                        // Iterate messages
+                        int i = 0;
+                        for (int k = messages.length; k-- > 0;) {
+                            IMAPMessage message = (IMAPMessage) messages[i++];
+                            long uid = message.getUID();
+                            if (uid < 0) {
+                                uid = folder.getUID(message);
+                            }
+                            MailDriveFileImpl mailDriveFileImpl = MailDriveFileImpl.parse(message, folderId, Long.toString(uid), userId, getRootFolderId(), fields);
+                            if (null != mailDriveFileImpl && isAccepted(mailDriveFileImpl)) {
+                                files.add(mailDriveFileImpl);
+                            }
+                        }
+
+                        // Clear folder's message cache
+                        IMAPMessageStorage.clearCache(folder);
+
+                        offset = end + 1;
+                    } while (offset <= messageCount);
+
+                    return files;
+                } finally {
+                    folder.close(false);
+                }
+            }
+        });
+
+        // Sort collection if needed
+        sort(files, sort, order);
+
+        return new FileTimedResult(files);
+    }
+
+    @Override
+    public TimedResult<File> getDocuments(final List<IDTuple> ids, final List<Field> fields) throws OXException {
+        if (null == ids) {
+            return new FileTimedResult(Collections.<File> emptyList());
+        }
+
+        final int size = ids.size();
+        if (size <= 0) {
+            return new FileTimedResult(Collections.<File> emptyList());
+        }
+
+        final Map<FullName, List<UidAndIndex>> uids = new HashMap<>(6, 0.9f);
+        {
+            Map<String, FullName> checkedFolders = new HashMap<>(6, 0.9f);
+            int i = 0;
+            for (IDTuple id : ids) {
+                String folderId = id.getFolder();
+
+                FullName fullName = checkedFolders.get(folderId);
+                if (null == fullName) {
+                    fullName = checkFolderId(folderId);
+                    checkedFolders.put(folderId, fullName);
+                }
+
+                List<UidAndIndex> l = uids.get(fullName);
+                if (null == l) {
+                    l = new ArrayList<>();
+                    uids.put(fullName, l);
+                }
+
+                long uid = parseUnsignedLong(id.getId());
+                if (uid >= 0) {
+                    l.add(new UidAndIndex(uid, i));
+                }
+                i++;
+            }
+        }
+
+        return perform(new MailDriveClosure<TimedResult<File>>() {
+
+            @Override
+            protected TimedResult<File> doPerform(IMAPStore imapStore, MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess) throws OXException, MessagingException, IOException {
+                File[] files = new File[size];
+
+                int limit = 100;
+                for (Map.Entry<FullName, List<UidAndIndex>> toFetch : uids.entrySet()) {
+                    FullName fullName = toFetch.getKey();
+                    IMAPFolder folder = getIMAPFolderFor(fullName, imapStore);
+                    folder.open(Folder.READ_ONLY);
+                    try {
+                        if (folder.getMessageCount() <= 0) {
+                            // Folder is empty
+                            for (UidAndIndex uid : toFetch.getValue()) {
+                                files[uid.index] = null;
+                            }
+                        } else {
+                            List<UidAndIndex> uids = toFetch.getValue();
+                            int numUids = uids.size();
+                            int offset = 0;
+
+                            do {
+                                int end = offset + limit;
+                                int cSize;
+                                if (end > numUids) {
+                                    end = numUids;
+                                    cSize = end - offset;
+                                } else {
+                                    cSize = limit;
+                                }
+
+                                // Get & fetch messages
+                                Message[] messages;
+                                Map<Long, Integer> indexes;
+                                {
+                                    long[] grabMe = new long[cSize];
+                                    indexes = new HashMap<>(cSize, 0.9f);
+                                    for (int k = offset; k < end; k++) {
+                                        UidAndIndex uidi = uids.get(k);
+                                        grabMe[k] = uidi.uid;
+                                        indexes.put(Long.valueOf(uidi.uid), Integer.valueOf(uidi.index));
+                                    }
+                                    messages = folder.getMessagesByUID(grabMe);
+                                    folder.fetch(messages, FETCH_PROFILE_VIRTUAL);
+                                }
+
+                                // Iterate messages
+                                int i = 0;
+                                for (int k = messages.length; k-- > 0;) {
+                                    IMAPMessage message = (IMAPMessage) messages[i++];
+                                    if (null != message) {
+                                        long uid = message.getUID();
+                                        if (uid < 0) {
+                                            uid = folder.getUID(message);
+                                        }
+
+                                        Integer index = indexes.get(Long.valueOf(uid));
+                                        if (null != index) {
+                                            MailDriveFileImpl mailDriveFileImpl = MailDriveFileImpl.parse(message, fullName.getFolderId(), Long.toString(uid), userId, getRootFolderId(), fields);
+                                            if (null != mailDriveFileImpl) {
+                                                files[index.intValue()] = mailDriveFileImpl;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Clear folder's message cache
+                                IMAPMessageStorage.clearCache(folder);
+
+                                offset = end;
+                            } while (offset < numUids);
+                        }
+                    } finally {
+                        folder.close(false);
+                    }
+                }
+
+                return new FileTimedResult(filterNullElements(files));
+            }
+        });
+    }
+
+    private static final SearchIterator<File> EMPTY_ITER = SearchIteratorAdapter.emptyIterator();
+
+    @Override
+    public Delta<File> getDelta(String folderId, long updateSince, List<Field> fields, boolean ignoreDeleted) throws OXException {
+        return new FileDelta(EMPTY_ITER, EMPTY_ITER, EMPTY_ITER, 0L);
+    }
+
+    @Override
+    public Delta<File> getDelta(String folderId, long updateSince, List<Field> fields, Field sort, SortDirection order, boolean ignoreDeleted) throws OXException {
+        return new FileDelta(EMPTY_ITER, EMPTY_ITER, EMPTY_ITER, 0L);
+    }
+
+    @Override
+    public SearchIterator<File> search(final String pattern, List<Field> fields, final String folderId, final Field sort, final SortDirection order, final int start, final int end) throws OXException {
+        return search(pattern, fields, folderId, false, sort, order, start, end);
+    }
+
+    private SortTerm[] optSortTermsForField(Field sort, SortDirection order) {
+        SortTerm sortTerm = null;
+        switch (sort) {
+            case CREATED:
+                //$FALL-THROUGH$
+            case LAST_MODIFIED:
+                //$FALL-THROUGH$
+            case LAST_MODIFIED_UTC:
+                sortTerm = SortTerm.ARRIVAL;
+                break;
+            case FILE_SIZE:
+                sortTerm = SortTerm.SIZE;
+                break;
+            case TITLE:
+                //$FALL-THROUGH$
+            case FILENAME:
+                sortTerm = SortTerm.SUBJECT;
+                break;
+            default:
+                break;
+        }
+        return sortTerm == null ? null : SortDirection.DESC == order ? new SortTerm[] { SortTerm.REVERSE, sortTerm } : new SortTerm[] { sortTerm };
+    }
+
+    @Override
+    public SearchIterator<File> search(final String pattern, final List<Field> fields, final String folderId, final boolean includeSubfolders, final Field sort, final SortDirection order, final int start, final int end) throws OXException {
+        final FullName fullName;
+        {
+            if (null == folderId) {
+                fullName = fullNameCollection.getFullNameFor(Type.ALL);
+            } else {
+                fullName = checkFolderId(folderId);
+            }
+        }
+
+        final SortTerm[] sortTerm = optSortTermsForField(sort, order);
+
+        List<File> files;
+        if (sortTerm != null) {
+            files = perform(new MailDriveClosure<List<File>>() {
+
+                @Override
+                protected List<File> doPerform(IMAPStore imapStore, MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess) throws OXException, MessagingException, IOException {
+                    List<File> files = new LinkedList<>();
+
+                    IMAPFolder folder = getIMAPFolderFor(fullName, imapStore);
+                    folder.open(Folder.READ_ONLY);
+                    try {
+                        if (folder.getMessageCount() > 0) {
+                            Message[] sortedMessages = folder.getSortedMessages(sortTerm, new SubjectTerm(pattern));
+
+                            // Slice...
+                            if ((start != NOT_SET) && (end != NOT_SET)) {
+                                int size = sortedMessages.length;
+                                if (start > size) {
+                                    // Return empty list if start is out of range
+                                    return Collections.emptyList();
+                                }
+
+                                // Reset end index if out of range
+                                int toIndex = end;
+                                if (toIndex >= size) {
+                                    toIndex = size;
+                                }
+
+                                int newLength = toIndex - start;
+                                if (newLength < 0) {
+                                    return Collections.emptyList();
+                                }
+
+                                Message[] copy = new Message[newLength];
+                                System.arraycopy(sortedMessages, start, copy, 0, Math.min(sortedMessages.length - start, newLength));
+                                sortedMessages = copy;
+                            }
+
+                            // Fetch for determined chunk
+                            folder.fetch(sortedMessages, FETCH_PROFILE_VIRTUAL);
+
+                            // Convert to files
+                            int i = 0;
+                            for (int k = sortedMessages.length; k-- > 0;) {
+                                IMAPMessage message = (IMAPMessage) sortedMessages[i++];
+                                long uid = message.getUID();
+                                if (uid < 0) {
+                                    uid = folder.getUID(message);
+                                }
+                                MailDriveFileImpl mailDriveFileImpl = MailDriveFileImpl.parse(message, fullName.getFolderId(), Long.toString(uid), userId, getRootFolderId(), fields);
+                                if (null != mailDriveFileImpl && isAccepted(mailDriveFileImpl)) {
+                                    files.add(mailDriveFileImpl);
+                                }
+                            }
+                        }
+                    } finally {
+                        folder.close(false);
+                    }
+
+                    return files;
+                }
+            });
+        } else {
+            // Need to fetch all and sort in-application
+            files = perform(new MailDriveClosure<List<File>>() {
+
+                @Override
+                protected List<File> doPerform(IMAPStore imapStore, MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess) throws OXException, MessagingException, IOException {
+                    List<File> files = new LinkedList<>();
+
+                    IMAPFolder folder = getIMAPFolderFor(fullName, imapStore);
+                    folder.open(Folder.READ_ONLY);
+                    try {
+                        if (folder.getMessageCount() > 0) {
+                            // Search and fetch for result set
+                            Message[] messages = folder.search(new SubjectTerm(pattern));
+                            folder.fetch(messages, FETCH_PROFILE_VIRTUAL);
+
+                            // Convert to files
+                            int i = 0;
+                            for (int k = messages.length; k-- > 0;) {
+                                IMAPMessage message = (IMAPMessage) messages[i++];
+                                long uid = message.getUID();
+                                if (uid < 0) {
+                                    uid = folder.getUID(message);
+                                }
+                                MailDriveFileImpl mailDriveFileImpl = MailDriveFileImpl.parse(message, fullName.getFolderId(), Long.toString(uid), userId, getRootFolderId(), fields);
+                                if (null != mailDriveFileImpl && isAccepted(mailDriveFileImpl)) {
+                                    files.add(mailDriveFileImpl);
+                                }
+                            }
+                        }
+                    } finally {
+                        folder.close(false);
+                    }
+
+                    return files;
+                }
+            });
+
+            // Sort collection
+            sort(files, sort, order);
+
+            // Slice...
+            if ((start != NOT_SET) && (end != NOT_SET)) {
+                int size = files.size();
+                if ((start) > size) {
+                    /*
+                     * Return empty iterator if start is out of range
+                     */
+                    return SearchIteratorAdapter.emptyIterator();
+                }
+                /*
+                 * Reset end index if out of range
+                 */
+                int toIndex = end;
+                if (toIndex >= size) {
+                    toIndex = size;
+                }
+                files = files.subList(start, toIndex);
+            }
+        }
+
+        return files.isEmpty() ? SearchIteratorAdapter.emptyIterator() : new SearchIteratorAdapter<>(files.iterator(), files.size());
+    }
+
+    @Override
+    public FileStorageAccountAccess getAccountAccess() {
+        return accountAccess;
+    }
+
+    @Override
+    public Map<String, Long> getSequenceNumbers(List<String> folderIds) throws OXException {
+        if (null == folderIds || 0 == folderIds.size()) {
+            return Collections.emptyMap();
+        }
+        FileStorageFolderAccess folderAccess = getAccountAccess().getFolderAccess();
+        Map<String, Long> sequenceNumbers = new HashMap<>(folderIds.size());
+        for (String folderId : folderIds) {
+            Date lastModifiedDate = folderAccess.getFolder(folderId).getLastModifiedDate();
+            sequenceNumbers.put(folderId, null != lastModifiedDate ? Long.valueOf(lastModifiedDate.getTime()) : null);
+        }
+        return sequenceNumbers;
+    }
+
+    /**
+     * Sorts the supplied list of files if needed.
+     *
+     * @param files The files to sort
+     * @param sort The sort order, or <code>null</code> if not specified
+     * @param order The sort direction
+     */
+    public static void sort(List<File> files, Field sort, SortDirection order) {
+        if (null != sort && 1 < files.size()) {
+            Collections.sort(files, order.comparatorBy(sort));
+        }
+    }
+
+    /**
+     * Checks if specified mail drive file is accepted according to possibly available filters.
+     *
+     * @param mailDriveFileImpl The mail drive file to check
+     * @return <code>true</code> if accepted; otherwise <code>false</code>
+     */
+    public boolean isAccepted(MailDriveFileImpl mailDriveFileImpl) {
+        return MailDriveFileFilters.getFilterFor(session).accepts(mailDriveFileImpl, session);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * An <code>InputStream</code> that takes care of releasing/closing resources.
+     */
+    private static class ResourceReleasingInputStream extends InputStream {
+
+        private final InputStream in;
+        private final IMAPFolder imapFolder;
+        private final MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess;
+        private final AccessControl accessControl;
+
+        ResourceReleasingInputStream(InputStream in,IMAPFolder imapFolder, MailAccess<? extends IMailFolderStorage, ? extends IMailMessageStorage> mailAccess, AccessControl accessControl) {
+            super();
+            this.in = in;
+            this.imapFolder = imapFolder;
+            this.mailAccess = mailAccess;
+            this.accessControl = accessControl;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return in.read();
+        }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            return in.read(b);
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return in.read(b, off, len);
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            return in.skip(n);
+        }
+
+        @Override
+        public String toString() {
+            return in.toString();
+        }
+
+        @Override
+        public int available() throws IOException {
+            return in.available();
+        }
+
+        @Override
+        public void close() throws IOException {
+            try {
+                in.close();
+            } finally {
+                closeSafe(imapFolder);
+                MailAccess.closeInstance(mailAccess);
+                accessControl.close();
+            }
+        }
+
+        @Override
+        public void mark(int readlimit) {
+            in.mark(readlimit);
+        }
+
+        @Override
+        public void reset() throws IOException {
+            in.reset();
+        }
+
+        @Override
+        public boolean markSupported() {
+            return in.markSupported();
+        }
+    }
+
+    private static final class UidAndIndex {
+
+        final long uid;
+        final int index;
+
+        UidAndIndex(long uid, int index) {
+            super();
+            this.uid = uid;
+            this.index = index;
+        }
+    }
+
+    static <E> List<E> filterNullElements(E[] elements) {
+        int length = null == elements ? 0 : elements.length;
+        if (length == 0) {
+            return Collections.emptyList();
+        }
+
+        List<E> list = new ArrayList<>(length);
+        for (int i = 0, k = length; k-- > 0; i++) {
+            @SuppressWarnings("null") E elem = elements[i];
+            if (null != elem) {
+                list.add(elem);
+            }
+        }
+        return list;
+    }
+
+    static void closeFolder(IMAPFolder folder) {
+        try {
+            folder.close(false);
+        } catch (Exception x) {
+            // Ignore
+        }
+    }
+
+}

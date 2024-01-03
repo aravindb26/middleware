@@ -1,0 +1,45 @@
+/chronos/v1/itip/pushmail:
+  put:
+    operationId: pushmail
+    tags:
+      - Push
+      - ITip
+      - IMip
+    summary: Used by the dovecot mail server to push IMip Mails to the server
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            title: PushMail
+            properties:
+              event:
+                type: string
+                description: The event type.
+                enum:
+                  - messageNew
+              user:
+                type: string
+                description: The user identifier in the format <userId>@<contextId>, <username>@<loginmapping> or the user's mail login.
+              folder:
+                type: string
+                description: The folder id
+              body:
+                type: string
+                description: The RFC822 Mail body
+      description: >-
+        JSONObject containing the push mail
+      required: true
+    responses:
+      '200':
+        description: Empty repsonse.
+      '401':
+        description: Not authorized
+      '500':
+        description: >-
+          In case of internal server error that might have
+          multiple reasons. Response contains error message.
+        content:
+          application/json:
+            schema:
+              type: string

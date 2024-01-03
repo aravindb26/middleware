@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="lib/google-http-client-jackson2-1.43.3.jar" sourcepath="lib/source/google-http-client-jackson2-1.43.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/xpp3-1.1.4c.jar" sourcepath="lib/source/xpp3-1.1.4c-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.21.12.jar" sourcepath="lib/source/protobuf-java-3.21.12-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-client-2.2.0.jar" sourcepath="lib/source/google-api-client-2.2.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-client-appengine-2.2.0.jar" sourcepath="lib/source/google-api-client-appengine-2.2.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-client-gson-2.2.0.jar" sourcepath="lib/source/google-api-client-gson-2.2.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-client-jackson2-2.2.0.jar" sourcepath="lib/source/google-api-client-jackson2-2.2.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-client-protobuf-2.2.0.jar" sourcepath="lib/source/google-api-client-protobuf-2.2.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-client-servlet-2.2.0.jar" sourcepath="lib/source/google-api-client-servlet-2.2.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-client-xml-2.2.0.jar" sourcepath="lib/source/google-api-client-xml-2.2.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-services-calendar-v3-rev20230602-2.0.0.jar" sourcepath="lib/source/google-api-services-calendar-v3-rev20230602-2.0.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-services-drive-v3-rev20230610-2.0.0.jar" sourcepath="lib/source/google-api-services-drive-v3-rev20230610-2.0.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-services-gmail-v1-rev20230612-2.0.0.jar" sourcepath="lib/source/google-api-services-gmail-v1-rev20230612-2.0.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-services-oauth2-v2-rev20200213-2.0.0.jar" sourcepath="lib/source/google-api-services-oauth2-v2-rev20200213-2.0.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-api-services-people-v1-rev20230103-2.0.0.jar" sourcepath="lib/source/google-api-services-people-v1-rev20230103-2.0.0-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-http-client-1.42.3.jar" sourcepath="lib/source/google-http-client-1.42.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-http-client-apache-v2-1.42.3.jar" sourcepath="lib/source/google-http-client-apache-v2-1.42.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-http-client-appengine-1.42.3.jar" sourcepath="lib/source/google-http-client-appengine-1.42.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-http-client-gson-1.42.3.jar" sourcepath="lib/source/google-http-client-gson-1.42.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-http-client-protobuf-1.42.3.jar" sourcepath="lib/source/google-http-client-protobuf-1.42.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-http-client-xml-1.42.3.jar" sourcepath="lib/source/google-http-client-xml-1.42.3-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-oauth-client-1.34.1.jar" sourcepath="lib/source/google-oauth-client-1.34.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-oauth-client-appengine-1.34.1.jar" sourcepath="lib/source/google-oauth-client-appengine-1.34.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/google-oauth-client-java6-1.34.1.jar" sourcepath="lib/source/google-oauth-client-java6-1.34.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/grpc-context-1.27.2.jar" sourcepath="lib/source/grpc-context-1.27.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opencensus-api-0.31.1.jar" sourcepath="lib/source/opencensus-api-0.31.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/opencensus-contrib-http-util-0.31.1.jar" sourcepath="lib/source/opencensus-contrib-http-util-0.31.1-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

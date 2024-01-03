@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Request Analyzer
+Bundle-SymbolicName: com.openexchange.request.analyzer
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Activator: com.openexchange.request.analyzer.osgi.Activator
+Import-Package: com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.java.util,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.segment,
+ com.openexchange.server,
+ com.openexchange.servlet,
+ org.apache.http,
+ org.apache.http.client.utils,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Export-Package: com.openexchange.request.analyzer
+Automatic-Module-Name: com.openexchange.request.analyzer

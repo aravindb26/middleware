@@ -1,0 +1,33 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange PNS transport apns HTTP/2 utility bundle
+Bundle-SymbolicName: com.openexchange.pns.transport.apns_http2.util
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.pns.transport.apns_http2.util
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.eatthepath.pushy.apns,
+ com.eatthepath.pushy.apns.auth,
+ com.eatthepath.pushy.apns.proxy,
+ com.eatthepath.pushy.apns.util,
+ com.eatthepath.pushy.apns.util.concurrent,
+ com.fasterxml.jackson.core,
+ com.fasterxml.jackson.databind,
+ com.openexchange.apn.common,
+ com.openexchange.config,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.keystore,
+ com.openexchange.osgi,
+ com.openexchange.osgi.util,
+ com.openexchange.pns,
+ com.openexchange.push.clients,
+ com.openexchange.server,
+ com.openexchange.threadpool,
+ com.openexchange.tools.arrays,
+ org.apache.commons.io,
+ org.apache.log4j,
+ org.json,
+ org.osgi.framework,
+ org.slf4j
+Export-Package: com.openexchange.pns.transport.apns_http2.util

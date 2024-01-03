@@ -1,0 +1,15 @@
+feature_name: Deuty Permission
+feature_description: |
+  Configuration options for the deputy permission feature allowing users to grant deputy permissions to other users.
+properties:
+    - key: com.openexchange.deputy.enabled
+      description: |
+        Enables or disables the feature to grant deputy permissions to other users.
+      defaultValue: false
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: deputy.properties
+      packageName: open-xchange-deputy
+      tags: ["Deputy Permission"]

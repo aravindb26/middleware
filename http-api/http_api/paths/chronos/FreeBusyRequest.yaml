@@ -1,0 +1,61 @@
+/chronos?action=freeBusy:
+  put:
+    operationId: freebusy
+    tags:
+      - Chronos
+    summary: Gets free-busy timeslots for the given attendees.
+    security: 
+        - session: []
+        - oauth:
+          - read_calendar    
+    parameters:
+      - $ref: '#/components/parameters/ChronosFromTimeRange'
+      - $ref: '#/components/parameters/ChronosUntilTimeRange'
+      - in: query
+        name: maskUid
+        description: >
+          The unique identifier of an existing event or event series to ignore when
+          calculating free/busy information. 
+
+          This is useful when a client wants to find a new timeslot for an
+          existing event.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: merge
+        description: |
+          Set to <code>true</code> to merge the resulting free/busy-times.
+        required: false
+        schema:
+          type: boolean
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            title: FreeBusyBody
+            properties:
+              attendees:
+                type: array
+                description: A list of attendees
+                items:
+                  $ref: '#/components/schemas/Attendee'
+      description: A JSON object containing the attendees' data.
+      required: true          
+    responses:
+      '200':
+        description: >
+          An object containing an array of json objects for each attendee
+          containing a list of free-busy times. In case of errors the
+
+          responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChronosFreeBusyResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'

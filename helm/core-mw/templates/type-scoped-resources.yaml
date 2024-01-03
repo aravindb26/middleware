@@ -1,0 +1,15 @@
+{{- $globalContext := . -}}
+{{- $typedResources := include "core-mw.typedResources" . | fromYaml -}}
+{{- range $resourceName, $resourceSpec := $typedResources -}}
+# {{ $resourceName }}
+{{   range $typeName, $typedResourceSpec := $resourceSpec.types -}}
+{{-     if (not $typedResourceSpec.isDefault) -}}
+{{ include $resourceSpec.template (dict "Values" $typedResourceSpec.values "Context" $globalContext "TypeName" $typeName "ResourceName" $typedResourceSpec.name ) }}
+---
+{{      end -}}
+{{-   end -}}
+{{-   if $resourceSpec.needsDefault -}}
+{{ include $resourceSpec.template (dict "Values" $resourceSpec.values "Context" $globalContext "ResourceName" $resourceSpec.name) }}
+---
+{{    end -}}
+{{- end -}}

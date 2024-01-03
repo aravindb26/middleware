@@ -1,0 +1,18 @@
+PasswordChangeHistoryEntry:
+  $ref: ./passwordchangehistory/PasswordChangeHistoryEntry.yaml
+HealthData:
+  $ref: ./health/HealthData.yaml
+HealthCheckData:
+  $ref: ./health/HealthCheckData.yaml
+ServiceData:
+  $ref: ./health/ServiceData.yaml
+CloseSessionsData:
+  $ref: ./admin/CloseSessionsData.yaml
+MultifactorDeviceData:
+  $ref: ./multifactor/MultifactorDeviceData.yaml
+Capabilities:
+  $ref: ./capabilities/Capabilities.yaml
+AnalysisResult:
+  $ref: ./request-analysis/AnalysisResult.yaml
+RequestData:
+  $ref: ./request-analysis/RequestData.yaml

@@ -1,0 +1,27 @@
+/mail?action=all_seen:
+  put:
+    operationId: markAllMailsAsRead
+    tags:
+      - Mail
+    summary: Marks all mails of a folder as seen.
+    security: 
+        - session: []      
+        - oauth:
+          - read_mail    
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamMailFolder'
+    responses:
+      '200':
+        description: >
+          A JSON object with the value `true`. In case of errors the responsible
+          fields in the
+
+          response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailsAllSeenResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

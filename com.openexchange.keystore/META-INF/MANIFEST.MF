@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Keystore Service
+Bundle-SymbolicName: com.openexchange.keystore
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: com.openexchange.keystore
+Export-Package: com.openexchange.keystore
+Bundle-ActivationPolicy: lazy
+Import-Package: com.openexchange.config.lean,
+ com.openexchange.exception

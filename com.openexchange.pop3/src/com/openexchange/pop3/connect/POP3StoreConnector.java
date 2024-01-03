@@ -1,0 +1,700 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.pop3.connect;
+
+import static com.openexchange.java.Autoboxing.I;
+import static com.openexchange.mail.MailServletInterface.mailInterfaceMonitor;
+import static com.openexchange.pop3.services.POP3ServiceRegistry.getServiceRegistry;
+import static com.openexchange.pop3.util.POP3StorageUtil.parseLoginDelaySeconds;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.SocketTimeoutException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.mail.AuthenticationFailedException;
+import javax.mail.Folder;
+import javax.mail.MessagingException;
+import javax.mail.internet.idn.IDNA;
+import com.openexchange.exception.OXException;
+import com.openexchange.java.Charsets;
+import com.openexchange.java.Streams;
+import com.openexchange.java.Strings;
+import com.openexchange.log.audit.AuditLogService;
+import com.openexchange.log.audit.DefaultAttribute;
+import com.openexchange.log.audit.DefaultAttribute.Name;
+import com.openexchange.mail.MailExceptionCode;
+import com.openexchange.mail.mime.MimeMailException;
+import com.openexchange.mail.mime.MimeMailExceptionCode;
+import com.openexchange.mail.mime.MimeSessionPropertyNames;
+import com.openexchange.mailaccount.Account;
+import com.openexchange.mailaccount.MailAccountStorageService;
+import com.openexchange.mailaccount.MailAccounts;
+import com.openexchange.mailaccount.utils.MailAccountUtils;
+import com.openexchange.net.HostList;
+import com.openexchange.net.ssl.SSLSocketFactoryProvider;
+import com.openexchange.net.ssl.config.SSLConfigurationService;
+import com.openexchange.net.ssl.exception.SSLExceptionCode;
+import com.openexchange.pop3.POP3ExceptionCode;
+import com.openexchange.pop3.POP3Provider;
+import com.openexchange.pop3.config.IPOP3Properties;
+import com.openexchange.pop3.config.POP3Config;
+import com.openexchange.pop3.config.POP3Properties;
+import com.openexchange.pop3.config.POP3SessionProperties;
+import com.openexchange.pop3.services.POP3ServiceRegistry;
+import com.openexchange.pop3.util.POP3CapabilityCache;
+import com.openexchange.server.ServiceExceptionCode;
+import com.openexchange.session.Session;
+import com.openexchange.threadpool.AbstractTask;
+import com.openexchange.threadpool.ThreadPools;
+import com.sun.mail.pop3.POP3Folder;
+import com.sun.mail.pop3.POP3Prober;
+import com.sun.mail.pop3.POP3Store;
+
+/**
+ * {@link POP3StoreConnector} - Connects an instance of {@link POP3Store}.
+ *
+ * @author <a href="mailto:thorben.betten@open-xchange.com">Thorben Betten</a>
+ */
+public final class POP3StoreConnector {
+
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(POP3StoreConnector.class);
+
+    private static final PrintStream EMPTY_PRINTER = new PrintStream(new OutputStream() {
+
+        @Override
+        public void write(final int b) throws IOException {
+            // Do nothing
+        }
+
+        @Override
+        public void write(final byte[] b, final int off, final int len) throws IOException {
+            // Do nothing
+        }
+
+        @Override
+        public void write(final byte[] b) throws IOException {
+            // Do nothing
+        }
+
+    });
+
+    /**
+     * The result after establishing a connection to POP3 server.
+     */
+    public static final class POP3StoreResult {
+
+        private String capabilities;
+        private POP3Store pop3Store;
+        private final List<OXException> warnings;
+
+        protected POP3StoreResult(final String capabilities) {
+            super();
+            this.capabilities = capabilities;
+            warnings = new ArrayList<OXException>(2);
+        }
+
+        /**
+         * Sets the capabilities
+         *
+         * @param capabilities The capabilities to set
+         */
+        public void setCapabilities(final String capabilities) {
+            this.capabilities = capabilities;
+        }
+
+        /**
+         * Sets the connected {@link POP3Store} instance.
+         *
+         * @param pop3Store The connected {@link POP3Store} instance.
+         */
+        protected void setPop3Store(final POP3Store pop3Store) {
+            this.pop3Store = pop3Store;
+        }
+
+        /**
+         * Adds given warnings.
+         *
+         * @param warning The warning to add
+         */
+        protected void addWarning(final OXException warning) {
+            warnings.add(warning);
+        }
+
+        /**
+         * Gets the warnings occurred during establishing a connection to POP3 server.
+         *
+         * @return The warnings
+         */
+        public Collection<OXException> getWarnings() {
+            return Collections.unmodifiableCollection(warnings);
+        }
+
+        /**
+         * Gets the connected {@link POP3Store} instance.
+         *
+         * @return The connected {@link POP3Store} instance.
+         */
+        public POP3Store getPop3Store() {
+            return pop3Store;
+        }
+
+        /**
+         * Gets the POP3 server's capabilities.
+         *
+         * @return The POP3 server's capabilities.
+         */
+        public String getCapabilities() {
+            return capabilities;
+        }
+
+        /**
+         * Checks if this result contains one or more warnings.
+         *
+         * @return <code>true</code> if this result contains one or more warnings; otherwsie <code>false</code>
+         */
+        public boolean containsWarnings() {
+            return !warnings.isEmpty();
+        }
+
+    }
+
+    private static Map<HostAndPort, Long> timedOutServers;
+
+    private static Map<LoginAndPass, Long> failedAuths;
+
+    /**
+     * Start-up.
+     */
+    public static void startUp() {
+        timedOutServers = new ConcurrentHashMap<HostAndPort, Long>();
+        failedAuths = new ConcurrentHashMap<LoginAndPass, Long>();
+    }
+
+    /**
+     * Shut-down.
+     */
+    public static void shutDown() {
+        timedOutServers = null;
+        failedAuths = null;
+    }
+
+    /**
+     * Initializes a new {@link POP3StoreConnector}.
+     */
+    private POP3StoreConnector() {
+        super();
+    }
+
+    /**
+     * Gets a connected instance of {@link POP3Store}.
+     *
+     * @param pop3Config The POP3 configuration providing credentials and server settings
+     * @param pop3Properties Optional additional POP3 properties applied to POP3 session (may be <code>null</code>)
+     * @param monitorFailedAuthentication <code>true</code> to monitor failed authentication; otherwise <code>false</code>
+     * @param accountId The account identifier
+     * @param session The session providing user information
+     * @param errorOnMissingUIDL <code>true</code> to throw an error on missing UIDL; otherwise <code>false</code> to ignore
+     * @return A connected instance of {@link POP3Store}
+     * @throws OXException If establishing a connected instance of {@link POP3Store} fails
+     */
+    public static POP3StoreResult getPOP3Store(POP3Config pop3Config, Properties pop3Properties, boolean monitorFailedAuthentication, final int accountId, final Session session, boolean errorOnMissingUIDL, boolean forceSecure) throws OXException {
+        POP3Store pop3Store = null;
+        try {
+            final boolean tmpDownEnabled = (POP3Properties.getInstance().getPOP3TemporaryDown() > 0);
+            if (tmpDownEnabled) {
+                /*
+                 * Check if POP3 server is marked as being (temporary) down since connecting to it failed before
+                 */
+                checkTemporaryDown(pop3Config);
+            }
+            /*
+             * Check capabilities
+             */
+            final IPOP3Properties pop3ConfProps = (IPOP3Properties) pop3Config.getMailProperties();
+            final String server = pop3Config.getServer();
+            final int port = pop3Config.getPort();
+            String staticCapabilities = getCapabilities(pop3Config, session, pop3ConfProps);
+            /*
+             * JavaMail POP3 implementation requires capabilities "UIDL" and "TOP"
+             */
+            final POP3StoreResult result = new POP3StoreResult(staticCapabilities);
+            String login = authEncode(pop3Config.getLogin(), POP3Properties.getInstance().getPOP3AuthEnc());
+            boolean responseCodeAware = staticCapabilities.indexOf("RESP-CODES") >= 0;
+            String tmpPass = authEncode(pop3Config.getPassword(), POP3Properties.getInstance().getPOP3AuthEnc());
+            /*
+             * Check for already failed authentication
+             */
+            checkFailedAuths(login, tmpPass);
+            /*
+             * Get properties
+             */
+            final Properties pop3Props = POP3SessionProperties.getDefaultSessionProperties();
+            if ((null != pop3Properties) && !pop3Properties.isEmpty()) {
+                pop3Props.putAll(pop3Properties);
+            }
+            /*
+             * Set timeouts
+             */
+            final int timeout = pop3ConfProps.getReadTimeout();
+            if (timeout > 0) {
+                pop3Props.put("mail.pop3.timeout", String.valueOf(timeout));
+            }
+            final int connectionTimeout = pop3ConfProps.getConnectTimeout();
+            if (connectionTimeout > 0) {
+                pop3Props.put("mail.pop3.connectiontimeout", String.valueOf(connectionTimeout));
+            }
+            /*
+             * Blocked hosts
+             */
+            if (pop3Config.getAccountId() != Account.DEFAULT_ID && !MailAccounts.isSecondaryAccount(pop3Config.getAccountId(), pop3Config.getSession().getUserId(), pop3Config.getSession().getContextId())) {
+                HostList blockedHosts = MailAccountUtils.getBlockedHosts();
+                if (!blockedHosts.isEmpty()) {
+                    pop3Props.put("mail.pop3.blockedHosts", blockedHosts);
+                }
+            }
+            /*
+             * Check if a secure POP3 connection should be established.
+             *
+             * With JavaMail v1.4.3 the JavaMail POP3 provider supports to start in plain text mode and
+             * then switching the connection into TLS mode using the STLS command.
+             */
+            String sPort = String.valueOf(port);
+            SSLSocketFactoryProvider factoryProvider = POP3ServiceRegistry.getServiceRegistry().getService(SSLSocketFactoryProvider.class);
+            String socketFactoryClass = factoryProvider.getDefault().getClass().getName();
+            String protocols = pop3Config.getPOP3Properties().getSSLProtocols();
+            String cipherSuites = pop3Config.getPOP3Properties().getSSLCipherSuites();
+            SSLConfigurationService sslConfigService = POP3ServiceRegistry.getServiceRegistry().getService(SSLConfigurationService.class);
+            if (pop3Config.isSecure()) {
+                pop3Props.put("mail.pop3.socketFactory.class", socketFactoryClass);
+                pop3Props.put("mail.pop3.socketFactory.port", sPort);
+                pop3Props.put("mail.pop3.socketFactory.fallback", "false");
+                /*
+                 * Specify SSL protocols
+                 */
+                if (Strings.isNotEmpty(protocols)) {
+                    pop3Props.put("mail.pop3.ssl.protocols", protocols);
+                } else {
+                    if (null == sslConfigService) {
+                        throw ServiceExceptionCode.absentService(SSLConfigurationService.class);
+                    }
+                    pop3Props.put("mail.pop3.ssl.protocols", Strings.toWhitespaceSeparatedList(sslConfigService.getSupportedProtocols()));
+                }
+                /*
+                 * Specify SSL cipher suites
+                 */
+                if (Strings.isNotEmpty(cipherSuites)) {
+                    pop3Props.put("mail.pop3.ssl.ciphersuites", cipherSuites);
+                } else {
+                    if (null == sslConfigService) {
+                        throw ServiceExceptionCode.absentService(SSLConfigurationService.class);
+                    }
+                    pop3Props.put("mail.pop3.ssl.ciphersuites", Strings.toWhitespaceSeparatedList(sslConfigService.getSupportedCipherSuites()));
+                }
+            } else {
+                /*
+                 * Enables the use of the STARTTLS command (if supported by the server) to switch the connection to a TLS-protected connection.
+                 */
+                if (forceSecure && staticCapabilities.indexOf("STLS") < 0) {
+                    throw MailExceptionCode.NON_SECURE_DENIED.create(pop3Config.getServer());
+                }
+                pop3Props.put("mail.pop3.starttls.enable", "true");
+                pop3Props.put("mail.pop3.ssl.trust", "*");
+                boolean requireTls = pop3ConfProps.isRequireTls();
+                pop3Props.put("mail.pop3.starttls.enable", "true");
+                if (requireTls) {
+                    pop3Props.put("mail.pop3.starttls.required", "true");
+                }
+                /*
+                 * Specify the javax.net.ssl.SSLSocketFactory class, this class will be used to create POP3 SSL sockets if TLS handshake says
+                 * so.
+                 */
+                pop3Props.put("mail.pop3.socketFactory.port", sPort);
+                pop3Props.put("mail.pop3.ssl.socketFactory.class", socketFactoryClass);
+                pop3Props.put("mail.pop3.ssl.socketFactory.port", sPort);
+                pop3Props.put("mail.pop3.socketFactory.fallback", "false");
+                /*
+                 * Specify SSL protocols
+                 */
+                if (Strings.isNotEmpty(protocols)) {
+                    pop3Props.put("mail.pop3.ssl.protocols", protocols);
+                } else {
+                    if (null == sslConfigService) {
+                        throw ServiceExceptionCode.absentService(SSLConfigurationService.class);
+                    }
+                    pop3Props.put("mail.pop3.ssl.protocols", Strings.toWhitespaceSeparatedList(sslConfigService.getSupportedProtocols()));
+                }
+                /*
+                 * Specify SSL cipher suites
+                 */
+                if (Strings.isNotEmpty(cipherSuites)) {
+                    pop3Props.put("mail.pop3.ssl.ciphersuites", cipherSuites);
+                } else {
+                    if (null == sslConfigService) {
+                        throw ServiceExceptionCode.absentService(SSLConfigurationService.class);
+                    }
+                    pop3Props.put("mail.pop3.ssl.ciphersuites", Strings.toWhitespaceSeparatedList(sslConfigService.getSupportedCipherSuites()));
+                }
+                // pop3Props.put("mail.pop3.ssl.enable", "true");
+                /*
+                 * Needed for JavaMail >= 1.4
+                 */
+                // Security.setProperty("ssl.SocketFactory.provider", socketFactoryClass);
+            }
+            /*
+             * Apply properties to POP3 session
+             */
+            final javax.mail.Session pop3Session = javax.mail.Session.getInstance(pop3Props, null);
+            /*
+             * Check if debug should be enabled
+             */
+            if (Boolean.parseBoolean(pop3Session.getProperty(MimeSessionPropertyNames.PROP_MAIL_DEBUG))) {
+                pop3Session.setDebug(true);
+                pop3Session.setDebugOut(System.out);
+            } else {
+                pop3Session.setDebug(false);
+                pop3Session.setDebugOut(EMPTY_PRINTER);
+            }
+            /*
+             * Get store
+             */
+            pop3Store = (POP3Store) pop3Session.getStore(POP3Provider.PROTOCOL_POP3.getName());
+            /*
+             * ... and connect
+             */
+            String capabilities = staticCapabilities;
+            try {
+                pop3Store.connect(server, port, login, tmpPass);
+
+                // Log connect
+                AuditLogService auditLogService = getServiceRegistry().getOptionalService(AuditLogService.class);
+                if (null != auditLogService) {
+                    String eventId = Account.DEFAULT_ID == accountId ? "pop3.primary.login" : "pop3.external.login";
+                    auditLogService.log(eventId, DefaultAttribute.valueFor(Name.LOGIN, session.getLoginName()), DefaultAttribute.valueFor(Name.IP_ADDRESS, session.getLocalIp()), DefaultAttribute.timestampFor(new Date()), DefaultAttribute.arbitraryFor("pop3.login", pop3Config.getLogin()), DefaultAttribute.arbitraryFor("pop3.server", server), DefaultAttribute.arbitraryFor("pop3.port", Integer.toString(port)));
+                }
+
+                // Fetch capabilities again
+                final Map<String, String> caps = pop3Store.reinitCapabilities();
+                if (!caps.isEmpty()) {
+                    final StringBuilder sb = new StringBuilder(128);
+                    for (final String cap : caps.keySet()) {
+                        sb.append(cap).append('\n');
+                    }
+                    capabilities = sb.toString();
+                    result.setCapabilities(capabilities);
+                    responseCodeAware = caps.containsKey("RESP-CODES");
+                }
+            } catch (AuthenticationFailedException e) {
+                if (monitorFailedAuthentication) {
+                    /*
+                     * Remember failed authentication's credentials (for a short amount of time) to speed-up subsequent connect trials
+                     */
+                    failedAuths.put(new LoginAndPass(login, tmpPass), Long.valueOf(System.currentTimeMillis()));
+                }
+                // Fetch capabilities again
+                final Map<String, String> caps = pop3Store.reinitCapabilities();
+                if (!caps.isEmpty()) {
+                    final StringBuilder sb = new StringBuilder(128);
+                    for (final String cap : caps.keySet()) {
+                        sb.append(cap).append('\n');
+                    }
+                    capabilities = sb.toString();
+                    result.setCapabilities(capabilities);
+                    responseCodeAware = caps.containsKey("RESP-CODES");
+                }
+                if (responseCodeAware && e.getMessage().indexOf("[LOGIN-DELAY]") >= 0) {
+                    final int seconds = parseLoginDelaySeconds(capabilities);
+                    if (-1 == seconds) {
+                        throw POP3ExceptionCode.LOGIN_DELAY.create(e, server, pop3Config.getLogin(), Integer.valueOf(session.getUserId()), Integer.valueOf(session.getContextId()), e.getMessage());
+                    }
+                    throw POP3ExceptionCode.LOGIN_DELAY2.create(e, server, pop3Config.getLogin(), Integer.valueOf(session.getUserId()), Integer.valueOf(session.getContextId()), Integer.valueOf(seconds), e.getMessage());
+                }
+                if (accountId != Account.DEFAULT_ID) {
+                    AbstractTask<Void> task = new AbstractTask<Void>() {
+
+                        @Override
+                        public Void call() throws Exception {
+                            MailAccountStorageService mass = POP3ServiceRegistry.getServiceRegistry().getOptionalService(MailAccountStorageService.class);
+                            if (null != mass) {
+                                mass.incrementFailedMailAuthCount(accountId, session.getUserId(), session.getContextId(), e);
+                            }
+                            return null;
+                        }
+                    };
+                    ThreadPools.getThreadPool().submit(task);
+                }
+                throw e;
+            } catch (MessagingException e) {
+                if (MimeMailException.isSSLHandshakeException(e)) {
+                    String fingerPrint = SSLExceptionCode.extractArgument(e, "fingerprint");
+                    if (Strings.isNotEmpty(fingerPrint)) {
+                        List<Object> displayArgs = new ArrayList<>(2);
+                        displayArgs.add(fingerPrint);
+                        displayArgs.add(server);
+                        throw SSLExceptionCode.UNTRUSTED_CERTIFICATE.create(e.getCause(), displayArgs.toArray(new Object[] {}));
+                    }
+                }
+
+                final Exception nested = e.getNextException();
+                if (nested != null) {
+                    if (nested instanceof IOException) {
+                        throw MimeMailExceptionCode.CONNECT_ERROR.create(e, pop3Config.getServer(), pop3Config.getLogin(), I(pop3Config.getPOP3Properties().getConnectTimeout()));
+                    } else if (tmpDownEnabled && e.getNextException() instanceof SocketTimeoutException) {
+                        /*
+                         * TODO: Re-think if exception's message should be part of condition or just checking if nested exception is an instance of
+                         * SocketTimeoutException
+                         */
+                        /*
+                         * Remember a timed-out POP3 server on connect attempt
+                         */
+                        timedOutServers.put(new HostAndPort(server, port), Long.valueOf(System.currentTimeMillis()));
+                    }
+                }
+
+                throw e;
+            }
+            /*
+             * Check for needed capabilities
+             */
+            final boolean hasTop = (capabilities.indexOf("TOP") >= 0);
+            final boolean hasUidl = (capabilities.indexOf("UIDL") >= 0);
+            if (!hasTop || !hasUidl) {
+                final POP3Folder inbox = (POP3Folder) pop3Store.getFolder("INBOX");
+                inbox.open(Folder.READ_ONLY);
+                try {
+                    final POP3Prober prober = new POP3Prober(pop3Store, inbox);
+                    if (!hasUidl && !prober.probeUIDL()) {
+                        /*-
+                         * Probe failed.
+                         * Avoid fetching UIDs when further working with JavaMail API
+                         */
+                        if (errorOnMissingUIDL) {
+                            throw POP3ExceptionCode.MISSING_REQUIRED_CAPABILITY.create("UIDL", server, pop3Config.getLogin(), Integer.valueOf(session.getUserId()), Integer.valueOf(session.getContextId()));
+                        }
+                        result.addWarning(POP3ExceptionCode.EXPUNGE_MODE_ONLY.create("UIDL", server, pop3Config.getLogin(), Integer.valueOf(session.getUserId()), Integer.valueOf(session.getContextId())));
+                    }
+                    if (!hasTop && !prober.probeTOP()) {
+                        /*-
+                         * Probe failed.
+                         * Mandatory to further work with JavaMail API
+                         */
+                        throw POP3ExceptionCode.MISSING_REQUIRED_CAPABILITY.create("TOP", server, pop3Config.getLogin(), Integer.valueOf(session.getUserId()), Integer.valueOf(session.getContextId()));
+                    }
+                    /*
+                     * Check for warnings
+                     */
+                    final List<Exception> warnings = prober.getWarnings();
+                    if (!warnings.isEmpty()) {
+                        final org.slf4j.Logger logger = LOG;
+                        if (logger.isDebugEnabled()) {
+                            for (final Exception warning : warnings) {
+                                logger.debug("Exception during probing POP3 server \"{}\".", server, warning);
+                            }
+                        }
+                    }
+                } finally {
+                    inbox.close(false);
+                }
+            }
+            result.setPop3Store(pop3Store);
+            pop3Store = null;
+            return result;
+        } catch (MessagingException e) {
+            throw MimeMailException.handleMessagingException(e, pop3Config, session);
+        } finally {
+            Streams.close(pop3Store);
+        }
+    }
+
+    private static String getCapabilities(POP3Config pop3Config, final Session session, final IPOP3Properties pop3ConfProps) {
+        String staticCapabilities;
+        try {
+            staticCapabilities = POP3CapabilityCache.getCapability(InetAddress.getByName(IDNA.toASCII(pop3Config.getServer())), pop3Config.getPort(), pop3Config.isSecure(), pop3ConfProps, pop3Config.getLogin());
+        } catch (Exception e) {
+            LOG.warn("Couldn't detect capabilities from POP3 server \"{}\" with login \"{}\" (user={}, context={})", pop3Config.getServer(), pop3Config.getLogin(), I(session.getUserId()), I(session.getContextId()), e);
+            staticCapabilities = POP3CapabilityCache.getDeaultCapabilities();
+        }
+        return staticCapabilities;
+    }
+
+    private static void checkFailedAuths(final String login, final String pass) throws AuthenticationFailedException {
+        final LoginAndPass key = new LoginAndPass(login, pass);
+        final Long range = failedAuths.get(key);
+        if (range != null) {
+            // TODO: Put time-out to pop3.properties
+            if (System.currentTimeMillis() - range.longValue() <= 10000) {
+                throw new AuthenticationFailedException("Login failed: authentication failure");
+            }
+            failedAuths.remove(key);
+        }
+    }
+
+    private static void checkTemporaryDown(final POP3Config pop3Config) throws OXException {
+        final HostAndPort key = new HostAndPort(pop3Config.getServer(), pop3Config.getPort());
+        final Long range = timedOutServers.get(key);
+        if (range != null) {
+            if (System.currentTimeMillis() - range.longValue() <= POP3Properties.getInstance().getPOP3TemporaryDown()) {
+                /*
+                 * Still treated as being temporary broken
+                 */
+                throw POP3ExceptionCode.CONNECT_ERROR.create(pop3Config.getServer(), pop3Config.getLogin(), I(pop3Config.getPOP3Properties().getConnectTimeout()));
+            }
+            timedOutServers.remove(key);
+        }
+    }
+
+    /*-
+     * ########################################################################################################
+     * ############################################ HELPER CLASSES ############################################
+     * ########################################################################################################
+     */
+
+    private static final class LoginAndPass {
+
+        private final String login;
+        private final String pass;
+        private final int hash;
+
+        public LoginAndPass(final String login, final String pass) {
+            super();
+            this.login = login;
+            this.pass = pass;
+            int prime = 31;
+            int result = 1;
+            result = prime * result + ((login == null) ? 0 : login.hashCode());
+            result = prime * result + ((pass == null) ? 0 : pass.hashCode());
+            hash = result;
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            LoginAndPass other = (LoginAndPass) obj;
+            if (login == null) {
+                if (other.login != null) {
+                    return false;
+                }
+            } else if (!login.equals(other.login)) {
+                return false;
+            }
+            if (pass == null) {
+                if (other.pass != null) {
+                    return false;
+                }
+            } else if (!pass.equals(other.pass)) {
+                return false;
+            }
+            return true;
+        }
+
+    }
+
+    private static final class HostAndPort {
+
+        private final String host;
+
+        private final int port;
+
+        private final int hashCode;
+
+        public HostAndPort(final String host, final int port) {
+            super();
+            if (port < 0 || port > 0xFFFF) {
+                throw new IllegalArgumentException("port out of range:" + port);
+            }
+            if (host == null) {
+                throw new IllegalArgumentException("hostname can't be null");
+            }
+            this.host = host;
+            this.port = port;
+            int result = HashCodeUtil.SEED;
+            result = HashCodeUtil.hash(result, host);
+            result = HashCodeUtil.hash(result, port);
+            hashCode = result;
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final HostAndPort other = (HostAndPort) obj;
+            if (host == null) {
+                if (other.host != null) {
+                    return false;
+                }
+            } else if (!host.equals(other.host)) {
+                return false;
+            }
+            if (port != other.port) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private static String authEncode(String s, String charset) {
+        String tmp = s;
+        if (tmp != null) {
+            try {
+                tmp = new String(s.getBytes(Charsets.forName(charset)), Charsets.ISO_8859_1);
+            } catch (UnsupportedCharsetException e) {
+                LOG.error("Unsupported encoding in a message detected and monitored", e);
+                mailInterfaceMonitor.addUnsupportedEncodingExceptions(e.getMessage());
+            }
+        }
+        return tmp;
+    }
+
+}

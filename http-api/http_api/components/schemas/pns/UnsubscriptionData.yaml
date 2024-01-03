@@ -1,0 +1,24 @@
+type: object
+required:
+  - transport
+properties:
+  client:
+    type: string
+    description: >-
+      The client identifier; e.g. "open-xchange-appsuite". If not specified,
+      session-associated client identifier is considered. For transport type "webhook", 
+      the client configuration id is expected here.
+  token:
+    type: string
+    description: >-
+      The token or Webhook URI that was initially used for the subscription. 
+      Required unless the URI is statically defined in configuration settings for transport type "webhook".
+  transport:
+    type: string
+    description: |
+      The identifer of the transport; currently supported:
+      - "apn"
+      - "gcm"
+      - "wns"
+      - "websocket"  and
+      - "webhook"

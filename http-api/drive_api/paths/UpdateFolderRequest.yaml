@@ -1,0 +1,126 @@
+/drive?action=updateFolder:
+  put:
+    operationId: updateFolder
+    tags:
+      - Drive
+    summary: Updates a directory's metadata.
+    security: 
+        - session: []    
+    description: >
+      Updates specific metadata of a synchronized directory. This currently only
+      includes the permissions - which
+
+      in turn is only allowed for directories marked as `shareable`.
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+      - $ref: '#/components/parameters/gblQueryParamPath'
+      - in: query
+        name: checksum
+        description: The checksum of the directory to update.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >-
+          A JSON object containing the metadata of the requested directory. In
+          case of errors the responsible fields in the response are filled. Problems 
+          that occurrend during notification are included as warnings.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriveFolderResponse'
+    x-ox-examples:
+      - Example1: null
+        description: Basic example
+        example: >
+          ==> PUT
+          http://192.168.32.191/ajax/drive?action=updateFolder&session=35d55f0bd2284e78a8eb4dba99b1310b&root=9542&path=/Testfolder&checksum=d41d8cd98f00b204e9800998ecf8427e
+
+          > Content:
+            {
+              "folder": {
+                "permissions": [{
+                  "group": false,
+                  "bits": 403710016,
+                  "entity": 14
+                },
+                {
+                  "type": "guest",
+                  "email_address": "otto@example.com",
+                  "display_name": "Otto Example",
+                  "bits": 135274497
+                }]
+              },
+              "notification": {
+                "message": "Look!"
+              }
+            }
+
+          <== HTTP 200 OK (207.1722 ms elapsed, 769 bytes received)
+
+          <   Content: 
+                {
+                  "data": {
+                      "id": "133",
+                      "own_rights": 403710016,
+                      "permissions": [
+                          {
+                              "bits": 403710016,
+                              "entity": 14,
+                              "group": false
+                          },
+                          {
+                              "bits": 135274497,
+                              "entity": 15,
+                              "group": false
+                          }
+                      ],
+                      "extended_permissions": [
+                          {
+                              "entity": 14,
+                              "bits": 403710016,
+                              "type": "user",
+                              "display_name": "Mander, Jens",
+                              "contact": {
+                                  "email1": "jens.mander@example.com",
+                                  "last_name": "Mander",
+                                  "first_name": "Jens",
+                                  "image1_url": "/ajax/contacts/picture?action=get&user_id=14&timestamp=1618826793524"
+                              }
+                          },
+                          {
+                              "entity": 15,
+                              "bits": 135274497,
+                              "type": "guest",
+                              "contact": {
+                                  "email1": "otto@example.com",
+                                  "image1_url": "/ajax/contacts/picture?action=get&user_id=15&timestamp=1620303119498"
+                              }
+                          }
+                      ],
+                      "jump": [
+                          "permissions"
+                      ],
+                      "shared": true,
+                      "shareable": true,
+                      "checksum": "d41d8cd98f00b204e9800998ecf8427e",
+                      "path": "/Testfolder",
+                      "name": "Testfolder",
+                      "created": 1628673781937,
+                      "modified": 1628673788607,
+                      "created_by": 14,
+                      "modified_by": 14
+                  }
+              }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DriveFolderUpdateBody'
+      description: >
+        A JSON object containing the fields `folder` and `notification`. The
+        JSON object in field `folder` describes the updated directory metadata (currently only the property
+        `permissions` is considered) and the JSON object `notification` may include a message to notify added permission entities. To notify
+        with a default message, an empty `notification` object should still be added.
+      required: true

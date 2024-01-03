@@ -1,0 +1,34 @@
+/snippet?action=new:
+  put:
+    operationId: createSnippet
+    tags:
+      - Snippet
+    summary: Creates a snippet.
+    security: 
+        - session: []
+        - oauth: 
+          - write_userconfig 
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SnippetData'
+      description: >-
+        A JSON object describing the snippet excluding its attachment(s). For
+        adding attachments see `/snippet?action=attach` request.
+      required: true             
+    responses:
+      '200':
+        description: >
+          A JSON object containing the ID of the newly created snippet. In case
+          of errors the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SnippetUpdateResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

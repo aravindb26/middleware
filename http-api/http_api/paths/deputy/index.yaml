@@ -1,0 +1,8 @@
+requests: 
+  - AllRequest.yaml
+  - AvailableModulesRequest.yaml
+  - DeleteRequest.yaml
+  - GetRequest.yaml
+  - NewRequest.yaml
+  - ReverseRequest.yaml
+  - UpdateRequest.yaml

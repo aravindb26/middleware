@@ -1,0 +1,20 @@
+feature_name: Cross-Context database-related configurations.
+properties:
+    - key: com.openexchange.context.group
+      description: |
+        For setups serving multiple different "brands" or "domains", one or more 
+        contexts can be classified into a specific "group". The association with
+        the group is done by assigning the property "com.openexchange.context.group"
+        to a context via config cascade. A context may only be part of one group,
+        contexts without group association automatically fall into the "default"
+        group. 
+        The defined group name is used to differentiate cross-context data held 
+        in the global/cross-context database. 
+      defaultValue: default
+      version: 7.6.0
+      reloadable: true
+      configcascadeAware: true
+      related:
+      file: globaldb.properties
+      packageName: open-xchange-core
+      tags: ["Database", "Context", "XCTX"]

@@ -1,0 +1,79 @@
+/drive?action=settings:
+  get:
+    operationId: getSettings
+    tags:
+      - Drive
+    summary: Gets various settings applicable for the drive client.
+    security: 
+        - session: []    
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+      - $ref: '#/components/parameters/gblQueryApiVersion'
+      - in: query
+        name: language
+        description: >-
+          The locale to use for language-sensitive setting (in the format
+          `<2-letter-language>_<2-letter-regin>`, e.g. `de_CH` or `en_GB`).
+          Defaults to the user's configured locale on the server.
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object holding the settings. This also includes a JSON array
+          with the property name `quota` that
+
+          contains zero, one or two quota objects, depending on the filestore
+          configuration. If one or more quota types
+
+          are missoing in the array, the client can expect that there are no
+          limitations for that type. In case of
+
+          errors the responsible fields in the response are filled.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriveSettingsResponse'
+    x-ox-examples:
+      - Example1: null
+        description: Basic example
+        example: >
+          ==> GET
+          http://192.168.32.191/ajax/drive?action=settings&root=56&session=35cb8c2d1423480692f0d5053d14ba52
+
+
+          <== HTTP 200 OK (11.3530 ms elapsed, 318 bytes received)
+
+          <   Content: 
+              {
+                "data" : {
+                  "quota" : [{
+                      "limit" : 107374182400,
+                      "use" : 8828427,
+                      "type" : "storage"
+                    }, {
+                      "limit" : 800000000000,
+                      "use" : 1559,
+                      "type" : "file"
+                    }
+                  ],
+                  "helpLink" : "http://192.168.32.191/appsuite/help-drive/l10n/de_DE/index.html",
+                  "quotaManageLink" : "http://192.168.32.191/manageQuota",
+                  "serverVersion" : "7.8.1-Rev1",
+                  "supportedApiVersion" : "4",
+                  "minApiVersion" : "1",
+                  "localizedFolderNames": {
+                    "/Documents": "Dokumente",
+                    "/Music": "Musik",
+                    "/Pictures": "Bilder",
+                    "/": "Meine Dateien",
+                    "/Documents/Templates": "Vorlagen"
+                  },
+                  "capabilities" : [
+                    "invite_guests",
+                    "share_links",
+                    "invite_users_and_groups"
+                  ]
+                }
+              }

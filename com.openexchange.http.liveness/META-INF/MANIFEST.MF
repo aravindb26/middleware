@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange HTTP Liveness Bundle
+Bundle-SymbolicName: com.openexchange.http.liveness
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.config,
+ javax.crypto,
+ javax.crypto.interfaces,
+ javax.crypto.spec,
+ javax.naming,
+ javax.net,
+ javax.net.ssl,
+ javax.security.auth.callback,
+ javax.security.sasl,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j,
+ sun.misc
+Automatic-Module-Name: com.openexchange.http.liveness
+Bundle-Activator: com.openexchange.http.liveness.osgi.LivenessActivator

@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Cache Bundle
+Bundle-SymbolicName: com.openexchange.cluster.map
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.cluster.map
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.fasterxml.jackson.core,
+ com.fasterxml.jackson.core.type,
+ com.fasterxml.jackson.databind,
+ com.fasterxml.jackson.databind.module,
+ com.google.common.base,
+ com.google.common.collect,
+ com.google.common.primitives,
+ com.openexchange.annotation,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.osgi.annotation,
+ org.json,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Export-Package: com.openexchange.cluster.map,
+ com.openexchange.cluster.map.codec

@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gotenberg Mail Export
+Bundle-SymbolicName: com.openexchange.mail.exportpdf.gotenberg
+Bundle-Version: 8.0.0
+Bundle-Activator: com.openexchange.mail.exportpdf.gotenberg.osgi.GotenbergExportActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: com.openexchange.mail.export.gotenberg
+Import-Package: com.openexchange.ajax.container,
+ com.openexchange.config.lean,
+ com.openexchange.exception,
+ com.openexchange.gotenberg.client,
+ com.openexchange.java,
+ com.openexchange.mail.exportpdf,
+ com.openexchange.mail.exportpdf.converter,
+ com.openexchange.mail.exportpdf.converters,
+ com.openexchange.mail.exportpdf.converters.images,
+ com.openexchange.mail.mime,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.session,
+ org.osgi.framework,
+ org.slf4j

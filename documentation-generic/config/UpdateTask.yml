@@ -1,0 +1,77 @@
+feature_name: Updatetasks
+feature_description: |
+  Existing configuration options for update tasks
+properties:
+    - key: com.openexchange.groupware.update.excludedUpdateTasks
+      description: |
+        Specifies a comma-separated list of namespaces of update tasks that are supposed to be excluded from automatic update
+        procedure.
+        
+        A namespace groups multiple individual update tasks. See command-line tool "listnamespaceawareupdatetasks" to check for
+        existing namespaces.
+      defaultValue:
+      version: 
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: updatetasks.properties
+      packageName: open-xchange-core
+      tags: ["Updatetasks"]
+    - key: com.openexchange.groupware.update.denyImplicitUpdateOnContextLoad
+      description: |
+        Accepts a boolean value, which controls whether pending update tasks are triggered for context-associated database
+        schema when a context is loaded from database. If this property is set to "true" no pending update tasks are scheduled
+        for execution.
+      defaultValue: false
+      version: 7.10.2
+      reloadable: true
+      configcascadeAware: false
+      related:
+      file: updatetasks.properties
+      packageName: open-xchange-core
+      tags: ["Updatetasks"]
+    - key: com.openexchange.groupware.update.refreshIntervalMillis
+      description: |
+        Specifies the interval in milliseconds when to refresh/update lock's last-touched time stamp.
+        
+        Needs to be lower than configured idle times for blocking and background update tasks.
+        
+        A number of less than or equal to 0 (zero) lets application fall-back to default value.
+      defaultValue: 20000
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: false
+      related: ["com.openexchange.groupware.update.locked.idleMillis", "com.openexchange.groupware.update.background.idleMillis"]
+      file: updatetasks.properties
+      packageName: open-xchange-core
+      tags: ["Updatetasks"]
+    - key: com.openexchange.groupware.update.locked.idleMillis
+      description: |
+        Accepts the number of milliseconds specifying the allowed idle time for acquired lock for non-background update tasks.
+        If that idle time is exceeded the locked is considered as timed-out and update process is re-initiated.
+        The chosen value is required to be greater than the value of property "com.openexchange.groupware.update.refreshIntervalMillis"
+        
+        A number of less than or equal to 0 (zero) means infinite idle time.
+      defaultValue: 60000
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: false
+      related: ["com.openexchange.groupware.update.refreshIntervalMillis"]
+      file: updatetasks.properties
+      packageName: open-xchange-core
+      tags: ["Updatetasks"]
+    - key: com.openexchange.groupware.update.background.idleMillis
+      description: |
+        Accepts the number of milliseconds specifying the allowed idle time for acquired lock for background update tasks.
+        If that idle time is exceeded the locked is considered as timed-out and update process is re-initiated.
+        The chosen value is required to be greater than the value of property "com.openexchange.groupware.update.refreshIntervalMillis"
+        
+        A number of less than or equal to 0 (zero) means infinite idle time.
+      defaultValue: 0
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: false
+      related: ["com.openexchange.groupware.update.refreshIntervalMillis"]
+      file: updatetasks.properties
+      packageName: open-xchange-core
+      tags: ["Updatetasks"]

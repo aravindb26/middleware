@@ -1,0 +1,11 @@
+createadmin
+deleteadmin
+changeadmin
+listadmin
+listrestrictions
+initrestrictions
+removerestrictions
+updatemoduleaccessrestrictions
+updaterestrictions
+getresellercapabilities
+getadmin

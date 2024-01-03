@@ -1,0 +1,34 @@
+/account?action=update:
+  put:
+    operationId: updateAccount
+    tags:
+      - Mailaccount
+    summary: Updates a mail account.
+    security: 
+        - session: [] 
+        - oauth:
+          - write_mailaccount     
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MailAccountData'
+      description: >-
+        A JSON object identifying (by field `id`) and describing the account to
+        update. Only modified fields are present.
+      required: true
+    responses:
+      '200':
+        description: >
+          A JSON object containing the data of the updated mail account. In case
+          of errors the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailAccountUpdateResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'        

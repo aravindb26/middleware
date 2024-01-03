@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange admin user copy plugin RMI bundle
+Bundle-SymbolicName: com.openexchange.admin.user.copy.rmi
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.admin.rmi.dataobjects,
+ com.openexchange.admin.rmi.exceptions
+Export-Package: com.openexchange.admin.user.copy.rmi
+Bundle-ClassPath: .
+Automatic-Module-Name: com.openexchange.admin.user.copy.rmi

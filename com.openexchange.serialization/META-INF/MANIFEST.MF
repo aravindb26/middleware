@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Java Serialization
+Bundle-SymbolicName: com.openexchange.serialization
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.serialization
+Bundle-Activator: com.openexchange.serialization.osgi.Activator
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.annotations,
+ com.google.common.base,
+ com.google.common.collect,
+ com.openexchange.config,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.xml.util,
+ javax.xml.parsers,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j,
+ org.w3c.dom,
+ org.xml.sax
+Export-Package: com.openexchange.serialization

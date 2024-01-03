@@ -1,0 +1,260 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.folderstorage.internal;
+
+import java.util.TimeZone;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import com.openexchange.exception.OXException;
+import com.openexchange.folderstorage.ContentType;
+import com.openexchange.folderstorage.FolderStorage;
+import com.openexchange.folderstorage.Permission;
+import com.openexchange.folderstorage.Permissions;
+import com.openexchange.folderstorage.Type;
+import com.openexchange.folderstorage.database.contentType.InfostoreContentType;
+import com.openexchange.folderstorage.type.DocumentsType;
+import com.openexchange.folderstorage.type.MusicType;
+import com.openexchange.folderstorage.type.PicturesType;
+import com.openexchange.folderstorage.type.TemplatesType;
+import com.openexchange.folderstorage.type.TrashType;
+import com.openexchange.folderstorage.type.VideosType;
+import com.openexchange.framework.request.RequestContextHolder;
+import com.openexchange.groupware.notify.hostname.HostData;
+import com.openexchange.groupware.notify.hostname.HostnameService;
+import com.openexchange.groupware.settings.Setting;
+import com.openexchange.groupware.settings.impl.ConfigTree;
+import com.openexchange.session.Session;
+import com.openexchange.tools.session.ServerSession;
+
+/**
+ * {@link Tools} - A utility class for folder storage processing.
+ *
+ * @author <a href="mailto:thorben.betten@open-xchange.com">Thorben Betten</a>
+ */
+public final class Tools {
+
+    /**
+     * Initializes a new {@link Tools}.
+     */
+    private Tools() {
+        super();
+    }
+
+    private static final ConcurrentMap<String, Future<TimeZone>> TZ_MAP = new ConcurrentHashMap<String, Future<TimeZone>>();
+
+    /**
+     * Gets the <code>TimeZone</code> for the given ID.
+     *
+     * @param timeZoneID The ID for a <code>TimeZone</code>, either an abbreviation such as "PST", a full name such as
+     *            "America/Los_Angeles", or a custom ID such as "GMT-8:00".
+     * @return The specified <code>TimeZone</code>, or the GMT zone if the given ID cannot be understood.
+     */
+    public static TimeZone getTimeZone(final String timeZoneID) {
+        Future<TimeZone> future = TZ_MAP.get(timeZoneID);
+        if (null == future) {
+            final FutureTask<TimeZone> ft = new FutureTask<TimeZone>(new Callable<TimeZone>() {
+
+                @Override
+                public TimeZone call() throws Exception {
+                    return TimeZone.getTimeZone(timeZoneID);
+                }
+            });
+            future = TZ_MAP.putIfAbsent(timeZoneID, ft);
+            if (null == future) {
+                future = ft;
+                ft.run();
+            }
+        }
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            // Keep interrupted status
+            Thread.currentThread().interrupt();
+            final IllegalStateException ise = new IllegalStateException(e.getMessage());
+            ise.initCause(e);
+            throw ise;
+        } catch (CancellationException e) {
+            final IllegalStateException ise = new IllegalStateException(e.getMessage());
+            ise.initCause(e);
+            throw ise;
+        } catch (ExecutionException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof Exception) {
+                final IllegalStateException ise = new IllegalStateException(e.getMessage());
+                ise.initCause(e);
+                throw ise;
+            }
+            if (cause instanceof Error) {
+                throw (Error) cause;
+            }
+            throw new IllegalStateException("Not unchecked", cause);
+        }
+    }
+
+    /**
+     * Checks if given folder identifier appears to be a global identifier.
+     *
+     * @param id The folder identifier to check
+     * @return <code>true</code> if global; otherwise <code>false</code>
+     */
+    public static boolean isGlobalId(String id) {
+        return com.openexchange.java.util.Tools.getUnsignedInteger(id) > 0;
+    }
+
+    /**
+     * Calculates the bits from given permission.
+     *
+     * @param perm The permission
+     * @return The bits calculated from given permission
+     * @deprecated Deprecated as of 7.8.0. Use {@link Permissions#createPermissionBits(Permission)}
+     */
+    @Deprecated
+    public static int createPermissionBits(final Permission perm) {
+        return createPermissionBits(
+            perm.getFolderPermission(),
+            perm.getReadPermission(),
+            perm.getWritePermission(),
+            perm.getDeletePermission(),
+            perm.isAdmin());
+    }
+
+    /**
+     * Calculates the bits from given permissions.
+     *
+     * @param fp The folder permission
+     * @param rp The read permission
+     * @param wp The write permission
+     * @param dp The delete permission
+     * @param adminFlag <code>true</code> if admin access; otherwise <code>false</code>
+     * @return The bits calculated from given permissions
+     *
+     * @deprecated Deprecated as of 7.8.0. Use {@link Permissions#createPermissionBits(int, int, int, int, boolean)}
+     */
+    @Deprecated
+    public static int createPermissionBits(final int fp, final int rp, final int wp, final int dp, final boolean adminFlag) {
+        return Permissions.createPermissionBits(fp, rp, wp, dp, adminFlag);
+    }
+
+    /**
+     * Gets the identifier of a specific default folder as defined by the config tree setting.
+     * <p/>
+     * Currently, only config tree paths of infostore default folders are mapped.
+     *
+     * @param session The session
+     * @param contentType The content type to get the default folder for
+     * @param type The folder type
+     * @return The default folder identifier, or <code>null</code> if not set
+     * @throws OXException
+     */
+    public static String getConfiguredDefaultFolder(ServerSession session, ContentType contentType, Type type) throws OXException {
+        String settingsPath = getDefaultFolderSettingsPath(contentType, type);
+        if (null != settingsPath) {
+            Setting setting = ConfigTree.getInstance().getSettingByPath(settingsPath);
+            if (null != setting) {
+                setting.getShared().getValue(session, session.getContext(), session.getUser(), session.getUserConfiguration(), setting);
+                Object value = setting.getSingleValue();
+                if (null != value && (value instanceof String)) {
+                    return (String) value;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the settings path in the config tree for a given content- and folder-type.
+     * <p/>
+     * Currently, only config tree paths of infostore default folders are mapped.
+     *
+     * @param contentType The content type
+     * @param type The folder type
+     * @return The settings path, or <code>null</code> if not known
+     */
+    private static String getDefaultFolderSettingsPath(ContentType contentType, Type type) {
+        if ((contentType instanceof InfostoreContentType)) {
+            if (TrashType.getInstance().equals(type)) {
+                return "modules/infostore/folder/trash";
+            } else if (DocumentsType.getInstance().equals(type)) {
+                return "modules/infostore/folder/documents";
+            } else if (TemplatesType.getInstance().equals(type)) {
+                return "modules/infostore/folder/templates";
+            } else if (VideosType.getInstance().equals(type)) {
+                return "modules/infostore/folder/videos";
+            } else if (MusicType.getInstance().equals(type)) {
+                return "modules/infostore/folder/music";
+            } else if (PicturesType.getInstance().equals(type)) {
+                return "modules/infostore/folder/pictures";
+            } else  {
+                return "folder/infostore";
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Tries to get the host data of the according HTTP request.
+     *
+     * @param session The session or <code>null</code>
+     * @return The host data or <code>null</code> if none could be determined
+     */
+    public static HostData getHostData(Session session) {
+        com.openexchange.framework.request.RequestContext requestContext = RequestContextHolder.get();
+        if (requestContext == null) {
+            if (session != null) {
+                return (HostData) session.getParameter(HostnameService.PARAM_HOST_DATA);
+            }
+            return null;
+        }
+
+        return requestContext.getHostData();
+    }
+
+    /**
+     * Gets a value indicating whether a folder storage supports a certain content type.
+     *
+     * @param folderContentType The content type to check
+     * @param folderStorage The folder storage
+     * @return <code>true</code> if the content type is supported, <code>false</code>, otherwise
+     */
+    public static boolean supportsContentType(final ContentType folderContentType, final FolderStorage folderStorage) {
+        final ContentType[] supportedContentTypes = folderStorage.getSupportedContentTypes();
+        if (null == supportedContentTypes) {
+            return false;
+        }
+        if (0 == supportedContentTypes.length) {
+            return true;
+        }
+        final String cts = folderContentType.toString();
+        for (final ContentType supportedContentType : supportedContentTypes) {
+            if (supportedContentType.toString().equals(cts)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+}

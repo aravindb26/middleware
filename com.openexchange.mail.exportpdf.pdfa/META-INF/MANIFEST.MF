@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: PDF/A convertion service
+Bundle-SymbolicName: com.openexchange.mail.exportpdf.pdfa
+Bundle-Version: 8.0.0
+Bundle-Activator: com.openexchange.mail.exportpdf.pdfa.osgi.PDFAActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: com.openexchange.mail.exportpdf.pdfa
+Import-Package: com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.mail.exportpdf.converter,
+ com.openexchange.mail.exportpdf.converters,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.session,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-ActivationPolicy: lazy
+Export-Package: com.openexchange.mail.exportpdf.pdfa,
+ com.openexchange.mail.exportpdf.pdfa.exceptions

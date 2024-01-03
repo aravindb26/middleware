@@ -1,0 +1,16 @@
+type: object
+title: ExportPDFResponse
+properties:
+  $ref: ../common/CommonResponseData.yaml
+  data:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The file id of the exported PDF
+      warnings:
+        type: array
+        description: An array of warnings
+        items:
+          type: object
+          description: Warnings that might occur during conversion

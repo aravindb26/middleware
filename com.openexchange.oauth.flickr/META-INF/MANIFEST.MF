@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Flickr OAuth Plugin
+Bundle-SymbolicName: com.openexchange.oauth.flickr
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: com.openexchange.oauth.flickr

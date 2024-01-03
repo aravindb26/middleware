@@ -1,0 +1,28 @@
+/drive?action=deleteFromTrash:
+  put:
+    operationId: deleteFromTrash
+    tags:
+      - Drive
+    summary: Removes the given files and folders from trash.
+    security: 
+        - session: []    
+    description: >
+      Removes the given files and folders from trash. The files and folders will
+      be deleted permanently.
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+    responses:
+      '200':
+        description: |
+          If the operation is successfull, an empty response is returned.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrashFolderResponse'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TrashTargetsBody'
+      description: A JSON object describing the target files- and directories to delete.
+      required: true

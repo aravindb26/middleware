@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Recurrence Service Bundle
+Bundle-SymbolicName: com.openexchange.chronos.recurrence
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.chronos.recurrence.osgi.Activator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.chronos,
+ com.openexchange.chronos.common,
+ com.openexchange.chronos.compat,
+ com.openexchange.chronos.exception,
+ com.openexchange.chronos.service,
+ com.openexchange.config,
+ com.openexchange.config.lean,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.java.util,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ org.dmfs.rfc5545,
+ org.dmfs.rfc5545.calendarmetrics,
+ org.dmfs.rfc5545.recur,
+ org.dmfs.rfc5545.recurrenceset,
+ org.osgi.framework,
+ org.slf4j
+Automatic-Module-Name: com.openexchange.chronos.recurrence

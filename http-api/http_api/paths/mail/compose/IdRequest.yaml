@@ -1,0 +1,139 @@
+'/mail/compose/{id}':
+  get:
+    operationId: getMailComposeById
+    tags:
+      - MailCompose
+    summary: Load the composition space under the given identifier
+    security: 
+        - session: []    
+    parameters:
+      - in: path
+        name: id
+        description: The ID of the composition space
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: A JSON object containing the requested composition space.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailComposeResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+  delete:
+    operationId: deleteMailComposeById
+    tags:
+      - MailCompose
+    summary: Deletes the composition space under the given identifier
+    security: 
+        - session: []    
+    parameters:
+      - in: path
+        name: id
+        description: The ID of the composition space
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: harddelete
+        description: 'Flag to hard delete the associated draft message, meaning not to create a backup copy in default trash if set to `true`.'
+        required: false
+        schema:
+          type: boolean
+      - $ref: '#/components/parameters/MailComposeClientToken'
+    responses:
+      '200':
+        description: A JSON object containing the success status.
+        content:
+          application/json:
+            schema:
+              type: object
+              title: deleteMailComposeByIdResponse
+              properties:
+                success:
+                  type: boolean
+                  description: >-
+                    True if such a composition space has been successfully
+                    closed; false otherwise
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+  put:
+    operationId: updateMailComposeById
+    tags:
+      - MailCompose
+    summary: Updates the composition space
+    security: 
+        - session: []    
+    description: >-
+      Payload is JSON that reflects changes. Response is the current composition
+      space message model after update.
+    parameters:
+      - in: path
+        name: id
+        description: The ID of the composition space
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/MailComposeClientToken'
+    responses:
+      '200':
+        description: A JSON object containing the updated composition space.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailComposeResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MailComposeRequestMessageModel'
+      description: An object containing the attributes to update
+      required: true
+  patch:
+    operationId: patchMailComposeById
+    tags:
+      - MailCompose
+    summary: Patches the composition space
+    security: 
+        - session: []    
+    description: >-
+      Payload is JSON that reflects changes. Response is the current composition
+      space message model after update.
+
+      Note that it is not possible to change the attachments collection during this call.
+    parameters:
+      - in: path
+        name: id
+        description: The ID of the composition space
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/MailComposeClientToken'
+    responses:
+      '200':
+        description: A JSON object containing the updated composition space.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailComposeResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MailComposeRequestMessageModel'
+      description: An object containing the attributes to update
+      required: true

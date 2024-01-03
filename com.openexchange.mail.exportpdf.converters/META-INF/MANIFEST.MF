@@ -1,0 +1,33 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Mail Export Converters Bundle
+Bundle-SymbolicName: com.openexchange.mail.exportpdf.converters
+Bundle-Version: 8.0.0
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.mail.export.converters
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.collect,
+ com.openexchange.ajax.container,
+ com.openexchange.ajax.fileholder,
+ com.openexchange.config.lean,
+ com.openexchange.exception,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.mail.exportpdf,
+ com.openexchange.mail.exportpdf.converter,
+ com.openexchange.mail.mime,
+ com.openexchange.osgi,
+ com.openexchange.regional,
+ com.openexchange.server,
+ com.openexchange.session,
+ com.openexchange.tools.session,
+ com.openexchange.user,
+ javax.imageio,
+ javax.imageio.metadata,
+ javax.imageio.stream,
+ org.osgi.framework,
+ org.slf4j
+Bundle-Activator: com.openexchange.mail.exportpdf.converters.osgi.MailExportConvertersActivator
+Export-Package: com.openexchange.mail.exportpdf.converters,
+ com.openexchange.mail.exportpdf.converters.header,
+ com.openexchange.mail.exportpdf.converters.images

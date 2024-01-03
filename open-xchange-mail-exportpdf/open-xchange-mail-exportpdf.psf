@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<psf version="2.0">
+<provider id="org.eclipse.egit.core.GitProvider">
+<project reference="1.0,https://git.open-xchange.com/git/wd/backend,develop,com.openexchange.mail.exportpdf.collabora"/>
+<project reference="1.0,https://git.open-xchange.com/git/wd/backend,develop,com.openexchange.mail.exportpdf.converters"/>
+<project reference="1.0,https://git.open-xchange.com/git/wd/backend,develop,com.openexchange.mail.exportpdf.gotenberg"/>
+<project reference="1.0,https://git.open-xchange.com/git/wd/backend,develop,com.openexchange.mail.exportpdf.impl"/>
+<project reference="1.0,https://git.open-xchange.com/git/wd/backend,develop,com.openexchange.mail.exportpdf.pdfa"/>
+<project reference="1.0,https://git.open-xchange.com/git/wd/backend,develop,com.openexchange.mail.exportpdf.pdfa.collabora"/>
+<project reference="1.0,https://git.open-xchange.com/git/wd/backend,develop,com.openexchange.gotenberg.client"/>
+<project reference="1.0,https://git.open-xchange.com/git/wd/backend,develop,com.openexchange.collabora.online.client"/>
+</provider>
+</psf>

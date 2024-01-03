@@ -1,0 +1,30 @@
+/mail?action=zip_messages:
+  get:
+    operationId: getMailsAsZip
+    tags:
+      - Mail
+    summary: Gets multiple mails as a ZIP file.
+    security: 
+        - session: []
+        - oauth:
+          - read_mail    
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamMailFolder'
+      - in: query
+        name: id
+        description: A comma-separated list of Object IDs of the requested mails.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: The raw byte data of the ZIP file.
+        content:
+          application/zip:
+            schema:
+              type: string
+              format: binary
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

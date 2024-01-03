@@ -1,0 +1,28 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: LDAP-based MailResolver
+Bundle-SymbolicName: com.openexchange.mailmapping.ldap
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.mailmapping.ldap.osgi.LDAPMailMappingActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.cache,
+ com.google.common.util.concurrent,
+ com.openexchange.config,
+ com.openexchange.context,
+ com.openexchange.exception,
+ com.openexchange.groupware.contexts,
+ com.openexchange.ldap.common,
+ com.openexchange.mailmapping,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.session,
+ com.openexchange.user,
+ com.unboundid.ldap.sdk,
+ javax.mail.internet,
+ org.osgi.framework,
+ org.owasp.esapi,
+ org.owasp.esapi.reference,
+ org.slf4j
+Automatic-Module-Name: com.openexchange.mailmapping.ldap
+Require-Bundle: com.openexchange.java

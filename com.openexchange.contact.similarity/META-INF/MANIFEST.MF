@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Contact Similarity
+Bundle-SymbolicName: com.openexchange.contact.similarity
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.exception,
+ com.openexchange.groupware.contact.helpers,
+ com.openexchange.groupware.container,
+ com.openexchange.session
+Export-Package: com.openexchange.contact.similarity
+Automatic-Module-Name: com.openexchange.contact.similarity

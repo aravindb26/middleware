@@ -1,0 +1,39 @@
+/folders?action=path:
+  get:
+    operationId: getPath
+    tags:
+      - Folders
+    summary: Gets the parent folders above the specified folder.
+    security:
+        - session: [] 
+        - oauth: []  
+    parameters:
+      - in: query
+        name: id
+        description: Object ID of a folder.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/gblQueryParamFolderColumns'
+      - $ref: '#/components/parameters/gblQueryParamFolderTree'
+      - $ref: '#/components/parameters/gblQueryParamAllowedModules'
+      - $ref: '#/components/parameters/gblQueryParamLanguage'
+    responses:
+      '200':
+        description: >
+          An array with data for all parent nodes of a folder. Each array
+          element describes one folder and
+
+          is itself an array. The elements of each array contain the information
+          specified by the corresponding
+
+          identifiers in the `columns` parameter. In case of errors the
+          responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoldersResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'

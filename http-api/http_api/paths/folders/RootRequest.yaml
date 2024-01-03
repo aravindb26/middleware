@@ -1,0 +1,33 @@
+/folders?action=root:
+  get:
+    operationId: getRootFolders
+    tags:
+      - Folders
+    summary: Gets the folders at the root level of the folder structure.
+    security: 
+        - session: []
+        - oauth: []  
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamFolderColumns'
+      - $ref: '#/components/parameters/gblQueryParamFolderTree'
+      - $ref: '#/components/parameters/gblQueryParamAllowedModules'
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with data for all folders at the
+          root level of the folder structure. Each array element
+
+          describes one folder and is itself an array. The elements of each
+          array contain the information
+
+          specified by the corresponding identifiers in the `columns` parameter.
+          In case of errors the responsible
+
+          fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoldersResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'

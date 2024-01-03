@@ -1,0 +1,178 @@
+feature_name: Infostore
+feature_description: |
+  Properties for infostore
+properties:
+    - key: MAX_UPLOAD_SIZE
+      description: |
+        If the sum of all uploaded files in one request is larger than this value, the upload will be rejected.  
+        If this value is not set or <code>-1</code>, the more general [[MAX_UPLOAD_SIZE]] configured in server.properties will be used.  
+        If that value is <code>0</code> uploads will be unrestricted. The size is in Bytes.
+      defaultValue: 10485760
+      version: 
+      reloadable: false
+      configcascadeAware: false
+      related: MAX_UPLOAD_SIZE in server.properties
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore"]
+
+    - key: com.openexchange.infostore.trash.retentionDays
+      description: |
+        Specifies how many days items are kept in the trash folder until they are
+        finally deleted. Cleanup is triggered during user login. A value equal to or
+        smaller <code>0</code> disables automatic cleanup for items in the trash folder.
+        
+        Depending on the "protected" flag of the corresponding preference path,
+        users are able to change their configured value on their own. This can be
+        adjusted via "/meta/infostore.yml".
+      defaultValue: -1
+      version: 
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore"]
+
+    - key: com.openexchange.capability.autodelete_file_versions
+      description: |
+        Enables or disables the "autodelete_file_versions" capability. The capability
+        can also be set more fine-grained via config cascade. It is only effectively
+        enabled for users that have the "infostore" permission set.
+      defaultValue: false
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore", "Capability"]
+
+    - key: com.openexchange.infostore.autodelete.editable
+      description: |
+        Specifies whether a user may change/edit the auto-delete settings
+        
+        Requires the "autodelete_file_versions" capability to be available.
+      defaultValue: true
+      version: 7.10.1
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.capability.autodelete_file_versions
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore"]
+
+    - key: com.openexchange.infostore.autodelete.default.retentionDays
+      description: |
+        Specifies the default value to assume for how many days multiple versions of a Drive item/document
+        are kept until they are automatically deleted. However, the current version is never deleted regardless
+        of its age. Cleanup is triggered during user login. A value equal to or less than <code>0</code> (zero)
+        disables the auto-deletion by retention days.
+        
+        Users may set that value on their own if property "com.openexchange.infostore.autodelete.editable" signals
+        "true", in which case this default value is no more considered.
+        
+        Requires the "autodelete_file_versions" capability to be available for a user.
+      defaultValue: 0
+      version: 7.10.1
+      reloadable: true
+      configcascadeAware: true
+      related: ["com.openexchange.capability.autodelete_file_versions", "com.openexchange.infostore.autodelete.editable"]
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore"]
+ 
+    - key: com.openexchange.infostore.autodelete.default.maxVersions
+      description: |
+        Specifies the default value to assume for how many multiple versions of a Drive item/document are allowed
+        to be maintained. If the number of versions for a Drive item/document exceeds that threshold, oldest ones
+        are automatically deleted. Cleanup is triggered whenever a new versions is about to be added to an existent
+        Drive item/document. A value equal to or less than <code>0</code> (zero) disables the auto-deletion by max.
+        allowed number of versions.
+        
+        Users may set that value on their own if property "com.openexchange.infostore.autodelete.editable" signals
+        "true", in which case this default value is no more considered.
+        
+        Requires the "autodelete_file_versions" capability to be available for a user.
+      defaultValue: 0
+      version: 7.10.1
+      reloadable: true
+      configcascadeAware: true
+      related: ["com.openexchange.capability.autodelete_file_versions", "com.openexchange.infostore.autodelete.editable"]
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore"]
+
+    - key: com.openexchange.infostore.trash.useForWebdav
+      description: |
+        Specifies if the trash folder should be enabled for WebDAV access. If enabled, resources will be moved into
+        the trash folder on deletion. Also the trash folder will be exposed via WebDAV.
+      defaultValue: true
+      version: 7.10.4
+      reloadable: true
+      configcascadeAware: true
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore"]
+
+    - key: com.openexchange.infostore.maxPermissionEntities
+      description: |
+        Specifies the maximum allowed number of object permissions. A value below 0 deactivates the limit.
+      defaultValue: 100
+      version: 7.10.4
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore", "Limit", "Permission"]
+
+    - key: com.openexchange.infostore.fulltextSearch
+      description: |
+        Enables the FULLTEXT search support for searching files
+      defaultValue: false
+      version: 7.10.5
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.infostore.fulltextSearchMinimumPatternLength, com.openexchange.infostore.searchFields
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore", "Search", "Fulltext"]
+
+    - key: com.openexchange.infostore.fulltextSearchMinimumPatternLength
+      description: |
+        The minimum search pattern length to use the FULLTEXT index
+      defaultValue: 3
+      version: 7.10.5
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.infostore.fulltextSearch, com.openexchange.infostore.searchFields
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore", "Search", "Fulltext"]
+
+    - key: com.openexchange.infostore.searchFields
+      description: |
+        Specifies the fields to check when searching a file. The FULLTEXT index also gets generated for those fields.
+      defaultValue: title,description,filename,file_version_comment
+      version: 7.10.5
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.infostore.fulltextSearch, com.openexchange.infostore.fulltextSearchMinimumPatternLength
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore", "Search", "Fulltext"]
+
+    - key: com.openexchange.infostore.maxFoldersPerSearch
+      description: |
+        Allows to limit the length of single database statements that are issued when performing searches in the infostore.
+        Searches that are targeting even more folders are then performed in multiple batches. 
+        Defaults to 5000, a value of -1 disables the limit.
+      defaultValue: 5000
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: infostore.properties
+      packageName: open-xchange-core
+      tags: ["Infostore", "Search" ]

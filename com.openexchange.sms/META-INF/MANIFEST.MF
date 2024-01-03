@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange SMS bundle
+Bundle-SymbolicName: com.openexchange.sms
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.exception,
+ com.openexchange.i18n,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.server.services,
+ org.osgi.framework,
+ org.slf4j
+Export-Package: com.google.i18n.phonenumbers,
+ com.openexchange.sms
+Bundle-ClassPath: lib/libphonenumber-8.13.1.jar,
+ .
+Bundle-Activator: com.openexchange.sms.osgi.SMSActivator
+Automatic-Module-Name: com.openexchange.sms

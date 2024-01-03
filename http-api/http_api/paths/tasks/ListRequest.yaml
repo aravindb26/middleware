@@ -1,0 +1,35 @@
+/tasks?action=list:
+  put:
+    operationId: getTaskList
+    tags:
+      - Tasks
+    summary: Gets a list of tasks.
+    security: 
+        - session: []      
+        - oauth:
+          - read_tasks    
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamTaskColumns'
+    requestBody:
+      $ref: '#/components/requestBodies/TaskListElementArray'      
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with data for the requested tasks.
+          Each array element describes one task and
+
+          is itself an array. The elements of each array contain the information
+          specified by the corresponding
+
+          identifiers in the `columns` parameter. In case of errors the
+          responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TasksResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'      

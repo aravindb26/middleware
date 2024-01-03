@@ -1,0 +1,393 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.oidc.impl.tests;
+
+import static com.openexchange.java.Autoboxing.I;
+import static com.openexchange.java.Autoboxing.L;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.powermock.modules.junit4.PowerMockRunner;
+import com.google.common.collect.ImmutableMap;
+import com.nimbusds.jose.proc.BadJWSException;
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.oauth2.sdk.ErrorObject;
+import com.nimbusds.oauth2.sdk.OAuth2Error;
+import com.nimbusds.oauth2.sdk.Scope;
+import com.nimbusds.oauth2.sdk.TokenErrorResponse;
+import com.nimbusds.oauth2.sdk.TokenRequest;
+import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.oauth2.sdk.token.RefreshToken;
+import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
+import com.nimbusds.openid.connect.sdk.claims.IDTokenClaimsSet;
+import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
+import com.openexchange.authentication.Authenticated;
+import com.openexchange.authentication.AuthenticationRequest;
+import com.openexchange.authentication.LoginExceptionCodes;
+import com.openexchange.context.ContextService;
+import com.openexchange.exception.OXException;
+import com.openexchange.groupware.contexts.Context;
+import com.openexchange.java.util.UUIDs;
+import com.openexchange.oidc.AuthenticationInfo;
+import com.openexchange.oidc.OIDCBackend;
+import com.openexchange.oidc.OIDCBackendConfig;
+import com.openexchange.oidc.OIDCExceptionCode;
+import com.openexchange.oidc.osgi.OIDCBackendRegistry;
+import com.openexchange.oidc.osgi.Services;
+import com.openexchange.oidc.spi.OIDCCoreBackend;
+import com.openexchange.oidc.tools.MockablePasswordGrantAuthentication;
+import com.openexchange.oidc.tools.OIDCTools;
+import com.openexchange.oidc.tools.TestBackendConfig;
+import com.openexchange.server.ServiceLookup;
+import com.openexchange.session.Session;
+import com.openexchange.session.reservation.EnhancedAuthenticated;
+import com.openexchange.user.User;
+import com.openexchange.user.UserService;
+
+/**
+ * {@link OIDCPasswordGrantAuthenticationTest}
+ *
+ * @author <a href="mailto:steffen.templin@open-xchange.com">Steffen Templin</a>
+ * @since v7.10.3
+ */
+@RunWith(PowerMockRunner.class)
+public class OIDCPasswordGrantAuthenticationTest {
+
+    @Mock
+    private ServiceLookup mockedServices;
+
+    @Mock
+    private User user;
+
+    @Mock
+    private Context context;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private ContextService contextService;
+
+    @Mock
+    private OIDCBackendRegistry backendRegistry;
+
+    @Spy
+    private final OIDCBackend backend = new OIDCCoreBackend();
+
+    @Spy
+    private final OIDCBackendConfig config = new TestBackendConfig();
+
+    private MockablePasswordGrantAuthentication authenticationService;
+
+    private int userId;
+
+    private int contextId;
+
+    private String username;
+
+    private String loginmapping;
+
+    private String password;
+
+    @Before
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+
+        userId = ThreadLocalRandom.current().nextInt(1);
+        contextId = ThreadLocalRandom.current().nextInt(1);
+        username = "testuser";
+        loginmapping = "example.com";
+        password = "Secret123!";
+
+        when(I(user.getId())).thenReturn(I(userId));
+        when(user.getLoginInfo()).thenReturn(username);
+
+        when(I(context.getContextId())).thenReturn(I(contextId));
+        when(context.getLoginInfo()).thenReturn(new String[] { loginmapping });
+
+        when(userService.getUser(userId, context)).thenReturn(user);
+        when(contextService.getContext(contextId)).thenReturn(context);
+
+        Services.services.set(mockedServices);
+        when(mockedServices.getService(UserService.class)).thenReturn(userService);
+        when(mockedServices.getService(ContextService.class)).thenReturn(contextService);
+
+        doReturn(config).when(backend).getBackendConfig();
+        when(backendRegistry.getAllRegisteredBackends()).thenReturn(Collections.singletonList(backend));
+
+        authenticationService = Mockito.spy(new MockablePasswordGrantAuthentication(backendRegistry));
+    }
+
+
+    /**
+     * Successful login with username/password
+     */
+    @Test
+    public void loginWithUsernameAndPassword_Success() throws Exception {
+        // @formatter:off
+        AuthenticationRequest request = AuthenticationRequest.builder()
+            .withLogin(username)
+            .withPassword(password)
+            .withClient(null)
+            .withClientIP(null)
+            .withUserAgent(null)
+            .withParameters(Collections.emptyMap())
+            .withProperties(Collections.emptyMap())
+            .build();
+        // @formatter:on
+        TokenRequest tokenRequest = Mockito.mock(TokenRequest.class);
+        doReturn(tokenRequest).when(authenticationService).buildTokenRequest(backend, request.getLogin(), request.getPassword());
+
+        String accessTokenValue = UUIDs.getUnformattedStringFromRandom();
+        String refreshTokenValue = UUIDs.getUnformattedStringFromRandom();
+        String idTokenValue = UUIDs.getUnformattedStringFromRandom();
+        BearerAccessToken accessToken = new BearerAccessToken(accessTokenValue, 3600l, Scope.parse("openid"));
+        RefreshToken refreshToken = new RefreshToken(refreshTokenValue);
+        JWT mockedIdToken = Mockito.mock(JWT.class);
+        when(mockedIdToken.serialize()).thenReturn(idTokenValue);
+        OIDCTokenResponse tokenResponse = new OIDCTokenResponse(new OIDCTokens(mockedIdToken, accessToken, refreshToken));
+        doReturn(tokenResponse).when(authenticationService).sendTokenRequest(backend, tokenRequest);
+
+        IDTokenClaimsSet claimsSet = Mockito.mock(IDTokenClaimsSet.class);
+        doReturn(claimsSet).when(backend).validateIdToken(mockedIdToken, null);
+        doReturn(new AuthenticationInfo(contextId, userId)).when(backend).resolveAuthenticationResponse(request, tokenResponse);
+
+        Optional<Authenticated> optional = authenticationService.handleLoginRequest(request).getAuthenticated();
+        assertTrue(optional.isPresent());
+        Authenticated authenticated = optional.get();
+        assertNotNull(authenticated);
+        assertEquals(loginmapping, authenticated.getContextInfo());
+        assertEquals(username, authenticated.getUserInfo());
+        verify(backend).validateIdToken(mockedIdToken, null);
+        verify(backend).resolveAuthenticationResponse(request, tokenResponse);
+        verify(backend).enhanceAuthenticated(ArgumentCaptor.forClass(Authenticated.class).capture(), ArgumentCaptor.forClass(Map.class).capture());
+
+        Session session = Mockito.spy(Session.class);
+        assertTrue(authenticated instanceof EnhancedAuthenticated);
+        ((EnhancedAuthenticated) authenticated).enhanceSession(session);
+
+
+        ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Object> valueCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(session, Mockito.atLeast(5)).setParameter(keyCaptor.capture(), valueCaptor.capture());
+
+        ImmutableMap<Object, Object> sessionParamMatchers = ImmutableMap.builder()
+            .put(OIDCTools.IDTOKEN, Matchers.equalTo(idTokenValue))
+            .put(Session.PARAM_OAUTH_ACCESS_TOKEN, Matchers.equalTo(accessTokenValue))
+            .put(Session.PARAM_OAUTH_ACCESS_TOKEN_EXPIRY_DATE, TimestampStringMatcher.of(System.currentTimeMillis(), 5000l))
+            .put(Session.PARAM_OAUTH_REFRESH_TOKEN, Matchers.equalTo(refreshTokenValue))
+            .put(OIDCTools.BACKEND_PATH, Matchers.equalTo(""))
+            .build();
+
+
+        for (Entry<Object, Object> entry : sessionParamMatchers.entrySet()) {
+            int indexOf = keyCaptor.getAllValues().indexOf(entry.getKey());
+            assertTrue("Missing key in session properties: " + entry.getKey(), indexOf >= 0);
+            Object value = valueCaptor.getAllValues().get(indexOf);
+            assertThat((String) value, (Matcher<String>) entry.getValue());
+        }
+    }
+
+    /**
+     * Login with invalid username/password combination
+     */
+    @Test
+    public void loginWithUsernameAndPassword_InvalidCredentials() throws Exception {
+        // @formatter:off
+        AuthenticationRequest request = AuthenticationRequest.builder()
+            .withLogin(username)
+            .withPassword("INVALID!")
+            .withClient(null)
+            .withClientIP(null)
+            .withUserAgent(null)
+            .withParameters(Collections.emptyMap())
+            .withProperties(Collections.emptyMap())
+            .build();
+        // @formatter:on
+        TokenRequest tokenRequest = Mockito.mock(TokenRequest.class);
+        doReturn(tokenRequest).when(authenticationService).buildTokenRequest(backend, request.getLogin(), request.getPassword());
+
+        TokenErrorResponse tokenResponse = new TokenErrorResponse(OAuth2Error.INVALID_GRANT);
+        doReturn(tokenResponse).when(authenticationService).sendTokenRequest(backend, tokenRequest);
+
+        OXException error = null;
+        try {
+            authenticationService.handleLoginRequest(request);
+        } catch (OXException e) {
+            error = e;
+        }
+
+        assertTrue(LoginExceptionCodes.INVALID_CREDENTIALS.equals(error));
+    }
+
+    /**
+     * SSO returns token error response for any other reason than invalid credentials
+     */
+    @Test
+    public void loginWithUsernameAndPassword_ConfigOrRuntimeIssue() throws Exception {
+        // @formatter:off
+        AuthenticationRequest request = AuthenticationRequest.builder()
+            .withLogin(username)
+            .withPassword(password)
+            .withClient(null)
+            .withClientIP(null)
+            .withUserAgent(null)
+            .withParameters(Collections.emptyMap())
+            .withProperties(Collections.emptyMap())
+            .build();
+        // @formatter:on
+        TokenRequest tokenRequest = Mockito.mock(TokenRequest.class);
+        doReturn(tokenRequest).when(authenticationService).buildTokenRequest(backend, request.getLogin(), request.getPassword());
+
+        List<ErrorObject> possibleErrors = new LinkedList<>();
+        for (Field field : OAuth2Error.class.getDeclaredFields()) {
+            int modifiers = field.getModifiers();
+            if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && field.getType().equals(ErrorObject.class)) {
+                ErrorObject errorObject = (ErrorObject) field.get(null);
+                if (!errorObject.equals(OAuth2Error.INVALID_GRANT)) {
+                    possibleErrors.add(errorObject);
+                }
+            }
+        }
+
+        assertTrue("No error fields found for testing!", possibleErrors.size() > 0);
+
+        for (ErrorObject errorObject : possibleErrors) {
+            TokenErrorResponse tokenResponse = new TokenErrorResponse(errorObject);
+            doReturn(tokenResponse).when(authenticationService).sendTokenRequest(backend, tokenRequest);
+
+            OXException error = null;
+            try {
+                authenticationService.handleLoginRequest(request);
+            } catch (OXException e) {
+                error = e;
+            }
+
+            assertTrue(LoginExceptionCodes.UNKNOWN.equals(error));
+        }
+    }
+
+    /**
+     * Login with correct credentials, but invalid ID token was returned
+     */
+    @Test
+    public void loginWithUsernameAndPassword_InvalidIDTokenSignature() throws Exception {
+        // @formatter:off
+        AuthenticationRequest request = AuthenticationRequest.builder()
+            .withLogin(username)
+            .withPassword(password)
+            .withClient(null)
+            .withClientIP(null)
+            .withUserAgent(null)
+            .withParameters(Collections.emptyMap())
+            .withProperties(Collections.emptyMap())
+            .build();
+        // @formatter:on
+        TokenRequest tokenRequest = Mockito.mock(TokenRequest.class);
+        doReturn(tokenRequest).when(authenticationService).buildTokenRequest(backend, request.getLogin(), request.getPassword());
+
+        JWT mockedIdToken = Mockito.mock(JWT.class);
+        when(mockedIdToken.serialize()).thenReturn("invalidIDToken");
+        OIDCTokenResponse tokenResponse = new OIDCTokenResponse(new OIDCTokens(
+            mockedIdToken,
+            new BearerAccessToken(UUIDs.getUnformattedStringFromRandom()),
+            new RefreshToken()));
+
+        doReturn(tokenResponse).when(authenticationService).sendTokenRequest(backend, tokenRequest);
+        BadJWSException invalidSignatureException = new BadJWSException("Signed JWT rejected: Invalid signature");
+        OXException validationException = OIDCExceptionCode.IDTOKEN_VALIDATON_FAILED_CONTENT.create(
+            invalidSignatureException,
+            invalidSignatureException.getMessage());
+        doThrow(validationException).when(backend).validateIdToken(mockedIdToken, null);
+
+        OXException error = null;
+        try {
+            authenticationService.handleLoginRequest(request);
+        } catch (OXException e) {
+            error = e;
+        }
+
+        assertTrue(LoginExceptionCodes.LOGIN_DENIED.equals(error));
+    }
+
+    private static final class TimestampStringMatcher extends BaseMatcher<String> {
+
+        private final long timestamp;
+
+        private final long error;
+
+        TimestampStringMatcher(long timestamp, long error) {
+            this.timestamp = timestamp;
+            this.error = error;
+        }
+
+        static TimestampStringMatcher of(long timestamp, long error) {
+            return new TimestampStringMatcher(timestamp, error);
+        }
+
+        @Override
+        public boolean matches(Object item) {
+            if (item instanceof String) {
+                try {
+                    long actual = Long.parseLong((String) item);
+                    return actual >= timestamp - error;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("a timestamp string close to ").appendValue(L(timestamp));
+
+        }
+    }
+}

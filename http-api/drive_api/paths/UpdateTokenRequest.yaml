@@ -1,0 +1,56 @@
+/drive?action=updateToken:
+  get:
+    operationId: updateSubscriptionToken
+    tags:
+      - Drive
+    summary: Updates the subscription token.
+    security: 
+        - session: []    
+    description: >-
+      Updates a device's registration token in case a new one was assigned by
+      the service.
+    parameters:
+      - in: query
+        name: service
+        description: >-
+          The name of the underlying push service to use, currently one of gcm,
+          apn, or apn.macos.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: token
+        description: The previous registration token as assigned by the service.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: newToken
+        description: The new registration token as assigned by the service.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          An empty JSON result. In case of errors the responsible fields in the
+          response are filled.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonResponse'
+    x-ox-examples:
+      - Example1: null
+        description: Basic example
+        example: >
+          ==> GET
+          http://192.168.32.191/ajax/drive?action=updateToken&service=apn&session=51378e29f82042b4afe4af1c034c6d68&token=28919862989a1b5ba59c11d5f7cb7ba2b9678be9dd18b033184d04f682013677&newToken=38919862989a1b5ba59c11d5f7cb7ba2b9678be9dd18b033184d04f682013677
+
+
+          <== HTTP 200 OK (15.6653 ms elapsed, 11 bytes received)
+
+          <   Content: 
+              {
+                "data" : {
+                }
+              }

@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Central version component
+Bundle-SymbolicName: com.openexchange.version
+Automatic-Module-Name: com.openexchange.version
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.version.osgi.VersionActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Import-Package: com.google.common.collect,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ org.apache.commons.io,
+ org.osgi.framework,
+ org.slf4j
+Export-Package: com.openexchange.version

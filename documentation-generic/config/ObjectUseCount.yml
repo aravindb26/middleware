@@ -1,0 +1,14 @@
+feature_name: ObjectUseCount
+properties:
+    - key: com.openexchange.objectusecount.cleanupTimespan
+      description: |
+        Defines the timespan until an unused object use count in decreased. 
+        The value can be defined using units of measurement: "W" (=weeks), "D" (=days) and "H" (=hours). A value of "0" disables the cleanup.
+      defaultValue: "4W"
+      version: 7.10.6
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.database.cleanup.enabled
+      file: objectusecount.properties
+      packageName: open-xchange-core
+      tags: ["ObjectUseCount", "Contact"]

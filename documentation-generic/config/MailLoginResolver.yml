@@ -1,0 +1,178 @@
+feature_name: Mail Login Resolver
+properties:
+    - key: com.openexchange.mail.login.resolver.enabled
+      description: |
+        Configures if the mail login resolver service is used to resolve mail logins or not.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue: false
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.enabled
+      description: |
+        Configures if the LDAP-based mail login resolver service is enabled or not.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue: false
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.clientId
+      description: |
+        LDAP client identifier from ldap-client-config.yml.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue:
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.mailLoginSearchFilter
+      description: |
+        Specifies the LDAP search filter to find mail logins by userId and contextId. Placeholder <code>[mailLogin]</code> will be replaced by the given mail login.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue: (oxLocalMailRecipient=[mailLogin])
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.mailLoginSearchScope
+      description: |
+        Specifies the LDAP search scope to resolve mail logins. Possible values are:
+        <ul>
+          <li><code>SUB</code></li>
+          <li><code>ONE</code></li>
+        </ul>
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue: SUB
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.userIdAttribute
+      description: |
+        Specifies the attribute which is used to find the userId in the LDAP search result.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue:
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.userNameAttribute
+      description: |
+        Specifies the attribute which is used to find the user name in the LDAP search result.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue:
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.contextIdAttribute
+      description: |
+        Specifies the attribute which is used to find the contextId in the LDAP search result.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue:
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.contextNameAttribute
+      description: |
+        Specifies the attribute which is used to find the context name in the LDAP search result.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue:
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.entitySearchFilter
+      description: |
+        Specifies the LDAP search filter to find entities by their mail logins. Placeholder <code>[cid]</code> and <code>[uid]</code> 
+        will be replaced by the given userId and contextId.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue: (&(oxContextId=[cid])(oxUserId=[uid]))
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.entitySearchScope
+      description: |
+        Specifies the LDAP search scope to resolve entities. Possible values are:
+        <ul>
+          <li><code>SUB</code></li>
+          <li><code>ONE</code></li>
+        </ul>
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue: SUB
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.mailLoginAttribute
+      description: |
+        Specifies the attribute which is used to find the mail login in the LDAP search result.
+        Can be defined up to 'context' scope through the config-cascade, however, requires a 
+        system-wide setting when being used to resolve users in pushed iMIP messages.
+      defaultValue: oxLocalMailRecipient
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.calendar.pushedIMipResolveMode 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]
+    - key: com.openexchange.mail.login.resolver.ldap.cacheExpire
+      description: |
+        Specifies, in seconds, how long already resolved mail logins or entities are cached.
+      defaultValue: 600
+      version: 7.10.6
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: mailloginresolver.properties
+      packageName: open-xchange-core
+      tags: ["Mail Login Resolver"]

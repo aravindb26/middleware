@@ -1,0 +1,36 @@
+/tasks?action=delete:
+  put:
+    operationId: deleteTasks
+    tags:
+      - Tasks
+    summary: Deletes tasks.
+    security: 
+        - session: []
+        - oauth:
+          - write_tasks    
+    parameters:
+      - in: query
+        name: timestamp
+        description: Timestamp of the last update of the deleted tasks.
+        required: true
+        schema:
+          type: integer
+          format: int64
+    requestBody:
+      $ref: '#/components/requestBodies/TaskListElementArray'          
+    responses:
+      '200':
+        description: >
+          A JSON array with object IDs of tasks which were modified after the
+          specified timestamp and were therefore not deleted. In case of errors
+          the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskDeletionsResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

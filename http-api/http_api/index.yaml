@@ -1,0 +1,311 @@
+openapi: 3.0.0 
+
+info: 
+  $ref: ./info/index.yaml 
+
+servers:
+  - url: https://api.example.com/v1 
+
+tags:
+  - name: Login
+    description: >
+      The login module is used to obtain a session from the user's login
+      credentials. To understand the details
+
+      of the different login methods, see the article titled [Login
+      variations](http://oxpedia.org/wiki/index.php?title=Login_variations).
+
+
+      Because of security reasons each login variation will reject requests
+      containing the parameter
+
+      "password" within the URL query. 
+  - name: Config
+    description: >
+      The config module is used to retrieve and set user-specific configuration.
+      The configuration is
+
+      stored in a tree. Each node of the tree has a name and a value. The values
+      of leaf nodes are strings
+
+      which store the actual configuration data. The values of inner nodes are
+      defined recursively as
+
+      objects with one field for each child node. The name and the value of each
+      field is the name and the
+
+      value of the corresponding child node, respectively.
+  - name: Folders
+    description: |
+      The folders module is used to access the OX folder structure.
+
+      Special system folders:
+
+      <table class=simpleTable>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>6</td>
+            <td>contacts</td>
+            <td>System Users</td>
+          </tr>
+        </tbody>
+      </table>
+  - name: Tasks
+    description: The tasks module is used to access task information.
+  - name: Addressbooks
+    description: The addressbooks module is used to access contact information. In 
+      contrast to its legacy pendant "contacts", it can also be used to access data
+      stored in external contact provider plugins.  
+  - name: Contacts
+    description: The contacts module is used to access contact information. 
+      Deprecated, and provides only access to internally stored contacts from the 
+      default contacts provider. Clients should switch to the "addressbooks" module
+      for new features. 
+  - name: Chronos
+    description: The chronos module is used to access calendar data. In 
+      contrast to its legacy pendant "calendar", it offers a more standards compliant
+      data model, richer features and can also be used to access data stored in 
+      external calendar provider plugins.  
+  - name: Calendar
+    description: The calendar module is used to access calendar data. 
+      Deprecated, and provides only access to internally stored appointments from the 
+      default calendar provider. Clients should switch to the "chronos" module
+      for new features. 
+  - name: Mail
+    description: >-
+      The mail module is used to access mail data. When mails are stored on an
+      IMAP server, some functionality is not available due to restrictions of the
+      IMAP protocol. Such functionality is marked with "not IMAP".
+  - name: Groups
+    description: >-
+      The group module allows to query available groups. It is mainly used by the
+      dialog for the selection of participants.
+  - name: Resources
+    description: >-
+      The resource module allows to query available resources. It is mainly used
+      by the dialog for the selection of participants.
+  - name: Infostore
+    description: >-
+      The module infostore or filestore or files or drive has been renamed quite
+      often. Whatever its name, it combines the knowledge database, bookmarks and
+      document storage.
+  - name: Attachments
+    description: >-
+      The module attachments allows file attachments to arbitrary objects. An
+      attachment always belongs to an object (called 'attached') in a certain
+      folder of a certain module.
+  - name: Reminder
+    description: >-
+      The reminder module provides the ability to fetch all active reminders for a
+      user between two dates.
+  - name: Multiple
+    description: >-
+      The multiple module allows to bundle multiple requests to most other modules
+      in a single request.
+  - name: Quota
+    description: >-
+      The quota module allows accessing information about the limit and current
+      usage of a certain storage type.
+  - name: Import
+    description: >-
+      The module import allows to import specific module data (like Contacts,
+      Tasks or Appointments) in several formats (iCal, vCard, CSV) into a folder.
+      Please note: The callback for all actions of this bundle is
+      `callback_import`, not `callback_$actionname` for legacy purposes.
+  - name: Export
+    description: >-
+      The module export allows to export specific module data (like contacts,
+      tasks or appointments) from a folder in several formats (iCal, vCard, CSV).
+  - name: Sync
+    description: >-
+      The module sync delivers several core API extensions to support common
+      operations used in a mobile synchronization environment.
+  - name: Token
+    description: >-
+      The module token delivers several core API extensions to support token based
+      logins.
+  - name: Mailfilter
+    description: >
+      The mailfilter module is used to access all mail filter related options.
+
+
+      First of all the main structure of a mail filter script is, that it has
+      different rules. Each of them contains one command. This command takes a
+      test condition which executes the actions given in that command if the test
+      condition is true.
+
+      The test condition consists of a test command and some arguments for this
+      on the mail filter server, these tests must be determined at runtime. So
+      that no test field is transferred to the server which it isn't able to
+      handle. Examples for tests are `address`, `allof` and `anyof`.
+
+      Each test has a special comparison. The list of available comparisons
+      depends on the test given and the mail filter server configuration so they
+      have to be determined at runtime too. See chapter [Mail
+      filter](#mail-filter) for more information.
+  - name: File
+    description: >-
+      The ajax file upload module offers to store files in server's dedicated
+      download directory for a configurable amount of time. The files are then
+      accessible for further operations like inline images in (html) mails.
+  - name: Image
+    description: >-
+      The image module allows to download images from Open-Xchange server without
+      providing a session ID in request's URL parameters.
+  - name: Conversion
+    description: >-
+      The conversion module is a generic module to request data from a data source
+      and to process obtained/submitted data with a data handler. Thus data is
+      converted from a data source by a data handler.
+  - name: Mailaccount
+    description: >-
+      The mailaccount module is used to manage multiple mail accounts held by a
+      user.
+  - name: MailCompose
+    description: The MailCompose REST API.
+  - name: Autoconfig
+    description: >-
+      The module autoconfig can be used to request the best available settings for
+      an appropriate mail server.
+  - name: User
+    description: The user module is used to access user information.
+  - name: User/Me
+    description: The module user/me is used to access formal information about current user.
+  - name: OAuth
+    description: >
+      The Open-Xchange server can act as an OAuth client or be an OAuth provider
+      itself. The OAuth module supports both aspects:
+       * Manage multiple OAuth accounts for certain online services for a user. The OAuth mechanism allows the Open-Xchange application to act as behalf of this user using previously obtained access tokens granted by user. The according interface is divided into two parts: Account access and service's meta data access.
+       * Manage granted accesses of external services that can access a users data on his behalf, called "grants".
+  - name: JSlob
+    description: >-
+      The JSlob module is used to store and retrieve arbitrary JSON-structured
+      configuration for a single user.
+  - name: Freebusy
+    description: Provides access to free/busy information.
+  - name: Messaging
+    description: >
+      The messaging module is divided into services which represent a messaging
+      backend (they add a new folder module "messaging"),
+
+      into accounts which represent the concrete configuration of accounts for a
+      given messaging service, and into messages which
+
+      represent single messages consisting of some metadata, headers and a
+      content.
+  - name: Snippet
+  - name: Halo
+  - name: Capabilities
+    description: >-
+      Provides access to capabilities, i.e. modules or features that are available
+      on the backend and the user has access to.
+  - name: Jump
+    description: >-
+      The jump module is used to pass an acquired identity token for an
+      authenticated user from one system to another for a single sign-on.
+  - name: Share/Management
+    description: >
+      The share/management module can create and manage share links via different
+      actions. Dedicated actions to list all shares of a
+
+      user can be found in the corresponding modules, like
+      `/folders?action=shares` of module "folders" or `/infostore?action=shares`
+
+      of module "infostore".
+  - name: Share/Redeem
+    description: >
+      The share/redeem module is used to redeem previously reserved tokens during 
+      the share login workflow.
+  - name: Passwordchange
+    description: Via the passwordchange module the users can change their password.
+  - name: Filestorage
+    description: >-
+      The file storage module provides access to file storage backends, e.g.
+      Drive, Dropbox, etc.
+  - name: Mail_categories
+    description: The module mail_categories allows to manage mail categories.
+  - name: Advertisement
+    description: >-
+      Via the advertisement module the client can retrieve the advertisement
+      configuration
+  - name: Clientonboarding
+    description: >-
+      Via the client on-boarding module the client can retrieve possible
+      on-boarding configurations
+  - name: Pns
+    description: >-
+      The interface to add/remove notification subscriptions associated with a
+      token for certain topics
+  - name: Userfeedback
+    description: The user feedback module
+  - name: RSS Feed
+    description: The RSS Feed module
+  - name: Sessionmanagement
+    description: The session management module
+  - name: Jobqueue
+    description: The job queue module
+  - name: OpenId
+    description: >-
+      This module supports the Single Sign On mechanism known as OpenId and
+      therefore a few requests are needed to initiate an authentication and
+      trigger the end of the session.
+  - name: SAML
+    description: >-
+      Endpoints of the built-in SAML 2.0 service provider. See
+      https://documentation.open-xchange.com/latest/middleware/login/02_saml.html.
+  - name: System
+    description: The module for API related to the middelware system
+  - name: Manifests
+    description: The module for client configuration
+
+paths: 
+   source: ./paths/ 
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: query
+      name: session
+      description: The default security scheme which uses a session ID previously obtained from the login module. Used in combination with a session cookie.
+    oauth: 
+      type: oauth2
+      description: The security scheme for oauth enabled modules of the middleware
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.server.example.com/auth/realms/myrealm/protocol/openid-connect/auth
+          tokenUrl: https://auth.server.example.com/auth/realms/myrealm/protocol/openid-connect/token          
+          scopes:
+            write_userconfig: allows the user to make changes to the configuration
+            read_mail: allows to read mails
+            write_mail: allows to store, delete and sent mails
+            read_contacts: allows to read contacts
+            write_contacts: allows to create, update and delete contacts
+            read_calendar: allows to read events in the calendar
+            write_calendar: allows to create, update and delete events in the calendar
+            read_mailaccount: allows to read the data of mail accounts
+            write_mailaccount: allows to create, update and delete mail accounts
+            read_tasks: allows to read tasks
+            write_tasks: allows to create, update and delete tasks
+            read_files: allows read access to file storage backends
+            write_files: allows to create, update and delete a file storage account
+            read_reminder: allows to read reminders
+            write_reminder: allows to update and delete reminders
+  responses:
+    $ref: ./components/responses/index.yaml
+    
+  schemas: 
+    $ref: ./components/schemas/index.yaml 
+
+  parameters: 
+    $ref: ./components/parameters/index.yaml 
+
+  requestBodies: 
+    $ref: ./components/requestBodies/index.yaml

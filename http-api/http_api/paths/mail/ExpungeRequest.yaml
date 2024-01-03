@@ -1,0 +1,43 @@
+/mail?action=expunge:
+  put:
+    operationId: expungeMails
+    tags:
+      - Mail
+    summary: Expunges mails.
+    security: 
+        - session: []
+        - oauth:
+          - write_mail
+    parameters:
+      - in: query
+        name: harddelete
+        description: 'Flag to hard delete the messages, meaning not to create a backup copy of each message in default trash if set to `true`.'
+        required: false
+        schema:
+          type: boolean
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+      description: A JSON array with object IDs of mail folders.
+      required: true       
+    responses:
+      '200':
+        description: >
+          You receive an empty JSON array if everything worked well. In case of
+          errors the responsible fields
+
+          in the response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

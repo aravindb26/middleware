@@ -1,0 +1,40 @@
+'/mail/compose/{id}/referencedAttachment':
+  post:
+    operationId: postReferencedAttachments
+    tags:
+      - MailCompose
+    summary: Add new attachment.
+    security: 
+        - session: []    
+    parameters:
+      - in: path
+        name: id
+        description: The ID of the composition space
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/MailComposeClientToken'
+    responses:
+      '200':
+        description: A JSON object containing the newly added attachment.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailComposeAttachmentResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            title: postReferencedAttachmentBody
+            properties:
+              JSON:
+                description: >-
+                  Represents the attachment information as JSON string containing.
+                type: string
+            required:
+              - JSON

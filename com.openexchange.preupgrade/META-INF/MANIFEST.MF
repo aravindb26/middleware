@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Pre-Upgrade Orchestration and Execution
+Bundle-SymbolicName: com.openexchange.preupgrade
+Bundle-Version: 8.0.0
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.preupgrade
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ClassPath: .
+Import-Package: com.google.common.collect,
+ com.openexchange.common.progress,
+ com.openexchange.config,
+ com.openexchange.config.lean,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.preupgrade.properties,
+ com.openexchange.startup,
+ com.openexchange.threadpool,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.preupgrade.osgi.PreUpgradeActivator
+Export-Package: com.openexchange.preupgrade

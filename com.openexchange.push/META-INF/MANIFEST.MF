@@ -1,0 +1,35 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Push Bundle
+Bundle-SymbolicName: com.openexchange.push
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.annotations,
+ com.google.common.base,
+ com.google.common.cache,
+ com.openexchange.auth,
+ com.openexchange.event,
+ com.openexchange.exception,
+ com.openexchange.groupware,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.server,
+ com.openexchange.session,
+ javax.management,
+ javax.management.openmbean,
+ javax.management.remote,
+ javax.naming,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.osgi.service.event,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.push.osgi.PushActivator
+Export-Package: com.openexchange.push,
+ com.openexchange.push.credstorage,
+ com.openexchange.push.rmi
+Automatic-Module-Name: com.openexchange.push

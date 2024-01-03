@@ -1,0 +1,25 @@
+type: object
+required:
+  - entity
+  - group
+  - privilege
+properties:
+  entity:
+    type: integer
+    description: Internal identifier of the user or group to which this permission applies. 
+  group:
+    type: boolean
+    description: Set `true` if entity refers to a group, `false` if it refers to a user
+  privilege:
+    type: string
+    description: >-
+      The granted scheduling privilege.
+        * `none` - Not allowed to book the resource 
+        * `ask_to_book` - May submit a request to book the resource if it is available 
+        * `book_directly` - May book the resource directly if it is available 
+        * `delegate` - Act as delegate of the resource and manage bookings
+    enum:
+      - none
+      - ask_to_book
+      - book_directly
+      - delegate

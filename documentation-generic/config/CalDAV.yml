@@ -1,0 +1,113 @@
+feature_name: CalDAV
+properties:
+    - key: com.openexchange.caldav.enabled
+      description: |
+        Whether CalDAV is enabled or not
+      defaultValue: true
+      version: 
+      reloadable: true
+      configcascadeAware: true
+      related:
+      file: caldav.properties
+      packageName: open-xchange-dav
+      tags: ["CalDAV"]
+    - key: com.openexchange.caldav.tree
+      description: |
+        Configures the ID of the folder tree used by the CalDAV interface.
+      defaultValue: 0
+      version: 
+      reloadable: true
+      configcascadeAware: true
+      related:
+      file: caldav.properties
+      packageName: open-xchange-dav
+      tags: ["CalDAV", "Folder"]
+    - key: com.openexchange.caldav.interval.start
+      description: |
+        Appointments and tasks are available via the CalDAV interface if they fall 
+        into a configurable timeframe. This value specifies the start time of this 
+        interval, i.e. how  many days in the past should be considered. More formal, 
+        this value defines the negative offset in days relative to the current date 
+        representing the minimum end time of appointments and tasks to be synchronized.
+        A value of "0" disables the limit, which is the default. 
+      defaultValue: 0
+      version: 
+      reloadable: false
+      configcascadeAware: true
+      related: com.openexchange.caldav.interval.end
+      file: caldav.properties
+      packageName: open-xchange-dav
+      tags: ["CalDAV", "Limit", "Appointment"]
+    - key: com.openexchange.caldav.interval.end
+      description: |
+        Appointments and tasks are available via the CalDAV interface if they fall 
+        into a configurable timeframe. This value specifies the end time of this
+        interval, i.e. how many days in the future should be considered. More formal, 
+        this value defines the positive offset in days relative to the current date 
+        representing the maximum start time of appointments and tasks to be synchronized.
+        A value of "0" disables the limit, which is the default. 
+      defaultValue: 0
+      version:
+      reloadable: false
+      configcascadeAware: true
+      related: com.openexchange.caldav.interval.start
+      file: caldav.properties
+      packageName: open-xchange-dav
+      tags: ["CalDAV", "Limit", "Appointment"]
+    - key: com.openexchange.caldav.interval.strict
+      description: |
+        Controls whether resources sent by the client that fall out of the configured 
+        timerange are rejected by the server or not. If enabled, such PUT requests are 
+        answered with HTTP 403 and the "CALDAV:max-date-time" / "min-date-time" 
+        preconditions as per RFC 4791. 
+        However, since some clients are not really able to cope with these reponses, the 
+        check is deactivated by default so that such data sent by the client is still 
+        accepted by the server.
+      defaultValue: false
+      version: 7.10.4
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.caldav.interval.start com.openexchange.caldav.interval.end
+      file: caldav.properties
+      packageName: open-xchange-dav
+      tags: ["CalDAV", "Limit", "Appointment"]
+    - key: com.openexchange.caldav.url
+      description: |
+        Tells users where to find a caldav folder. This can be displayed in frontends.
+        You can use the variables [hostname] and [folderId]. 
+        If you chose to deploy caldav as a virtual host (say 'dav.open-xchange.com') use
+        <code>https://dav.open-xchange.com/caldav/[folderId]</code> as the value
+        If you are using user-agent sniffing use
+        <code>https://[hostname]/caldav/[folderId]</code>
+      defaultValue: https://[hostname]/caldav/[folderId]
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: caldav.properties
+      packageName: open-xchange-dav
+      tags: ["CalDAV", "Folder", "Host"]
+    - key: com.openexchange.caldav.standardFolderDisplayName
+      description: |
+        CalDAV display name for the standard folder. Placeholder [foldername]
+        and [owner] are possible. [foldername] is the localized String of default
+        folders.
+      defaultValue: "[owner]"
+      version:
+      reloadable: true
+      configcascadeAware: false
+      file: caldav.properties
+      packageName: open-xchange-dav
+      tags: ["CalDAV", "Folder"]
+    - key: com.openexchange.caldav.sharedFolderDisplayName
+      description: |
+        CalDAV display name for shared folders. Placeholder [foldername]
+        and [owner] are possible. [foldername] is the localized String of default
+        folders, or the folder name as-is for non-default folders.
+      defaultValue: "[owner]: [foldername]"
+      version:
+      reloadable: true
+      configcascadeAware: false
+      file: caldav.properties
+      packageName: open-xchange-dav
+      tags: ["CalDAV", "Folder"]

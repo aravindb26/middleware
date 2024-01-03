@@ -1,0 +1,8 @@
+.git
+.cache
+
+# Vim
+[._]*.sw[a-p]
+[._]sw[a-p]
+
+!README*.md

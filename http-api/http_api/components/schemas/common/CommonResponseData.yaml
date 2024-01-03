@@ -1,0 +1,5 @@
+$ref: ../common/CommonResponseExceptionData.yaml
+timestamp:
+  type: integer
+  format: int64
+  description: The latest timestamp of the returned data (see [Updates](#updates)).

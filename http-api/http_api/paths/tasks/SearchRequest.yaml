@@ -1,0 +1,75 @@
+/tasks?action=search:
+  put:
+    operationId: searchTasks
+    tags:
+      - Tasks
+    summary: Search for tasks.
+    security: 
+        - session: []      
+        - oauth:
+          - read_tasks    
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamTaskColumns'
+      - in: query
+        name: sort
+        description: >-
+          The identifier of a column which determines the sort order of the
+          response. If this parameter is specified , then the parameter order
+          must be also specified.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: order
+        description: >-
+          "asc" if the response entires should be sorted in the ascending order,
+          "desc" if the response entries should be sorted in the descending
+          order. If this parameter is specified, then the parameter sort must be
+          also specified.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: start
+        description: >-
+          Inclusive start date for a time range the tasks should end in. If start is
+          omitted end is ignored.
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - in: query
+        name: end
+        description: >-
+          Exclusive end date for a time range the tasks should end in. If this
+          parameter is omitted the time range has an open end.
+        required: false
+        schema:
+          type: integer
+          format: int64
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TaskSearchBody'
+      description: A JSON object containing search parameters.
+      required: true          
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with matching tasks. Tasks are
+          represented by arrays. The elements of each array contain the
+
+          information specified by the corresponding identifiers in the
+          `columns` parameter. In case of errors the
+
+          responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TasksResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'               

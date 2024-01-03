@@ -1,0 +1,35 @@
+/calendar?action=search:
+  put:
+    operationId: searchAppointments
+    tags:
+      - Calendar
+    summary: Searches for appointments.
+    security: 
+        - session: []
+        - oauth: 
+          - read_calendar            
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamCalendarColumns'
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with matching appointments.
+          Appointments are represented by arrays. The elements of each array
+          contain the
+
+          information specified by the corresponding identifiers in the
+          `columns` parameter. In case of errors the
+
+          responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentsResponse'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AppointmentSearchBody'
+      description: A JSON object containing search parameters.
+      required: true

@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Stream Control Bundle
+Bundle-SymbolicName: com.openexchange.streamcontrol
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.exception,
+ com.openexchange.java,
+ org.osgi.framework,
+ org.slf4j
+Export-Package: com.openexchange.streamcontrol
+Automatic-Module-Name: com.openexchange.streamcontrol
+Bundle-Activator: com.openexchange.streamcontrol.osgi.StreamControlActivator

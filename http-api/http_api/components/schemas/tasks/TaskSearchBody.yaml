@@ -1,0 +1,15 @@
+type: object
+required:
+  - pattern
+properties:
+  pattern:
+    type: string
+    description: >-
+      Search pattern to find tasks. In the pattern, the character "*" matches
+      zero or more characters and the character "?" matches exactly one
+      character. All other characters match only themselves.
+  folder:
+    type: string
+    description: >-
+      Defines the folder to search for tasks in. If this is omitted in all task
+      folders will be searched.

@@ -1,0 +1,47 @@
+/messaging/message?action=list:
+  put:
+    operationId: getMessagingMessageList
+    tags:
+      - Messaging
+    summary: Gets a list of messaging messages.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: columns
+        description: >-
+          A comma-separated list of column names, like "folder,headers,body".
+          See [Messaging fields](#messaging-message-columns) for valid column
+          names.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with data for requested messages.
+          Each array element describes one message and
+
+          is itself an array. The elements of each array contain the information
+          specified by the corresponding
+
+          column names in the `columns` parameter. In case of errors the
+          responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessagingMessagesResponse'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: object
+      description: >-
+        A JSON array of JSON arrays with the folder and ID as elements each
+        identifying a message.
+      required: true

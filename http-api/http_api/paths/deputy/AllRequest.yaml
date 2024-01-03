@@ -1,0 +1,19 @@
+/deputy?action=all:
+  get:
+    operationId: allDeputyPermissions
+    tags:
+      - Deputypermission
+    summary: Gets all deputy permission granted by session-associated user
+    security: 
+        - session: []
+    responses:
+      '200':
+        description: A JSON array containing deputy permissions.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeputyListResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized

@@ -1,0 +1,31 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Implementation for Cascading Configuration System
+Bundle-SymbolicName: com.openexchange.config.cascade.impl
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.annotations,
+ com.google.common.base,
+ com.google.common.cache,
+ com.google.common.collect,
+ com.openexchange.caching,
+ com.openexchange.caching.events,
+ com.openexchange.config,
+ com.openexchange.config.cascade,
+ com.openexchange.exception,
+ com.openexchange.groupware,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.sessiond,
+ com.openexchange.tools.strings,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.osgi.service.event,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.config.cascade.impl.osgi.ConfigCascadeActivator
+Automatic-Module-Name: com.openexchange.config.cascade.impl

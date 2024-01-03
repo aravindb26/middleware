@@ -1,0 +1,35 @@
+CHART NAME: {{ .Chart.Name }}
+CHART VERSION: {{ .Chart.Version }}
+APP VERSION: {{ .Chart.AppVersion }}
+
+** Please be patient while the chart is being deployed **
+
+{{ if not (lookup "v1" "Secret" .Release.Namespace (printf "%s-common-env" .Release.Namespace)) }}
+{{- $cookieHashSalt := "" -}}
+{{- $shareCryptKey := "" -}}
+{{- $sessiondEncryptionKey := "" -}}
+{{- if .Values.global -}}
+  {{- if .Values.global.appsuite -}}
+    {{- if .Values.global.appsuite.cookieHashSalt -}}
+      {{- $cookieHashSalt = .Values.global.appsuite.cookieHashSalt -}}
+    {{- end -}}
+    {{- if .Values.global.appsuite.shareCryptKey -}}
+      {{- $shareCryptKey = .Values.global.appsuite.shareCryptKey -}}
+    {{- end -}}
+    {{- if .Values.global.appsuite.sessiondEncryptionKey -}}
+      {{- $sessiondEncryptionKey = .Values.global.appsuite.sessiondEncryptionKey -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{ if or (not $cookieHashSalt) (not $shareCryptKey) (not $sessiondEncryptionKey) }}
+The Open-Xchange Server requires some property values to be unique for every deployment. Since one or more of those property values were not provided, we generated them for you!
+
+In order to print those property values to the command line, please execute the following commands:
+
+{{ if (not $cookieHashSalt) }}  kubectl get secret --namespace {{ .Release.Name }} {{ .Release.Name }}-common-env -o jsonpath="{.data.COOKIE_HASH_SALT}" | base64 -d {{- end }}
+{{ if (not $shareCryptKey) }}  kubectl get secret --namespace {{ .Release.Name }} {{ .Release.Name }}-common-env -o jsonpath="{.data.SHARE_CRYPT_KEY}" | base64 -d {{- end }}
+{{ if (not $sessiondEncryptionKey) }}  kubectl get secret --namespace {{ .Release.Name }} {{ .Release.Name }}-common-env -o jsonpath="{.data.SESSIOND_ENCRYPTION_KEY}" | base64 -d {{- end }}
+
+WARNING: Those property values are not supposed to change over time. Please save them to prevent data loss!
+{{ end }}
+{{ end }}

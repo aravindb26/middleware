@@ -1,0 +1,44 @@
+type: object
+properties:
+  $ref: ../common/CommonObjectData.yaml
+  folder:
+    type: integer
+    description: The ID of the first folder in which the attached object resides.
+  attached:
+    type: integer
+    description: The ID of the object this attachment is attached to.
+  module:
+    type: integer
+    description: |
+      The module type of the object.<br>
+      * 1 (appointment),<br>
+      * 4 (task),<br>
+      * 7 (contact),<br>
+      * 137 (infostore)
+    enum:
+      - 1  
+      - 4  
+      - 7  
+      - 137
+  filename:
+    type: string
+    description: The filename of the attached file.
+  file_size:
+    type: integer
+    format: int64
+    description: The file size (in bytes) of the attached file.
+  file_mimetype:
+    type: string
+    description: The MIME type of the attached file.
+  rft_flag:
+    type: boolean
+    description: >-
+      If the attachment is a RTF attachment of outlook (outlook descriptions can
+      be stored as RTF documents).
+  uri:
+    type: string
+    description: >-
+      A uniform resource identifier to the attachment file. Drive attachments are also allowed in this attribute.
+      A drive attachment is referenced via it's full URI with the following structure 
+      drive://<folder_id>/<file_id>/<optional_version>, e.g. drive://34/34%2F1.
+      The <optional_version> part defaults to the latest version of the file.

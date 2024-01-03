@@ -1,0 +1,50 @@
+feature_name: Resource
+properties:
+    - key: CHECK_RES_UID_FOR_NOT_ALLOWED_CHARS
+      description: |
+        Specifies whether to check the resource name by using the check in [[CHECK_RES_UID_REGEXP]].
+      defaultValue: true
+      version: 
+      reloadable: false
+      configcascadeAware: false
+      related: CHECK_RES_UID_REGEXP
+      file: Resource.properties
+      packageName: open-xchange-admin
+      tags: ["Resource"]
+    - key: CHECK_RES_UID_REGEXP
+      description: |
+        Specifies a check to perform for resource names in case [[CHECK_RES_UID_FOR_NOT_ALLOWED_CHARS]] is set to <code>true</code>.
+      defaultValue: "[ $@%\\.+a-zA-Z0-9_-]"
+      version: 
+      reloadable: false
+      configcascadeAware: false
+      related: CHECK_RES_UID_FOR_NOT_ALLOWED_CHARS
+      file: Resource.properties
+      packageName: open-xchange-admin
+      tags: ["Resource"]
+    - key: AUTO_TO_LOWERCASE_UID
+      description: |
+        Specifies whether to lowercase the uid or not.
+      defaultValue: false
+      version: 
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: Resource.properties
+      packageName: open-xchange-admin
+      tags: ["Resource"]
+    - key: com.openexchange.resource.simplePermissionMode
+      description: |
+        Enables or disables a special mode to control which permission combinations are possible. If enabled, only two alternatives for 
+        permissions are allowed to cover the basic managed/unmanaged resource semantics: either 'book_directly' for all users (group 0), 
+        or, a combination of 'ask_to_book' for group 0, plus one or more entities who act as 'delegate'.
+        Note: This simple mode is enabled by default, and must remain 'true', as long as resources are managed in App Suite by users with
+        'editresource' module permission.          
+      defaultValue: true
+      version: 8
+      reloadable: true
+      configcascadeAware: true
+      related: 
+      file: Resource.properties
+      packageName: open-xchange-core
+      tags: ["Resource"]

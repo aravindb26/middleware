@@ -1,0 +1,26 @@
+/oauth/services?action=get:
+  get:
+    operationId: getOAuthService
+    tags:
+      - OAuth
+    summary: Gets all OAuth service's meta data.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: id
+        description: The service's identifier.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object containing the meta data of the OAuth service. In case
+          of errors the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthServiceResponse'

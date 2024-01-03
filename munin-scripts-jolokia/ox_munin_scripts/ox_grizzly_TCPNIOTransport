@@ -1,0 +1,97 @@
+#!/usr/bin/perl
+#%# family=auto
+#%# capabilities=autoconf
+
+use strict;
+
+use LWP;
+use JSON;
+
+if ( $ARGV[0] and $ARGV[0] eq "autoconf")
+{
+    if (-e "/opt/open-xchange/bundles/com.openexchange.http.grizzly/com.openexchange.http.grizzly.jar") {
+        print "yes\n";
+        exit 0;
+    } else {
+        print "no\n";
+        exit 0;
+    }
+}
+
+if ( $ARGV[0] and $ARGV[0] eq "config") {
+    print "graph_title Grizzly TCPNIOTransport\n";
+    print "graph_args --base 1000 -l 0\n";
+    print "graph_category Open Xchange\n";
+    print "graph_vlabel Number\n";
+    
+    print "bytes-read.label bytes-read\n";
+    print "bytes-read.draw LINE1\n";
+    print "bytes-read.type DERIVE\n";
+    print "bytes-read.min 0\n";
+
+    print "bytes-written.label bytes-written\n";
+    print "bytes-written.draw LINE1\n";
+    print "bytes-written.type DERIVE\n";
+    print "bytes-written.min 0\n";
+
+    print "last-error.label last-error\n";
+    print "last-error.draw LINE1\n";
+    print "last-error.type DERIVE\n";
+    print "last-error.min 0\n";
+    
+    print "open-connections-count.label open-connections-count\n";
+    print "open-connections-count.draw LINE1\n";
+    print "open-connections-count.type DERIVE\n";
+    print "open-connections-count.min 0\n";
+
+    print "total-connections-count.label total-connections-count\n";
+    print "total-connections-count.draw LINE1\n";
+    print "total-connections-count.type DERIVE\n";
+    print "total-connections-count.min 0\n";
+
+    exit 0;
+}
+
+my $url = $ENV{oxJolokiaUrl};
+my $username = $ENV{oxJolokiaUser};
+my $password = $ENV{oxJolokiaPassword};
+
+callUrl("bytes-read","/read/org.glassfish.grizzly:name=Transport,pp=!/gmbal-root!/HttpServer[HttpServer]!/NetworkListener[NetworkListener[http-listener]],type=TCPNIOTransport/bytes-read");
+callUrl("bytes-written","/read/org.glassfish.grizzly:name=Transport,pp=!/gmbal-root!/HttpServer[HttpServer]!/NetworkListener[NetworkListener[http-listener]],type=TCPNIOTransport/bytes-written");
+callUrl("last-error","/read/org.glassfish.grizzly:name=Transport,pp=!/gmbal-root!/HttpServer[HttpServer]!/NetworkListener[NetworkListener[http-listener]],type=TCPNIOTransport/last-error");
+callUrl("open-connections-count","/read/org.glassfish.grizzly:name=Transport,pp=!/gmbal-root!/HttpServer[HttpServer]!/NetworkListener[NetworkListener[http-listener]],type=TCPNIOTransport/open-connections-count");
+callUrl("total-connections-count","/read/org.glassfish.grizzly:name=Transport,pp=!/gmbal-root!/HttpServer[HttpServer]!/NetworkListener[NetworkListener[http-listener]],type=TCPNIOTransport/total-connections-count");
+
+sub callUrl {
+	my $ua = LWP::UserAgent->new();
+	my $req = HTTP::Request->new(GET => "$url$_[1]");
+	$req->authorization_basic($username,$password);
+	
+	$req->header('Accept', => 'text/html');
+	
+	my $response = $ua->request($req);
+	
+	if ($response->is_success) {
+		my $json = decode_json($response->decoded_content);
+		if (defined $json->{value}){
+			print "$_[0].value ";
+			if($json->{value} =~ /N\/A/ ) {
+    	    	print 0, "\n";
+  		   	} else {
+  		    	print $json->{value},"\n";
+			}
+		}
+	}
+	else {
+		my $status = $response->status_line;
+		if ($status == 404) {
+			die "Link to servlet might not be set correctly, this can be done by altering /etc/munin/plugin-conf.d/ox and setting the correct path to your jolokia servlet";
+		}
+		elsif ($status == 401) {
+			die "Credentials to login might be not set correctly. The credentials are set inside /opt/open-xchange/etc/jolokia.properties on the OX, for munin, those need to be altered at /etc/munin/plugin-conf.d/ox";
+		}
+		else {
+			die "Something went wrong:\n",$status;
+		}
+	}
+}

@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Test resources
+Bundle-SymbolicName: com.openexchange.test
+Automatic-Module-Name: com.openexchange.test
+Bundle-Version: 6.21.0
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ClassPath: .
+Import-Package: com.fasterxml.jackson.core,
+ com.fasterxml.jackson.core.base,
+ com.fasterxml.jackson.core.format,
+ com.fasterxml.jackson.core.io,
+ com.fasterxml.jackson.core.json,
+ com.fasterxml.jackson.core.sym,
+ com.fasterxml.jackson.core.type,
+ com.fasterxml.jackson.core.util,
+ com.google.common.collect,
+ com.google.common.io,
+ com.google.json,
+ com.openexchange.annotation,
+ javax.servlet,
+ javax.servlet.http,
+ org.json

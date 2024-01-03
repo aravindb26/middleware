@@ -1,0 +1,128 @@
+
+package com.openexchange.report.appsuite.storage;
+
+import static com.openexchange.java.Autoboxing.L;
+import static com.openexchange.java.Autoboxing.l;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+import org.apache.commons.lang.StringUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+import com.openexchange.ajax.tools.JSONCoercion;
+import com.openexchange.report.appsuite.ReportExceptionCodes;
+import com.openexchange.report.appsuite.internal.ReportProperties;
+import com.openexchange.report.appsuite.serialization.Report;
+
+public class ChunkingUtilities {
+
+    private static final int MAX_LOCK_FILE_ATTEMPTS = 20;
+
+    public static void removeAllReportParts(String uuid) {
+        File partsFolder = new File(ReportProperties.getStoragePath());
+        File[] parts = partsFolder.listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".part");
+            }
+        });
+        if (parts != null) {
+            for (File file : parts) {
+                if (file.getName().contains(uuid)) {
+                    file.delete();
+                }
+            }
+        }
+    }
+
+    public static void storeCapSContentToFiles(String reportUUID, String folderPath, Map<String, Object> data) throws JSONException, IOException {
+        String filename = reportUUID + "_" + data.get(Report.CAPABILITIES).hashCode() + ".part";
+        File storedDataFile = new File(folderPath + "/" + filename);
+        if (storedDataFile.exists()) {
+            mergeNewWithStoredData(storedDataFile, data);
+        }
+
+        try (OutputStreamWriter fw = new OutputStreamWriter(new FileOutputStream(storedDataFile), com.openexchange.java.Charsets.UTF_8)) {
+            // overwrite the so far stored data
+            JSONObject jsonData = (JSONObject) JSONCoercion.coerceToJSON(data);
+            fw.write(jsonData.toString(2));
+        }
+    }
+
+    private static void mergeNewWithStoredData(File storedDataFile, Map<String, Object> data) throws IOException {
+        try (RandomAccessFile storedFile = new RandomAccessFile(storedDataFile, "rw"); FileLock fileLock = getFileLock(storedFile); Scanner sc = new Scanner(storedDataFile)) {
+            // unable to get file lock for more then 20 seconds
+            if (fileLock == null) {
+                storedFile.close();
+                throw new IOException("Unable to get file lock on file: " + storedDataFile.getAbsolutePath());
+            }
+            // Load and parse the existing data first into an Own JSONObject
+            String content = sc.useDelimiter("\\Z").next();
+            @SuppressWarnings("unchecked") Map<String, Object> storedData = (HashMap<String, Object>) JSONCoercion.parseAndCoerceToNative(content);
+            // Merge the data of the two files into dataToStore
+            mergeNewValuesWithStoredValues(storedData, data);
+        } catch (FileNotFoundException e) {
+            ReportExceptionCodes.STORED_FILE_NOT_FOUND.create(e);
+        } catch (InterruptedException e) {
+            ReportExceptionCodes.UNABLE_TO_GET_FILELOCK.create(e);
+        }
+    }
+
+    private static FileLock getFileLock(RandomAccessFile storedFile) throws InterruptedException, IOException {
+        FileLock fileLock = null;
+        int fileLockAttempts = 0;
+        while (fileLock == null && fileLockAttempts <= MAX_LOCK_FILE_ATTEMPTS) {
+            try {
+                fileLock = storedFile.getChannel().tryLock();
+            } catch (OverlappingFileLockException e) {
+                Thread.sleep(1000);
+                fileLockAttempts++;
+                continue;
+            }
+        }
+        return fileLock;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void mergeNewValuesWithStoredValues(Map<String, Object> storedCounts, Map<String, Object> additionalCounts) {
+        if (storedCounts.get(Report.CONTEXTS) != null && additionalCounts.get(Report.CONTEXTS) != null) {
+            long additionalContexts = Long.parseLong(String.valueOf(storedCounts.get(Report.CONTEXTS)));
+            additionalCounts.put(Report.CONTEXTS, L(Long.parseLong(String.valueOf(additionalCounts.get(Report.CONTEXTS))) + additionalContexts));
+        }
+        for (Map.Entry<String, Object> entry : storedCounts.entrySet()) {
+            String key = entry.getKey();
+            // loaded file data can be either Long or integer
+            if (!additionalCounts.containsKey(key)) {
+                additionalCounts.put(key, entry.getValue());
+                continue;
+            }
+            if (entry.getValue() instanceof Integer || entry.getValue() instanceof Long) {
+                long value = additionalCounts.get(key) instanceof Integer ? Long.parseLong(String.valueOf(additionalCounts.get(key))) : ((Long) additionalCounts.get(key)).longValue();
+                long storedValue = Long.parseLong(String.valueOf(entry.getValue()));
+                if (!StringUtils.containsIgnoreCase(key, "context") && !key.equals(Report.TOTAL)) {
+                    additionalCounts.put(key, L(value + storedValue));
+                } else if (key.equals(Report.TOTAL)) {
+                    additionalCounts.put(Report.TOTAL, L(value + storedValue));
+                    additionalCounts.put(Report.CONTEXT_USERS_AVG, L((l((Long) additionalCounts.get(Report.TOTAL))) / (l((Long) additionalCounts.get(Report.CONTEXTS)))));
+                } else if (key.equals(Report.CONTEXT_USERS_MAX) && storedValue > l((Long) additionalCounts.get(Report.CONTEXT_USERS_MAX))) {
+                    additionalCounts.put(Report.CONTEXT_USERS_MAX, L(storedValue));
+                } else if (key.equals(Report.CONTEXT_USERS_MIN) && storedValue < l((Long) additionalCounts.get(Report.CONTEXT_USERS_MIN)) || l((Long) additionalCounts.get(Report.CONTEXT_USERS_MIN)) == 0l) {
+                    additionalCounts.put(Report.CONTEXT_USERS_MIN, L(storedValue));
+                }
+            } else if (entry.getValue() instanceof HashMap) {
+                mergeNewValuesWithStoredValues((HashMap<String, Object>) entry.getValue(), (HashMap<String, Object>) additionalCounts.get(entry.getKey()));
+            }
+        }
+    }
+
+}

@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Properties
+Bundle-SymbolicName: com.openexchange.preupgrade.properties
+Bundle-Version: 8.0.0
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.preupgrade.properties
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.config.lean
+Export-Package: com.openexchange.preupgrade.properties

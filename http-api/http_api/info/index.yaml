@@ -1,0 +1,8 @@
+title: OX HTTP API
+description: |
+  Documentation of the Open-Xchange HTTP API which is used by the new AJAX GUI.
+contact:
+  name: Open-Xchange GmbH
+  email: info@open-xchange.com
+  url: 'https://www.open-xchange.com/'
+$ref: ../../../com.openexchange.version/version.txt

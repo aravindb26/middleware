@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange GeoLocation Service Implementation Bundle
+Bundle-SymbolicName: com.openexchange.geolocation.impl
+Bundle-Version: 8
+Automatic-Module-Name: com.openexchange.geolocation.impl
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.config.lean,
+ com.openexchange.database,
+ com.openexchange.exception,
+ com.openexchange.geolocation,
+ com.openexchange.geolocation.exceptions,
+ com.openexchange.java,
+ com.openexchange.java.util,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.geolocation.osgi.GeoLocationActivator

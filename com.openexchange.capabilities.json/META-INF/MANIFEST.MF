@@ -1,0 +1,37 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Capabilities JSON Interface
+Bundle-SymbolicName: com.openexchange.capabilities.json
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.capabilities.json.osgi.CapabilitiesJSONActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.fasterxml.jackson.core,
+ com.fasterxml.jackson.core.base,
+ com.fasterxml.jackson.core.format,
+ com.fasterxml.jackson.core.io,
+ com.fasterxml.jackson.core.json,
+ com.fasterxml.jackson.core.sym,
+ com.fasterxml.jackson.core.type,
+ com.fasterxml.jackson.core.util,
+ com.google.common.annotations,
+ com.google.common.base,
+ com.google.common.collect,
+ com.openexchange.ajax.requesthandler,
+ com.openexchange.ajax.requesthandler.osgiservice,
+ com.openexchange.annotation,
+ com.openexchange.capabilities,
+ com.openexchange.exception,
+ com.openexchange.groupware.userconfiguration,
+ com.openexchange.groupware.userconfiguration.osgi,
+ com.openexchange.osgi,
+ com.openexchange.passwordchange,
+ com.openexchange.server,
+ com.openexchange.session,
+ com.openexchange.tools.servlet,
+ com.openexchange.tools.session,
+ org.json,
+ org.osgi.framework,
+ org.osgi.util.tracker
+Export-Package: com.openexchange.capabilities.json
+Automatic-Module-Name: com.openexchange.capabilities.json

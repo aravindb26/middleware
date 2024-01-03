@@ -1,0 +1,6 @@
+/opt/open-xchange/etc/documentconverter-client.properties:
+  com.openexchange.documentconverter.client.remoteDocumentConverterUrl: "{{ env `DC_SERVER_URL` }}"
+/opt/open-xchange/etc/imageconverter-client.properties:
+  com.openexchange.imageconverter.client.remoteImageConverterUrl: "{{ env `IC_SERVER_URL` }}"
+/opt/open-xchange/etc/documents.properties:
+  com.openexchange.office.spellcheck.remoteURL: "{{ env `SPELLCHECK_SERVER_URL` }}"

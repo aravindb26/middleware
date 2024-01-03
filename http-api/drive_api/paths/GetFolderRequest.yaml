@@ -1,0 +1,26 @@
+/drive?action=getFolder:
+  get:
+    operationId: getFolder
+    tags:
+      - Drive
+    summary: Gets metadata of a specific synchronized directory.
+    security: 
+        - session: []    
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamRoot'
+      - $ref: '#/components/parameters/gblQueryParamPath'
+      - in: query
+        name: checksum
+        description: The checksum of the directory.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >-
+          A JSON object containing the metadata of the requested directory. In
+          case of errors the responsible fields in the response are filled.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriveFolderResponse'

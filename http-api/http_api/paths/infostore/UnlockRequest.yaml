@@ -1,0 +1,24 @@
+/infostore?action=unlock:
+  get:
+    operationId: unlockInfoItem
+    tags:
+      - Infostore
+    summary: Unlocks an infoitem.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: id
+        description: Object ID of the infoitem that shall be unlocked.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          In case of errors the responsible fields in the response are filled
+          (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonResponse'

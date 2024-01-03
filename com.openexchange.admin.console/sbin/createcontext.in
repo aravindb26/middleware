@@ -1,0 +1,187 @@
+#!/bin/bash
+#
+#
+#   @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+#   @license AGPL-3.0
+#
+#   This code is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+#
+#   Any use of the work other than as authorized under this license or copyright law is prohibited.
+#
+#
+
+
+OXFUNCTIONS=@oxfunctions@
+OXCONFIG=@oxscriptconf@
+
+test -f $OXFUNCTIONS || {
+	echo "missing common shell functions file"
+	exit 1
+}
+
+. $OXFUNCTIONS
+
+test -f $OXCONFIG && . $OXCONFIG
+
+ox_set_JAVA_BIN
+
+BNAME=$(basename $0)
+ACTION=
+case "${BNAME}" in
+    "changecontext")
+    ACTION="context.Change"
+    ;;
+    "createcontext")
+    ACTION="context.Create"
+    ;;
+    "deletecontext")
+    ACTION="context.Delete"
+    ;;
+    "getmoduleaccessforcontext")
+    ACTION="context.GetModuleAccess"
+    ;;
+    "getaccesscombinationnameforcontext")
+    ACTION="context.GetAccessCombinationName"
+    ;;
+    "disablecontext")
+    ACTION="context.Disable"
+    ;;
+    "disableallcontext")
+    ACTION="context.DisableAll"
+    ;;
+    "enablecontext")
+    ACTION="context.Enable"
+    ;;
+    "enableallcontext")
+    ACTION="context.EnableAll"
+    ;;
+    "checkcountsconsistency")
+    ACTION="context.CheckCountsConsistency"
+    ;;
+    "deleteinvisible")
+    ACTION="context.DeleteInvisible"
+    ;;
+    "movecontextdatabase")
+    ACTION="context.MoveContextDatabase"
+    ;;
+    "movecontextfilestore")
+    ACTION="context.MoveContextFilestore"
+    ;;
+    "listcontext")
+    ACTION="context.List"
+    ;;
+    "listcontextsbydatabase")
+    ACTION="context.ListContextByDatabase"
+    ;;
+    "listcontextsbyfilestore")
+    ACTION="context.ListContextByFilestore"
+    ;;
+    "listquota")
+    ACTION="context.ListQuota"
+    ;;
+    "changefilestore")
+    ACTION="util.filestore.ChangeFilestore"
+    ;;
+    "listdatabase")
+    ACTION="util.database.ListDatabase"
+    ;;
+    "listdatabaseschema")
+    ACTION="util.database.ListDatabaseSchema"
+    ;;
+    "recalculatefilestoreusage")
+    ACTION="util.filestore.RecalculateFilestoreUsage"
+    ;;
+    "listfilestore")
+    ACTION="util.filestore.ListFilestore"
+    ;;
+    "listserver")
+    ACTION="util.server.ListServer"
+    ;;
+    "changeserver")
+    ACTION="util.server.ChangeServer"
+    ;;
+    "registerdatabase")
+    ACTION="util.database.RegisterDatabase"
+    ;;
+    "createschemas")
+    ACTION="util.database.CreateSchemas"
+    ;;
+    "deleteemptyschemas")
+    ACTION="util.database.DeleteEmptySchemas"
+    ;;
+    "registerfilestore")
+    ACTION="util.filestore.RegisterFilestore"
+    ;;
+    "registerserver")
+    ACTION="util.server.RegisterServer"
+    ;;
+    "unregisterdatabase")
+    ACTION="util.database.UnregisterDatabase"
+    ;;
+    "checkdatabase")
+    ACTION="util.database.CheckDatabase"
+    ;;
+	"upgradeschemata")
+    ACTION="util.database.UpgradeSchemata"
+    ;;
+	"countdatabaseschema")
+    ACTION="util.database.CountDatabaseSchema"
+    ;;
+    "unblockdatabase")
+    ACTION="util.database.UnblockDatabase"
+    ;;
+    "unregisterfilestore")
+    ACTION="util.filestore.UnregisterFilestore"
+    ;;
+    "unregisterserver")
+    ACTION="util.server.UnregisterServer"
+    ;;
+    "changedatabase")
+    ACTION="util.database.ChangeDatabase"
+    ;;
+    "createschema")
+    ACTION="util.schema.CreateSchema"
+    ;;
+    "getschemaname")
+    ACTION="context.GetSchemaName"
+    ;;
+    "getadminid")
+    ACTION="context.GetAdminId"
+    ;;
+    "getcontextcapabilities")
+    ACTION="context.GetContextCapabilities"
+    ;;
+    "existscontext")
+    ACTION="context.Exists"
+    ;;
+esac
+
+JAVAMAIN="com.openexchange.admin.console.${ACTION}"
+
+test -z "$JAVA_OXCMD_OPTS" && JAVA_OXCMD_OPTS="-Xmx280M"
+
+JAVA_OPTS="${JAVA_OXCMD_OPTS} \
+-Djava.awt.headless=true \
+-Dopenexchange.propdir=$PROPERTIESDIR"
+
+CLASSPATH="-classpath @classpath@"
+
+ADMINCP=$(for jar in $LIBPATH/*.jar; do
+    if [[ "${jar}" == *"calcengine"* ]]; then
+        continue
+    fi
+    echo -n "${jar}:"
+    done)
+
+exec $JAVA_BIN $JAVA_OPTS $CLASSPATH:$ADMINCP $JAVAMAIN "$@"

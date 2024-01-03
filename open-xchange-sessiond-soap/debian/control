@@ -1,0 +1,13 @@
+Source: open-xchange-sessiond-soap
+Section: web
+Priority: optional
+Maintainer: Thorben Betten <thorben.betten@open-xchange.com>
+Build-Depends: debhelper (>= 7.0.1)
+Standards-Version: 3.9.8
+Homepage: http://www.open-xchange.com
+
+Package: open-xchange-sessiond-soap
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@), open-xchange-soap-cxf (>= @OXVERSION@)
+Description: The Open-Xchange SessionD SOAP interface
+ This package installs the OSGi bundle that provide a SOAP interface to manage sessions.

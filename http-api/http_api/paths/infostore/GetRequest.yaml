@@ -1,0 +1,27 @@
+/infostore?action=get:
+  get:
+    operationId: getInfoItem
+    tags:
+      - Infostore
+    summary: Gets an infoitem.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: id
+        description: Object ID of the requested infoitem.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/gblQueryParamInfostoreFolder'
+    responses:
+      '200':
+        description: >
+          A JSON object containing all data of the requested infoitem. In case
+          of errors the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InfoItemResponse'

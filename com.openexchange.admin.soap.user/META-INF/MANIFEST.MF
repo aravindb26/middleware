@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Admin SOAP User Bundle
+Bundle-SymbolicName: com.openexchange.admin.soap.user
+Automatic-Module-Name: com.openexchange.admin.soap.user
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Require-Bundle: com.openexchange.soap.common
+Import-Package: com.openexchange.admin.rmi,
+ com.openexchange.admin.rmi.dataobjects,
+ com.openexchange.admin.rmi.exceptions,
+ com.openexchange.admin.rmi.extensions,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.tools.net,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j,
+ javax.xml.datatype
+Bundle-Activator: com.openexchange.admin.soap.user.osgi.SoapUserActivator
+Bundle-ClassPath: .

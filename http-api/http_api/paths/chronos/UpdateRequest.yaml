@@ -1,0 +1,182 @@
+/chronos?action=update:
+  put:
+    operationId: updateEvent
+    tags:
+      - Chronos
+    summary: Updates an event.
+    security: 
+        - session: []  
+        - oauth:
+          - write_calendar    
+    parameters:
+      - $ref: '#/components/parameters/QueryParamChronosFolder'
+      - $ref: '#/components/parameters/QueryParamChronosID'
+      - $ref: '#/components/parameters/QueryParamChronosRecurrenceID'
+      - $ref: '#/components/parameters/QueryParamChronosRecurrenceRange'
+      - $ref: '#/components/parameters/QueryParamChronosCheckConflicts'
+      - $ref: '#/components/parameters/QueryParamChronosScheduling'
+      - $ref: '#/components/parameters/QueryParamChronosExtendedEntities'
+      - $ref: '#/components/parameters/QueryParamChronosPushToken'
+      - $ref: '#/components/parameters/QueryParamChronosFields'
+      - in: query
+        name: rangeStart
+        description: >
+          If expand is set to 'true' this parameter defines a lower inclusive
+          limit as a utc date-time value as specified in rfc 5545 chapter 3.3.5.
+          E.g. "20170708T220000Z". 
+
+          Only events which start on or after this date are returned.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: rangeEnd
+        description: >
+          If expand is set to 'true' this parameter defines a upper exclusive
+          limit as a utc date-time value as specified in rfc 5545 chapter 3.3.5.
+          E.g. "20170708T220000Z". 
+
+          Only events which end before this date are returned.
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/QueryParamChronosExpand'
+      - in: query
+        name: usedGroups
+        description: >
+          In case the client resolves groups into single attendees the client
+          can provide the ids 
+
+          of the groups he used (resolved) as a comma separated list. This way
+          the usecount of those groups will be increased.
+        schema:
+          type: string
+      - in: query
+        name: timestamp
+        description: Timestamp of the last update of the event.
+        required: true
+        schema:
+          type: integer
+          format: int64
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            title: updateEventBody
+            properties:
+              event:
+                type: object
+                $ref: '#/components/schemas/EventData'
+              comment:
+                type: string
+                description: >-
+                  Optional comment for the user to provide information about the
+                  update of the event. This will not be peristed and is just
+                  used to inform the attendees via notifications and invitation
+                  mails
+      description: A JSON object containing the event's data.
+      required: true          
+    responses:
+      '200':
+        description: >
+          A JSON object containing containing the result of the update. In case
+          of errors the
+
+          responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChronosCalendarResultResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'                
+  post:
+    operationId: updateEventWithAttachments
+    tags:
+      - Chronos
+    summary: Updates an event and its attachments.
+    security: 
+        - session: []  
+        - oauth:
+          - write_calendar     
+    description: >-
+      #### Note:
+
+      It is possible to update multiple attachments at once. Therefore add
+      additional form fields and replace "[index]" in `file_[index]` with 
+      the appropriate index, like `file_1`. The index always starts with 0
+      (mandatory attachment object). There can only be one json payload 
+      describing the EventData, the rest json payloads (if
+      present) will simply be ignored.
+
+      If the event already has attachments, then for each of those attachments
+      their valid manageId must be provided as part of the attachment metadata. 
+
+      The absense of an already existing attachment for the event will
+      result in the deletion of that attachment.
+    parameters:
+      - $ref: '#/components/parameters/QueryParamChronosFolder'
+      - $ref: '#/components/parameters/QueryParamChronosID'
+      - $ref: '#/components/parameters/QueryParamChronosRecurrenceID'
+      - $ref: '#/components/parameters/QueryParamChronosCheckConflicts'
+      - $ref: '#/components/parameters/QueryParamChronosScheduling'
+      - $ref: '#/components/parameters/QueryParamChronosExtendedEntities'
+      - in: query
+        name: usedGroups
+        description: >
+          In case the client resolves groups into single attendees the client
+          can provide the ids 
+
+          of the groups he used (resolved) as a comma separated list. This way
+          the usecount of those groups will be increased.
+        schema:
+          type: string
+      - in: query
+        name: timestamp
+        description: Timestamp of the last update of the event.
+        required: true
+        schema:
+          type: integer
+          format: int64
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            title: UpdateRequestBody
+            properties:
+              json_0:
+                description: >
+                  A JSON object containing an optional comment for the user to
+                  provide information about the update of the event under the
+                  key 'comment' and 
+
+                  the event's data as described in
+                  [EventData](#/definitions/EventData) under the key 'data'.
+                type: string
+              file_0:
+                description: The attachment file as per `<input type="file" />`.
+                type: string
+                format: binary
+            required:
+              - json_0
+              - file_0          
+    responses:
+      '200':
+        description: >
+          A HTML page containing the result of the update or in case of errors
+          an error object (see [File
+          uploads](https://documentation.open-xchange.com/latest/middleware/http_api/1_introduction.html#file-uploads)
+          as an example).
+        content:
+          text/html:
+            schema:
+              type: string
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'                
+

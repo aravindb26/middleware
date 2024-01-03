@@ -1,0 +1,227 @@
+feature_name: Mail Export
+properties:
+  - key: com.openexchange.mail.exportpdf.concurrentExports
+    description: |
+      Defines the maximum concurrent mail exports that the server is allowed
+      to process. If the limit is reached an error will be returned to the client,
+      advising it to retry again in a while.
+    defaultValue: 10
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.mail.exportpdf.pageMarginTop
+    description: |
+      Defines the top margin (in millimetres) of the exported pages
+    defaultValue: 12.7
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.mail.exportpdf.pageMarginBottom
+    description: |
+      Defines the bottom margin (in millimetres) of the exported pages
+    defaultValue: 12.7
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.mail.exportpdf.pageMarginLeft
+    description: |
+      Defines the left margin (in millimetres) of the exported pages
+    defaultValue: 12.7
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.mail.exportpdf.pageMarginRight
+    description: |
+      Defines the right margin (in millimetres) of the exported pages
+    defaultValue: 12.7
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.mail.exportpdf.headersFontSizer
+    description: |
+      Defines the headers' font size
+    defaultValue: 12
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.mail.exportpdf.bodyFontSize
+    description: |
+      Defines the body font size
+    defaultValue: 12
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.mail.exportpdf.autoPageOrientation
+    description: |
+      Defines whether PDF pages will be auto-oriented in
+      landscape mode whenever a full page appended image
+      is in landscape mode.
+    defaultValue: false
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]     
+  - key: com.openexchange.mail.exportpdf.collabora.enabled
+    description: |
+      Specifies whether the Colabora mail converter should be enabled or not.
+    defaultValue: false
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export", "Collabora"]
+  - key: com.openexchange.mail.exportpdf.collabora.url
+    description: |
+      The base URL for the Collabora Conversion service
+    defaultValue: https://localhost:9980
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export", "Collabora"]
+  - key: com.openexchange.mail.exportpdf.collabora.fileExtensions
+    description: |
+      A comma separated list of file extensions which are actually handled by the collabora export service
+    defaultValue: sxw, odt, fodt, sxc, ods, fods, sxi, odp, fodp, sxd, odg, fodg, odc, sxg, odm, stw, ott, otm, stc, ots, sti, otp std, otg, odb, oxt, doc, dot xls, ppt, docx, docm, dotx, dotm, xltx, xltm, xlsx, xlsb, xlsm, pptx, pptm, potx, potm, wpd, pdb, hwp, wps, wri, wk1, cgm, dxf, emf, wmf, cdr, vsd, pub, vss, lrf, gnumeric, mw, numbers, p65, pdf, jpg, jpeg, gif, png, dif, slk, csv, dbf, oth, rtf, txt, html, htm
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export", "Collabora"]
+  - key: com.openexchange.mail.exportpdf.collabora.imageReplacementMode
+    description: |
+      The mode defines how to handle/replace inline images. Viable options are: 'distributedFile' and 'base64'.
+    defaultValue: distributedFile
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export", "Collabora"]
+  - key: com.openexchange.mail.exportpdf.gotenberg.enabled
+    description: |
+      Specifies whether the Gotenberg mail converter should be enabled or not.
+    defaultValue: false
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export", "Gotenberg"]
+  - key: com.openexchange.mail.exportpdf.gotenberg.url
+    description: |
+      The base URL for the Gotenberg Conversion service
+    defaultValue: http://localhost:3000
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export", "Gotenberg"]
+  - key: com.openexchange.mail.exportpdf.gotenberg.pdfFormat
+    description: |
+      Specifies the PDF format to retrieve from the gotenberg conversion service.
+      "PDF/A-1a", "PDF/A-2b" and "PDF/A-3b" are supported formats, or "PDF" for regular, non-PDF/A 
+    defaultValue: PDF
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export", "Gotenberg"]
+  - key: com.openexchange.mail.exportpdf.gotenberg.fileExtensions
+    description: |
+      A comma separated list of file extensions which are actually handled by the Gotenberg export service
+    defaultValue: html,htm
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export", "Gotenberg"]
+  - key: com.openexchange.mail.exportpdf.internal-converter.text.fileExtensions
+    description: |
+      A comma separated list of text file extensions which are actually handled by the internal text export service
+    defaultValue: txt,md,js,java,py
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.mail.exportpdf.internal-converter.image.fileExtensions
+    description: |
+      A comma separated list of image file extensions which are actually handled by the internal image export service
+    defaultValue: jpg,jpeg,png,gif
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.mail.exportpdf.internal-converter.pdf.fileExtensions
+    description: |
+      A comma separated list of pdf file extensions which are actually handled by the internal pdf export service
+    defaultValue: pdf
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]
+  - key: com.openexchange.capability.mail_export_pdf
+    description: |
+      Allows the user to export mails as PDF. 
+    defaultValue: false
+    version:
+    reloadable: true
+    configcascadeAware: true
+    related:
+    file: mail.properties
+    packageName: open-xchange-mail-exportpdf
+    tags: ["Mail", "Mail Export"]

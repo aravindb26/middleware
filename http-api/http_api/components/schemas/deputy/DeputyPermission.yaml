@@ -1,0 +1,53 @@
+type: object
+properties:
+  userId:
+    type: integer
+    format: int32
+    description: The identifier of the user to which a deputy permission is granted
+  sendOnBehalfOf:
+    type: boolean
+    description: Whether the deputy user is allowed to send E-Mail on behalf of granting user
+  modulePermissions:
+    type: object
+    description: The individual permissions by module granted to deputy user
+    properties:
+      calendar:
+        type: object
+        description: The calendar permissions granted to deputy user
+        properties:
+          permission:
+            type: integer
+            format: int32
+            description: The permission bit mask
+      contact:
+        type: object
+        description: The contact permissions granted to deputy user
+        properties:
+          permission:
+            type: integer
+            format: int32
+            description: The permission bit mask
+      drive:
+        type: object
+        description: The Drive permissions granted to deputy user
+        properties:
+          permission:
+            type: integer
+            format: int32
+            description: The permission bit mask
+      mail:
+        type: object
+        description: The mail permissions granted to deputy user
+        properties:
+          permission:
+            type: integer
+            format: int32
+            description: The permission bit mask
+      task:
+        type: object
+        description: The task permissions granted to deputy user
+        properties:
+          permission:
+            type: integer
+            format: int32
+            description: The permission bit mask

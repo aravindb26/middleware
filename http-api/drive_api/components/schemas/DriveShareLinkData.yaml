@@ -1,0 +1,6 @@
+type: object
+properties:
+  $ref: ./RawDriveShareLinkData.yaml
+  checksum:
+    type: string
+    description: The current checksum of the share target (available since v7.8.1).

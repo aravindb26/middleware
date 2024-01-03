@@ -1,0 +1,430 @@
+feature_name: Hazelcast
+feature_description: |
+  The following configuration settings are used to set up a cluster of multiple backend nodes based on the underlying hazelcast library. 
+  Unless otherwise mentioned, all nodes in the cluster should be configured equally.
+
+  If this is a single-node installation, there's no need to change anything and the default configuration can be used. 
+  When setting up a cluster of multiple nodes, at least the following parameters should be configured additionally:
+  <ul>
+  <li><code>com.openexchange.hazelcast.group.name</code></li>
+  <li><code>com.openexchange.hazelcast.network.join</code> (including join-specific options)</li>
+  <li><code>com.openexchange.hazelcast.network.interfaces</code></li>
+  </ul>
+  For more advanced configurations, one may additionally place a file named <code>hazelcast.xml</code> into the <code>conf/hazelcast</code> subfolder 
+  that will be picked up during start and used as a basis for all further configurations applied. 
+  See <a href="https://github.com/hazelcast/hazelcast/blob/master/hazelcast/src/main/resources/hazelcast-default.xml">hazelcast-default.xml</a> for details.
+
+  The distributed data structures should be configured separately in their own configuration files in the <code>conf/hazelcast</code> subfolder.
+properties:
+    - key: com.openexchange.hazelcast.enabled
+      description: |
+        Enables or disables Hazelcast. Setting this property to <code>false</code> will result in no Hazelcast instance 
+        being created for this node, and all other dependent features will be disabled.
+      defaultValue: true
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.shutdownOnOutOfMemory
+      description: |
+        Specifies if Hazelcast is supposed to be shut-down in case an Out-Of-Memory error occurred.
+      defaultValue: false
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.group.name
+      description: |
+        Configures the name of the cluster. Only nodes using the same group name will join each other and form the cluster. 
+        Required if [[com.openexchange.hazelcast.network.join]] is not <code>empty</code>. 
+        Please mind that the effective group name will be extended by a version string automatically. 
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.network.join
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.network.join
+      description: |
+        Specifies which mechanism is used to discover other backend nodes in the cluster. 
+        Possible values are:
+        <ul>
+          <li><code>empty</code> - No discovery for single-node setups</li>
+          <li><code>static</code> - Fixed set of cluster member nodes</li>
+          <li><code>multicast</code> - Automatic discovery of other nodes via multicast</li>
+          <li><code>dns</code> - Consult a DNS server to resolve configured domain names to the most recent set of IP addresses of all service nodes</li>
+          <li><code>kubernetes</code> - Automatic discovery of other nodes via a kubernetes service</li>
+        </ul>
+        Depending on the specified value, further configuration might be needed.
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.network.join.static.nodes
+      description: |
+        Configures a comma-separated list of IP addresses / hostnames of possible nodes in the cluster, 
+        e.g. <code>10.20.30.12, 10.20.30.13:5701, 192.178.168.110</code>.
+        
+        Only used if [[com.openexchange.hazelcast.network.join]] is set to <code>static</code>. 
+        It doesn't hurt if the address of the local host appears in the list, so that it's still possible to use the same list throughout all nodes in the cluster.
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.network.join
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Host"]
+    - key: com.openexchange.hazelcast.network.join.multicast.group
+      description: |
+        Configures the multicast address used to discover other nodes in the cluster dynamically. 
+        Only used if [[com.openexchange.hazelcast.network.join]] is set to <code>multicast</code>. 
+        If the nodes reside in different subnets, please ensure that multicast is enabled between the subnets.
+      defaultValue: "224.2.2.3"
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.network.join
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.network.join.multicast.port
+      description: |
+        Configures the multicast port used to discover other nodes in the cluster dynamically. 
+        Only used if [[com.openexchange.hazelcast.network.join]] is set to <code>multicast</code>.
+      defaultValue: 54327
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.network.join
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Port"]
+    - key: com.openexchange.hazelcast.merge.firstRunDelay
+      description: |
+        Configures the time until the first check if the cluster needs to merge is scheduled. 
+        This takes a timespan parameter with <code>ms</code> denoting milliseconds, <code>s</code> denoting seconds, <code>m</code> denoting minutes. 
+        The value is passed to the Hazelcast property "hazelcast.merge.first.run.delay.seconds".
+      defaultValue: 120s
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.merge.runDelay
+      description: |
+        Configures the time between each check if the cluster needs to merge. 
+        This takes a timespan parameter with <code>ms</code> denoting milliseconds, <code>s</code> denoting seconds, <code>m</code> denoting minutes. 
+        The value is passed to the Hazelcast property "hazelcast.merge.next.run.delay.seconds".
+      defaultValue: 120s
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.network.interfaces
+      description: |
+        Comma-separated list of interface addresses Hazelcast should use. 
+        Wildcards (<code>*</code>) and ranges (<code>-</code>) can be used. Leave blank to listen on all interfaces. 
+        Especially in server environments with multiple network interfaces, it's recommended to specify the IP-address of the network interface to bind to explicitly. 
+        Only needs to be adjusted when building a cluster of multiple backend nodes.
+      defaultValue: 127.0.0.1
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.network.port
+      description: |
+        The port Hazelcast will listen for incoming connections.
+      defaultValue: 5701
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.network.portOffset 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Port"]
+    - key: com.openexchange.hazelcast.network.portOffset
+      description: |
+        The offset to be applied to the port, which is used to form a separate cluster in networks with mixed versions of the Hazelcast library.
+        If set to <code>auto</code>, a default offset is chosen by the application, based on the shipped Hazelcast version. Can also be set to <code>0</code> to
+        use the port from "com.openexchange.hazelcast.network.port" as-is.
+      defaultValue: auto
+      version: 7.10.5
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.network.port
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Port"]
+    - key: com.openexchange.hazelcast.network.portAutoIncrement
+      description: |
+        Configures if automatically the next port should be tried if the incoming port is already in use.
+      defaultValue: true
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Port"]
+    - key: com.openexchange.hazelcast.network.outboundPortDefinitions
+      description: |
+        By default, Hazelcast lets the system to pick up an ephemeral port during socket bind operation. 
+        But security policies/firewalls may require to restrict outbound ports to be used by Hazelcast enabled applications. 
+        To fulfill this requirement, you can configure Hazelcast to use only defined outbound ports. 
+        You can use port ranges and/or comma separated ports, e.g. <code>35000-35100</code> or <code>36001, 36002, 36003</code>.
+      defaultValue:
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Port"]
+    - key: com.openexchange.hazelcast.network.enableIPv6Support
+      description: |
+        Enables or disables support for IPv6. IPv6 support is switched off by default, since some platforms have issues in use of IPv6 stack, 
+        and some other platforms such as Amazon AWS have no support at all.
+      defaultValue: false
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.socket.bindAny
+      description: |
+        Configures whether to bind the server- and client-sockets to any local interface or not.
+        If set to <code>false</code> bind operation are restricted to the picked interface address based on the value of [[com.openexchange.hazelcast.network.interfaces]].
+      defaultValue: false
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.network.interfaces
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.healthMonitorLevel
+      description: |
+        Controls the log level for regular statistics of the health monitor. Possible values include:
+        <ul>
+          <li><code>off</code> - Disables the health monitor</li>
+          <li><code>silent</code> - Prints out statistics if certain thresholds are exceeded</li>
+          <li><code>noisy</code> - Always prints out statistics</li>
+        </ul>
+        <b>Note</b>:  
+        Please also check the configured log level for "com.hazelcast.internal.diagnostics".
+      defaultValue: silent
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Logging"]
+    - key: com.openexchange.hazelcast.maxOperationTimeout
+      description: |
+        Specifies the implicit maximum operation timeout in milliseconds for operations on distributed data structures, 
+        if no explicit timeout is specified for an operation.
+      defaultValue: 30000
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Limit", "Timeout"]
+    - key: com.openexchange.hazelcast.jmx
+      description: |
+        Enables or disables JMX monitoring for Hazelcast components such as statistics about distributed data structures.
+      defaultValue: true
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Monitoring"]
+    - key: com.openexchange.hazelcast.memcache.enabled
+      description: |
+        Enables or disables Hazelcast's internal Memcache client request listener service. This should normally be set to <code>false</code>, as it's not needed by the backend.
+      defaultValue: false
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.rest.enabled
+      description: |
+        Enables or disables Hazelcast's internal REST client request listener service. This should normally be set to <code>false</code>, as it's not needed by the backend.
+      defaultValue: false
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "REST"]
+    - key: com.openexchange.hazelcast.liteMember
+      description: |
+        Allows to configure a node as <i>lite</i> member. 
+        Lite members are the Hazelcast cluster members that do not store data. These members are used mainly to execute tasks and register listeners, and they do not have partitions.
+      defaultValue: false
+      version: 7.8.4
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.sessionstorage.hazelcast.enabled
+      description: |
+        Enable/disable the Hazelcast-based session storage.
+      defaultValue: true
+      version:
+      reloadable: false
+      configcascadeAware: false
+      related:
+      file: sessionstorage-hazelcast.properties
+      packageName: open-xchange-sessionstorage-hazelcast
+      tags: ["Hazelcast", "Session"]
+    - key: com.openexchange.hazelcast.network.join.dns.domainNames
+      description: |
+        The comma-separated list of domain names that are supposed to be resolved to a (super-)set of host addresses through a DNS look-up.
+        Only effective if property "com.openexchange.hazelcast.network.join" is set to "dns"
+      defaultValue:
+      version: 7.10.3
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.network.join.dns.resolverHost
+      description: |
+        The optional host name for the DNS server. If not specified system's default DNS service is used.
+        Only effective if property "com.openexchange.hazelcast.network.join" is set to "dns"
+      defaultValue:
+      version: 7.10.3
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.network.join.dns.resolverPort
+      description: |
+        The optional port number for the DNS server. If not specified default port (53 UDP) is used.
+        Only effective if property "com.openexchange.hazelcast.network.join" is set to "dns"
+      defaultValue: -1
+      version: 7.10.3
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.network.join.dns.refreshMillis
+      description: |
+        The refrsh rate in milliseconds when a new DNS look-up is supported to be performed to apply possibly changed members to Hazelcast
+        network configuration.
+        Only effective if property "com.openexchange.hazelcast.network.join" is set to "dns"
+      defaultValue: 60000
+      version: 7.10.3
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.network.join.k8s.serviceDNS
+      description: |
+        The kubernetes service dns name which provides all hazelcast instances. Only valid in case [[com.openexchange.hazelcast.network.join]] is set to `kubernetes`.
+      defaultValue:
+      version: 7.10.4
+      reloadable: true
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.network.join
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast", "Kubernetes"]
+    - key: com.openexchange.hazelcast.diagnostics.enabled
+      description: |
+        The option to enabled/disable Hazelcast diagnostics logging; see https://docs.hazelcast.com/imdg/latest/management/diagnostics.html#diagnostics-plugins
+      defaultValue: false
+      version: 7.10.6
+      reloadable: false
+      configcascadeAware: false
+      related: 
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.diagnostics.directory
+      description: |
+        Specifies the directory to use for the diagnostics log file. If not specified the common logger is used.
+      defaultValue: 
+      version: 7.10.6
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.diagnostics.enabled
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.diagnostics.max.rolled.file.size.mb
+      description: |
+        A rolling file approach is used in case diagnostics log file is configured to prevent creating too much data.
+        By default 10 files of 50MB each are allowed to exist. The size of the file can be changed using this property
+      defaultValue: 50
+      version: 7.10.6
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.diagnostics.directory
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.diagnostics.max.rolled.file.count
+      description: |
+        A rolling file approach is used in case diagnostics log file is configured to prevent creating too much data.
+        By default 10 files of 50MB each are allowed to exist. The number of files can be changed using this property
+      defaultValue: 10
+      version: 7.10.6
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.diagnostics.directory
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]
+    - key: com.openexchange.hazelcast.diagnostics.filename.prefix
+      description: |
+        Configures the prefix for the diagnostics file. By deafult 'diagnostics-...log' is used.
+      defaultValue: 
+      version: 7.10.6
+      reloadable: false
+      configcascadeAware: false
+      related: com.openexchange.hazelcast.diagnostics.directory
+      file: hazelcast.properties
+      packageName: open-xchange-core
+      tags: ["Hazelcast"]

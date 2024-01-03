@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Sessiond SOAP Bundle
+Bundle-SymbolicName: com.openexchange.sessiond.soap
+Automatic-Module-Name: com.openexchange.sessiond.soap
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Require-Bundle: com.openexchange.soap.common
+Import-Package: com.openexchange.auth,
+ com.openexchange.auth.rmi,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.sessiond.rmi,
+ com.openexchange.tools.net,
+ javax.xml.datatype,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.sessiond.soap.osgi.SoapSessionActivator
+Bundle-ClassPath: .

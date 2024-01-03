@@ -1,0 +1,37 @@
+/reminder?action=delete:
+  put:
+    operationId: deleteReminders
+    tags:
+      - Reminder
+    summary: Deletes reminders.
+    security:
+      - session: []     
+      - oauth:
+        - write_reminder
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ReminderListElement'
+      description: >-
+        A JSON array with JSON objects containing the field `id` of the
+        reminders to delete.
+      required: true             
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with identifiers of reminders that
+          were not deleted. In case of
+
+          errors the responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemindersResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

@@ -1,0 +1,35 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: The Mobile API Facade bundle for push notification service
+Bundle-SymbolicName: com.openexchange.pns.mobile.api.facade
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.eatthepath.pushy.apns,
+ com.eatthepath.pushy.apns.util,
+ com.google.android.gcm,
+ com.google.common.cache,
+ com.google.common.collect,
+ com.openexchange.ajax,
+ com.openexchange.apn.common,
+ com.openexchange.config,
+ com.openexchange.config.cascade,
+ com.openexchange.config.lean,
+ com.openexchange.exception,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.java.util,
+ com.openexchange.keystore,
+ com.openexchange.osgi,
+ com.openexchange.pns,
+ com.openexchange.pns.transport.apns_http2.util,
+ com.openexchange.pns.transport.gcm,
+ com.openexchange.server,
+ com.openexchange.session,
+ org.apache.commons.io,
+ org.json,
+ org.osgi.framework,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.pns.mobile.api.facade.osgi.MobileApiFacadePushStuffActivator
+Automatic-Module-Name: com.openexchange.pns.mobile.api.facade

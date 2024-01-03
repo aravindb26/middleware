@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange SessionD
+Bundle-SymbolicName: com.openexchange.sessiond.rmi
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.auth,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.sessiond,
+ org.osgi.framework,
+ org.osgi.service.event,
+ org.osgi.util.tracker,
+ org.slf4j
+Automatic-Module-Name: com.openexchange.sessiond.rmi
+Export-Package: com.openexchange.sessiond.rmi

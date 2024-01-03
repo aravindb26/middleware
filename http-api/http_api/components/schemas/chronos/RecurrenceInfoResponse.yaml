@@ -1,0 +1,23 @@
+type: object
+properties:
+  $ref: ../common/CommonResponseData.yaml
+  data:
+    type: object
+    title: Recurrence Info
+    description: Details for a specific recurrence from an event series. This includes the series master, as well as the recurrence event,
+      along with information whether it is an overridden and/or re-scheduled occurrence compared to the regular series.
+    properties:
+      overridden: 
+        type: boolean
+        description: Indicates whether the event recurrence was <i>overridden</i>, hence it represents a change exception event or not.
+      rescheduled: 
+        type: boolean
+        description: Indicates whether the event recurrence was <i>re-scheduled</i>, hence it represents a change exception event, and it
+          was changed in a substantial way compared to its original occurrence.
+      recurrenceEvent:
+        description: Tthe event recurrence, which is either the change exception event in case it was <i>overridden</i>, or the regular 
+          event occurrence if not.
+        $ref: '#/components/schemas/EventData'
+      masterEvent:
+        description: Gets the series master event. May not be set if not available (e.g. for <i>orphaned</i> change exceptions).
+        $ref: '#/components/schemas/EventData'

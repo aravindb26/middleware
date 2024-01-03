@@ -1,0 +1,75 @@
+Message-ID: <7ba5175e-3459-40de-8b49-6c115de4e3c2@mie.utoronto.ca>
+Date: Wed, 18 Oct 2023 10:11:12 -0400
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Content-Language: en-GB
+To: dovecot@dovecot.org
+From: Peter Pan <pan@whatever.ca>
+Content-Type: multipart/mixed; boundary="===============0534319218858360943=="
+Subject: Re: The future of SIS
+
+This is a multi-part message in MIME format.
+--===============0534319218858360943==
+Content-Type: multipart/alternative;
+ boundary="------------3Kl1to9p9cr0AHE8kciPYTAD"
+Content-Language: en-GB
+
+This is a multi-part message in MIME format.
+--------------3Kl1to9p9cr0AHE8kciPYTAD
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+On 2023-10-18 3:35 a.m., Peter wrote:
+>> 	Dovecot has this option to store attachments separately not? So I am
+>> not sure this is then still a problem.
+>>
+>>
+>>
+>> Interesting. How do you tell dovecot to do that ?
+>>
+> I thought I read about something like this,
+>
+> mail_location = .... ATTACHMENTS=/attachment
+>
+> but now you have made me read the docs[1] I can't really find it.
+>
+> @Aki maybe if this SIS is phased out, it is good to offer a solution that stores the attachments separately? I think that would allow current SIS users to implement something alternative.
+>
+>
+
+https://doc.dovecot.org/settings/core/#core_setting-mail_attachment_dir
+
+I hope this option will not be obsoleted.
+--------------3Kl1to9p9cr0AHE8kciPYTAD
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Ck9uIDIwMjMtMTAtMTggMzozNSBhLm0uLCBNYXJjIHdyb3RlOgogICAgICAgICAgRG92ZWNvdCBo
+YXMgdGhpcyBvcHRpb24gdG8gc3RvcmUgYXR0YWNobWVudHMgc2VwYXJhdGVseQogICAgICAgICAg
+bm90PyBTbyBJIGFtCiAgICAgICAgICBub3Qgc3VyZSB0aGlzIGlzIHRoZW4gc3RpbGwgYSBwcm9i
+bGVtLgoKCgogICAgICAgICAgSW50ZXJlc3RpbmcuIEhvdyBkbyB5b3UgdGVsbCBkb3ZlY290IHRv
+IGRvIHRoYXQgPwpJIHRob3VnaHQgSSByZWFkIGFib3V0IHNvbWV0aGluZyBsaWtlIHRoaXMsCgpt
+YWlsX2xvY2F0aW9uID0gLi4uLiBBVFRBQ0hNRU5UUz0vYXR0YWNobWVudAoKYnV0IG5vdyB5b3Ug
+aGF2ZSBtYWRlIG1lIHJlYWQgdGhlIGRvY3NbMV0gSSBjYW4ndCByZWFsbHkgZmluZCBpdC4KCkBB
+a2kgbWF5YmUgaWYgdGhpcyBTSVMgaXMgcGhhc2VkIG91dCwgaXQgaXMgZ29vZCB0byBvZmZlciBh
+IHNvbHV0aW9uIHRoYXQKc3RvcmVzIHRoZSBhdHRhY2htZW50cyBzZXBhcmF0ZWx5PyBJIHRoaW5r
+IHRoYXQgd291bGQgYWxsb3cgY3VycmVudCBTSVMgdXNlcnMKdG8gaW1wbGVtZW50IHNvbWV0aGlu
+ZyBhbHRlcm5hdGl2ZS4KCgpodHRwczovL2RvYy5kb3ZlY290Lm9yZy9zZXR0aW5ncy9jb3JlLyNj
+b3JlX3NldHRpbmctbWFpbF9hdHRhY2htZW50X2RpcgoKSSBob3BlIHRoaXMgb3B0aW9uIHdpbGwg
+bm90IGJlIG9ic29sZXRlZC4K
+
+--------------3Kl1to9p9cr0AHE8kciPYTAD--
+
+--===============0534319218858360943==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+dovecot mailing list -- dovecot@dovecot.org
+To unsubscribe send an email to dovecot-leave@dovecot.org
+
+--===============0534319218858360943==--

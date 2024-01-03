@@ -1,0 +1,18 @@
+{{- if (or .Values.extras.monitoring.enabled .Values.global.extras.monitoring.enabled) -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ox-common.names.fullname" . }}-monitoring
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    grafana.ox.io/service-monitor-implementation: default
+    {{- include "ox-common.labels.standard" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "ox-common.labels.matchLabels" . | nindent 4 }}
+  ports:
+  - name: monitoring
+    port: 80
+    protocol: TCP
+    targetPort: http
+{{- end -}}

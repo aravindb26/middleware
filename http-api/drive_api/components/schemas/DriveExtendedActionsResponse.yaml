@@ -1,0 +1,44 @@
+type: object
+properties:
+  $ref: ./CommonResponseData.yaml
+  data:
+    type: object
+    description: >-
+      An array containing the actions the client should execute for
+      synchronization.
+      If the `diagnostics` parameter was set, quota 
+      information was requested, or the supplied API version parameter is 
+      equal or grater than 8, the array is wrapped into an additional JSON 
+      object in the field `actions`. The path to the root folder is indicated 
+      in `pathToRoot`. The localized path to the root folder (based on the user's locale) 
+      is indicated in `localizedPathToRoot`.If requested, the diagnostics trace 
+      is provided at `diagnostics`, quota information at `quota`. 
+      If `driveMeta` was set to `inline`, `download` actions for `.drive-meta` 
+      will carry the metadata in an additional JSON object in `data` field 
+      of `action`. In case of errors the responsible fields in the response 
+      are filled.
+      A JSON object containing an array of actions the client should execute
+      for synchronization. 
+    properties:
+      actions:
+        type: array
+        items:
+          $ref: '#/components/schemas/DriveExtendedAction'
+      pathToRoot:
+        type: string
+        description: Path to internal 'real' root folder from given rootFolderId
+      localizedPathToRoot:
+        type: string
+        description: >
+          Localized path to internal 'real' root folder from given rootFolderId
+          (based on the supplied `language` or the user's locale).
+      diagnostics:
+        type: string
+        description: The diagnostics log
+      quota:
+        type: array
+        description: >-
+          An array of quota objects showing the quota limits and usage. A size of
+          zero represents unlimited quota.
+        items:
+          $ref: '#/components/schemas/DriveQuota'

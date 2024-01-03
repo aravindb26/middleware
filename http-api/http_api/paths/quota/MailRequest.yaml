@@ -1,0 +1,20 @@
+/quota?action=mail:
+  get:
+    operationId: getMailUsage
+    tags:
+      - Quota
+    summary: Gets the mail usage data.
+    security: 
+        - session: []    
+    responses:
+      '200':
+        description: >
+          A JSON object containing the mail quota. In case of errors the
+          responsible
+
+          fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuotaResponse'

@@ -1,0 +1,103 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.carddav.servlet;
+
+import static com.openexchange.java.Autoboxing.b;
+import java.util.HashSet;
+import javax.servlet.http.HttpServletRequest;
+import com.openexchange.ajax.requesthandler.oauth.OAuthConstants;
+import com.openexchange.config.cascade.ComposedConfigProperty;
+import com.openexchange.config.cascade.ConfigViewFactory;
+import com.openexchange.dav.DAVOAuthScope;
+import com.openexchange.dav.DAVServlet;
+import com.openexchange.exception.OXException;
+import com.openexchange.java.Strings;
+import com.openexchange.login.Interface;
+import com.openexchange.oauth.provider.resourceserver.OAuthAccess;
+import com.openexchange.session.Session;
+import com.openexchange.session.restricted.Scope;
+import com.openexchange.tools.session.ServerSession;
+import com.openexchange.webdav.protocol.WebdavMethod;
+
+/**
+ * The {@link CardDAV} servlet. It delegates all calls to the CaldavPerformer
+ *
+ * @author <a href="mailto:francisco.laguna@open-xchange.com">Francisco Laguna</a>
+ */
+public class CardDAV extends DAVServlet {
+
+    private static final long serialVersionUID = -6381396333467867154L;
+
+    /** The required scope to access read-only CardDAV-related endpoints for restricted sessions (authenticated with app-specific passwords) */
+    private static final String RESTRICTED_SCOPE_CARDDAV_READ = "read_carddav";
+
+    /** The required scope to access read-only CardDAV-related endpoints for restricted sessions (authenticated with app-specific passwords) */
+    private static final String RESTRICTED_SCOPE_CARDDAV_WRITE = "write_carddav";
+
+    /**
+     * Initializes a new {@link CardDAV}.
+     *
+     * @param performer The CardDAV performer
+     */
+    public CardDAV(CarddavPerformer performer) {
+        super(performer, Interface.CARDDAV);
+    }
+
+    @Override
+    protected boolean checkPermission(HttpServletRequest request, WebdavMethod method, ServerSession session) {
+        /*
+         * check basic permissions of the session's user
+         */
+        boolean enabled = false;
+        try {
+            Boolean b = performer.getFactory().requireService(ConfigViewFactory.class).getView(session.getUserId(), session.getContextId()).property("com.openexchange.carddav.enabled", Boolean.class).get();
+            enabled = b != null && b(b);
+        } catch (OXException e) {
+            org.slf4j.LoggerFactory.getLogger(CardDAV.class).warn("Error obtaining 'enabled' property from config-cascade, assuming 'false'.", e);
+            return false;
+        }
+        if (false == enabled || false == session.getUserPermissionBits().hasContact()) {
+            return false;
+        }
+        /*
+         * check that "carddav" scope is available when authenticated through OAuth
+         */
+        OAuthAccess oAuthAccess = (OAuthAccess) request.getAttribute(OAuthConstants.PARAM_OAUTH_ACCESS);
+        if (null != oAuthAccess) {
+            Scope scope = oAuthAccess.getScope();
+            return scope.has(DAVOAuthScope.CARDDAV.getScope());
+        }
+        /*
+         * check that an "carddav" scope appropriate for the method is available when session is restricted (authenticated through app-specific password)
+         */
+        String restrictedScopes = (String) session.getParameter(Session.PARAM_RESTRICTED);
+        if (null != restrictedScopes) {
+            String requiredScope = null != method && method.isReadOnly() ? RESTRICTED_SCOPE_CARDDAV_READ : RESTRICTED_SCOPE_CARDDAV_WRITE;
+            return Strings.splitByComma(restrictedScopes, new HashSet<String>()).contains(requiredScope);
+        }
+        /*
+         * assume regularly authenticated *DAV session, otherwise
+         */
+        return true;
+    }
+
+}

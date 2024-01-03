@@ -1,0 +1,42 @@
+type: object
+required:
+  - transport
+  - topics
+properties:
+  client:
+    type: string
+    description: >-
+      The client identifier; e.g. "open-xchange-appsuite". If not specified,
+      session-associated client identifier is considered. For transport type "webhook", 
+      the client configuration id is expected here.
+  token:
+    type: string
+    description: >-
+      The token or Webhook URI to use when sending out notifications using specified transport. 
+      Required unless the URI is statically defined in configuration settings for transport type "webhook".
+  transport:
+    type: string
+    description: |
+      The identifer of the transport; currently supported:
+      - "apn"
+      - "gcm"
+      - "wns"
+      - "websocket"  and
+      - "webhook"
+  topics:
+    type: array
+    description: >
+      An array of topic identifiers or wild-cards, to which the subscription
+      signals interest.
+
+      E.g. ["ox:mail:*","ox:calendar:new"] interest for all mail-related events
+      and for newly created appointments
+    items:
+      type: string
+  meta:
+    type: string
+    description: The optional meta information for the subscription. 
+  expires:
+    type: integer
+    format: int64
+    description: The time stamp as the number of milliseconds since January 1, 1970, 00:00:00 GMT specifying when subscription expires

@@ -1,0 +1,28 @@
+Source: open-xchange-core
+Section: web
+Priority: optional
+Maintainer: Marcus Klein <marcus.klein@open-xchange.com>
+Build-Depends: debhelper (>= 7.0.1), lsb-release
+Standards-Version: 3.9.6
+Homepage: http://www.open-xchange.com
+
+Package: open-xchange-core
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-osgi (>= @OXVERSION@), open-xchange-xerces (>= @OXVERSION@), open-xchange-system (>= @OXVERSION@), open-xchange-hazelcast-community (>= @OXVERSION@) | open-xchange-hazelcast
+Pre-Depends: dpkg (>= 1.15.7.2), patch
+Breaks: open-xchange-oauth (<< 7.8.3), open-xchange-freebusy (<< 7.10.0), open-xchange-rest (<< 7.10.1), open-xchange-oidc (<< 7.10.3), open-xchange-admin (<< 7.10.5)
+Replaces: open-xchange-messaging (<< 7.2.1-0), open-xchange-oauth (<< 7.8.3), open-xchange-freebusy (<< 7.10.0), open-xchange-rest (<< 7.10.1), open-xchange-oidc (<< 7.10.3), open-xchange-admin (<< 7.10.5)
+Conflicts: open-xchange-messaging (<< 7.2.1-0), open-xchange-publish (<< 7.10.2-0), open-xchange-geoip-ip2location (<< 7.10.3), open-xchange-filestore-swift (<< 7.10.4)
+Description: The essential core of an Open-Xchange backend
+ This package installs all essential bundles that are necessary to get a working backend installation. This are the bundles for the main
+ modules of Open-Xchange: Mail, Calendar, Contacts, Tasks and InfoStore. Additionally the following functionalities are installed with this
+ package:
+ * the main caching system using the Java Caching System (JCS)
+ * the config cascade allowing administrators to selectively override configuration parameters on context and user level
+ * the contact collector storing every contact of read or written emails in a special collected contacts folder
+ * the conversion engine converting vCard or iCal email attachments to contacts or appointments
+ * the import and export module to import or export complete contact or appointment folders
+ * the iMIP implementation to handle invitations with participants through emails
+ * auto configuration for external email accounts
+ * encrypted storing of passwords for integrated social accounts
+ * and a lot more

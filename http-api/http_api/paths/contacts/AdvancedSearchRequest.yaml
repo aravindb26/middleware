@@ -1,0 +1,95 @@
+/contacts?action=advancedSearch:
+  put:
+    operationId: searchContactsAdvanced
+    tags:
+      - Contacts
+    summary: Search for contacts by filter.
+    security:
+        - session: []
+        - oauth:
+          - read_contacts             
+    parameters:
+      - $ref: '#/components/parameters/gblQueryParamContactColumns'
+      - in: query
+        name: sort
+        description: >-
+          The identifier of a column which determines the sort order of the
+          response. If this parameter is specified , then the parameter order
+          must be also specified.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: order
+        description: >-
+          "asc" if the response entires should be sorted in the ascending order,
+          "desc" if the response entries should be sorted in the descending
+          order. If this parameter is specified, then the parameter sort must be
+          also specified.
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: collation
+        description: >-
+          Allows you to specify a collation to sort the contacts by. Only
+          supports "gbk" and "gb2312", not needed for other languages. Parameter
+          sort should be set for this to work.
+        required: false
+        schema:
+          type: string
+          enum:
+            - gbk
+            - gb2312
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with matching contacts. Contacts are
+          represented by arrays. The elements of each array contain the
+
+          information specified by the corresponding identifiers in the
+          `columns` parameter. In case of errors the
+
+          responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactsResponse'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            title: advancedSearchBody
+            properties:
+              filter:
+                type: string
+                description: >
+                  A JSON object describing the search term as introducted in [Advanced
+                  search](#advanced-search).
+                  Example:
+                  `["and",["=", {"field":"last_name"},"Mustermann"],["=",{"field":"first_name"},"Max"]]`
+                  which represents 'last_name = "Mustermann" AND first_name = "Max"'.
+                  
+                  Valid fields are the ones specified in [Contact data](#/definitions/ContactData) model.
+                  The field 'folder' is not allowed as operand.
+              folders:
+                type: array
+                description: > 
+                  The identifiers of the folders to restrict the search to. If not defined, all visible folders 
+                  (optionally filtered through to "folderTypes"]) are considered.
+                items:
+                  type: string
+              folderTypes:
+                type: object
+                title: contactsSearchFolderTypes
+                description: The kind of folders to perform the search in, if no folders are defined through "folders" explicitly.
+                properties:
+                  includeUnsubscribed:
+                    type: string
+                    description: Controls whether also unsubscribed folders (i.e. not visible in the tree) are considered.
+                  pickerOnly:
+                    type: string
+                    description: Configures if only folders that are explicitly marked for usage in the picker are considered.
+            required: ["filter"]

@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: middleware-core-coverity
+spec:
+  securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+  containers:
+  - name: jnlp
+    env:
+    - name: JAVA_OPTS
+      value: "-XX:MaxRAMPercentage=50"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+    volumeMounts:
+      - mountPath: /shared-data
+        name: shared-data
+  - name: coverity
+    image: registry.gitlab.open-xchange.com/jenkins/runner-coverity:latest
+    command:
+    - sleep
+    args:
+    - 99d
+    resources:
+      limits:
+        memory: 15Gi
+      requests:
+        cpu: 6
+        memory: 15Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+    volumeMounts:
+    - mountPath: /shared-data
+      name: shared-data
+  - name: ant
+    image: frekele/ant:1.9.11-jdk8
+    command:
+    - sleep
+    args:
+    - 99d
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+  imagePullSecrets:
+  - name: gitlab
+  volumes:
+  - name: shared-data
+    persistentVolumeClaim:
+      claimName: middleware-core-pvc

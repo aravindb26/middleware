@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.control"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/commons-codec-1.15.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/jcl-over-slf4j-1.7.36.jar" sourcepath="/com.openexchange.bundles/source/jcl-over-slf4j-1.7.36-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/jul-to-slf4j-1.7.36.jar" sourcepath="/com.openexchange.bundles/source/jul-to-slf4j-1.7.36-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/log4j-over-slf4j-1.7.36.jar" sourcepath="/com.openexchange.bundles/source/log4j-over-slf4j-1.7.36-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/logback-classic-1.2.11.jar" sourcepath="/com.openexchange.bundles/source/logback-classic-1.2.11-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/logback-core-1.2.11.jar" sourcepath="/com.openexchange.bundles/source/logback-core-1.2.11-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/slf4j-api-1.7.36.jar" sourcepath="/com.openexchange.bundles/source/slf4j-api-1.7.36-sources.jar"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

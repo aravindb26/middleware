@@ -1,0 +1,29 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Mobility Configuration eMail transport
+Bundle-SymbolicName: com.openexchange.eas.provisioning.action.mail
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.mobile.configuration.json.action.email.osgi.ActionActivator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.config,
+ com.openexchange.exception,
+ com.openexchange.groupware.ldap,
+ com.openexchange.log,
+ com.openexchange.mail.dataobjects,
+ com.openexchange.mail.dataobjects.compose,
+ com.openexchange.mail.transport,
+ com.openexchange.mailaccount,
+ com.openexchange.mobile.configuration.json.action,
+ com.openexchange.mobile.configuration.json.container,
+ com.openexchange.mobile.configuration.json.servlet,
+ com.openexchange.osgi,
+ com.openexchange.session,
+ com.openexchange.user,
+ javax.mail,
+ javax.mail.internet,
+ javax.mail.internet.idn,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.slf4j
+Automatic-Module-Name: com.openexchange.eas.provisioning.action.mail

@@ -1,0 +1,29 @@
+/chronos/itip?action=apply_change:
+  put:
+    operationId: apply_change
+    tags:
+      - Chronos
+    summary: Applies an update of an appointment based on an iMIP mail in the calendar.
+    security: 
+        - session: []
+    description: >-
+      Updates appointment(s) in the calendar based on the iMIP REQUEST mail by the organizer.
+    parameters:
+      - in: query
+        name: timezone
+        description: The timezone to show the resulting events in.
+        required: false
+        schema:
+          type: string
+          default: UTC
+    responses:
+      '200':
+        description: >
+          A JSON object containing containing the result of the update. In case
+          of errors the responsible fields in the response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChronosCalendarResultResponse'
+    requestBody:
+      $ref: '#/components/requestBodies/ConversionDataSource'

@@ -1,0 +1,99 @@
+feature_name: Drive Push
+feature_description: |
+  Properties related to the drive push implementation
+properties:
+    - key: com.openexchange.drive.events.[apn-version].ios.enabled
+      description: |
+        Enables or disables push event notifications to clients using the Apple Push
+        Notification service (APNS). This requires a valid
+        configuration for the APNS certificate and keys,
+        or deploy the restricted components packages for drive.
+
+        [apn-version] must be replaced by the apn version you want to configure. Available options are 'apn' and 'apn2'.
+      defaultValue: false
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.drive.events.[apn-version].ios.clientId
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Push", "Apple"]
+    - key: com.openexchange.drive.events.[apn-version].ios.clientId
+      description: |
+        The id of the apn push transport client to use.
+      defaultValue: drive-mobile-ios
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.drive.events.[apn-version].ios.enabled
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Push", "Apple"]
+
+    - key: com.openexchange.drive.events.apn2.macos.enabled
+      description: |
+        Enables or disables push event notifications to macOS clients
+        using the Apple Push Notification service (APNS). This requires
+        a valid configuration for the APNS certificate and keys, or
+        deploy the restricted components packages for drive.
+
+      defaultValue: false
+      version: 8.x
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.drive.events.apn2.macos.clientId
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Push", "Apple"]
+    - key: com.openexchange.drive.events.apn2.macos.clientId
+      description: |
+        The id of the apn push transport macOS client to use.
+      defaultValue: drive-desktop
+      version: 8.x
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.drive.events.apn2.macos.enabled
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Push", "Apple"]
+
+    - key: com.openexchange.drive.events.gcm.enabled
+      description: |
+        Enables or disables push event notifications to clients using the Google
+        Firebase Cloud Messaging (FCM) service. This requires a valid configuration for the
+        FCM API key.
+      defaultValue: false
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.drive.events.gcm.clientId
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Push", "Android"]
+    - key: com.openexchange.drive.events.gcm.clientId
+      description: |
+        The id of the fcm push transport client to use.
+      defaultValue: drive-mobile-android
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related: com.openexchange.drive.events.gcm.enabled
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Push", "Android"]      
+
+    - key: com.openexchange.drive.events.blockingLongPolling.enabled
+      description: |
+        Configures whether blocking long polling for pushing synchronization events
+        to clients may be used as fallback when no other long polling handlers are
+        available due to missing support of the HTTP service. Handling long polling
+        in a blocking manner consumes a server thread, and should therefore only be
+        enabled for testing purposes.
+      defaultValue: false
+      version:
+      reloadable: true
+      configcascadeAware: true
+      related:
+      file: drive.properties
+      packageName: open-xchange-drive
+      tags: ["Drive", "Push"]

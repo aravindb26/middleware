@@ -1,0 +1,27 @@
+/messaging/account?action=all:
+  get:
+    operationId: getAllMessagingAccounts
+    tags:
+      - Messaging
+    summary: Gets all messaging accounts.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: messagingService
+        description: List only those accounts that belong to the given `messagingService`.
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with account objects. In case of
+          errors the responsible
+
+          fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessagingAccountsResponse'

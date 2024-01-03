@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: K8S Keystore
+Bundle-SymbolicName: com.openexchange.keystore.k8s
+Bundle-Version: 8
+Bundle-Activator: com.openexchange.keystore.k8s.osgi.Activator
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: com.openexchange.keystore.k8s
+Import-Package: com.google.common.cache,
+ com.openexchange.exception,
+ com.openexchange.java,
+ com.openexchange.keystore,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ io.fabric8.kubernetes.api.model,
+ io.fabric8.kubernetes.client,
+ io.fabric8.kubernetes.client.dsl,
+ org.osgi.framework,
+ org.slf4j
+Bundle-ActivationPolicy: lazy

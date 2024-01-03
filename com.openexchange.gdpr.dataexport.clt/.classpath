@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17"><attributes><attribute name="module" value="true"/></attributes></classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.global"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.server"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.management.impl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.common"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/commons-cli-1.5.0.jar" sourcepath="/com.openexchange.bundles/source/commons-cli-1.5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/httpcore-osgi-4.4.16.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.gdpr.dataexport"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.openexchange.gdpr.dataexport.impl"/>
+	<classpathentry kind="lib" path="/com.openexchange.bundles/jars/httpclient-osgi-4.5.14.jar"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

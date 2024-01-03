@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DefaultSpamHandler
+Bundle-SymbolicName: com.openexchange.spamhandler.default
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.config,
+ com.openexchange.config.cascade,
+ com.openexchange.exception,
+ com.openexchange.groupware,
+ com.openexchange.log,
+ com.openexchange.mail,
+ com.openexchange.mail.api,
+ com.openexchange.mail.service,
+ com.openexchange.osgi,
+ com.openexchange.server,
+ com.openexchange.session,
+ com.openexchange.spamhandler,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.slf4j
+Bundle-Activator: com.openexchange.spamhandler.defaultspamhandler.osgi.DefaultSpamHandlerActivator
+Automatic-Module-Name: com.openexchange.spamhandler.default

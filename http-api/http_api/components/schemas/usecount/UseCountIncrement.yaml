@@ -1,0 +1,27 @@
+type: object
+properties:
+  type:
+    type: string
+    description: The identifier of the entity's type; either "contact", "user", "group" or "resource". 
+    enum:
+      - contact
+      - user
+      - group
+      - resource
+  id:
+    type: string
+    description: The identifier of the entity; either contact identifier, user identifier, group identifier or resource identifier
+  folderId:
+    type: string
+    description: The identifier of the folder in which the entity resides. Only needed for "contact" entity type and if no email is provided.
+  mail:
+    type: string
+    description: The mail address of the contact. Only needed for "contact" entity type and if id and folderId are not provided.
+  accountId:
+    type: integer
+    format: int32
+    description: The numeric identifier of the account if not specified through a composite folder identifier
+  moduleId:
+    type: integer
+    format: int32
+    description: The numeric identifier of the module if not specified through a composite folder identifier

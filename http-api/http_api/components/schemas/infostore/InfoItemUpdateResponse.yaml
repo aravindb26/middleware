@@ -1,0 +1,7 @@
+type: object
+title: InfoItemUpdateResponse
+properties:
+  $ref: ../common/CommonResponseData.yaml
+  data:
+    type: string
+    description: The object ID of the updated infoitem.

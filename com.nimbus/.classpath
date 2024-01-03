@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/accessors-smart-2.4.11.jar" sourcepath="lib/source/accessors-smart-2.4.11-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-9.1.jar" sourcepath="lib/source/asm-9.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/content-type-2.2.jar" sourcepath="lib/source/content-type-2.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jcip-annotations-1.0-1.jar" sourcepath="lib/source/jcip-annotations-1.0-1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/json-smart-2.4.11.jar" sourcepath="lib/source/json-smart-2.4.11-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lang-tag-1.7.jar" sourcepath="lib/source/lang-tag-1.7-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/nimbus-jose-jwt-9.31.jar" sourcepath="lib/source/nimbus-jose-jwt-9.31-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/oauth2-oidc-sdk-10.7.jar" sourcepath="lib/source/oauth2-oidc-sdk-10.7-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

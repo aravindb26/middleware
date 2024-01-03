@@ -1,0 +1,158 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: middleware-core-gradle
+spec:
+  securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+  containers:
+  - name: jekyll
+    image: registry.gitlab.open-xchange.com/engineering/documentation
+    command:
+      - sleep
+    args:
+      - 365d
+    resources:
+      limits:
+        memory: 512Mi
+      requests:
+        memory: 512Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+  - name: jnlp
+    env:
+    - name: JAVA_OPTS
+      value: "-XX:MaxRAMPercentage=50"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+    volumeMounts:
+    - mountPath: /shared-data
+      name: shared-data
+  - name: gradle
+    image: registry-proxy.k3s.os2.oxui.de/library/gradle:7.3-jdk17
+    command:
+      - sleep
+    args:
+      - infinity
+    resources:
+      requests:
+        cpu: 2
+        memory: 4Gi
+      limits:
+        memory: 4Gi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+    volumeMounts:
+    - mountPath: /toox
+      name: toox
+    - mountPath: /shared-data
+      name: shared-data
+  - name: gettext
+    image: registry.gitlab.open-xchange.com/docker/gettext:2.0
+    command:
+    - /toox/server
+    args:
+    - msgcat
+    - xgettext
+    env:
+    - name: TOOX_TOOLS
+      value: ant
+    resources:
+      limits:
+        memory: 16Mi
+      requests:
+        cpu: 100m
+        memory: 16Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+    volumeMounts:
+      - mountPath: /toox
+        name: toox
+  - name: ant
+    image: registry-proxy.k3s.os2.oxui.de/frekele/ant:1.9.11-jdk8
+    command:
+    - /toox/server
+    args:
+    - ant
+    env:
+    - name: ANT_OPTS
+      value: "-Xmx512M"
+    - name: TOOX_TOOLS
+      value: msgcat,xgettext
+    resources:
+      requests:
+        memory: 256Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+    volumeMounts:
+    - mountPath: /toox
+      name: toox
+  - name: toox-proxy
+    image: registry.gitlab.open-xchange.com/engineering/tools/toox:0.15.3
+    command:
+    - /toox/proxy
+    env:
+    - name: TOOX_TOOLS
+      value: ant,gradle,msgcat,xgettext
+    resources:
+      limits:
+        memory: 32Mi
+      requests:
+        memory: 32Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+    volumeMounts:
+    - mountPath: /toox
+      name: toox
+  imagePullSecrets:
+    - name: gitlab
+  initContainers:
+  - name: toox-init
+    image: registry.gitlab.open-xchange.com/engineering/tools/toox:0.15.3
+    command:
+    - /toox/init
+    resources:
+      limits:
+        memory: 32Mi
+      requests:
+        memory: 32Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - all
+    volumeMounts:
+    - mountPath: /init
+      name: toox
+    workingDir: /init
+  volumes:
+  - name: toox
+    emptyDir: {}
+  - name: shared-data
+    persistentVolumeClaim:
+      claimName: middleware-core-pvc

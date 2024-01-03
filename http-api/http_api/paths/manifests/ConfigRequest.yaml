@@ -1,0 +1,20 @@
+/apps/manifests?action=config:
+  get:
+    operationId: getManifestConfig
+    tags:
+      - Manifests
+    summary: Processes multiple requests to other modules in a single request
+    security: 
+        - session: []    
+    description: >
+      Provides client configuration
+    responses:
+      '200':
+        description: >-
+          A JSON containing the configuration
+        content:
+          application/json:
+            schema:
+              type: object
+      '500':
+        description: Internal server error

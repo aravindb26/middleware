@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="com.openexchange.i18n overrides" basedir=".">
+
+    <description>
+        Installs the language files.
+    </description>
+
+    <!-- Constants -->
+    <property name="i18nDir" value="${prefix}/i18n"/>
+
+    <import file="build-project.xml"/>
+
+    <target name="installConf" description="Patches i18n.properties before installing it.">
+        <antcall target="patchAndInstallConf"/>
+    </target>
+
+    <target name="patchAndInstallConf">
+        <mkdir dir="${tmpDir}/${confDir}"/>
+        <copy todir="${tmpDir}/${confDir}" overwrite="true">
+            <fileset dir="${confDir}"/>
+        </copy>
+        <move tofile="${tmpDir}/${confDir}/i18n.properties" file="${tmpDir}/${confDir}/i18n.properties.in" overwrite="true"/>
+        <replace file="${tmpDir}/${confDir}/i18n.properties">
+            <replacefilter token="@i18nDir@" value="${i18nDir}"/>
+        </replace>
+        <copy todir="${destDir}/${confInstallDir}">
+            <fileset dir="${tmpDir}/${confDir}"/>
+        </copy>
+    </target>
+
+    <target name="postInstall" description="Installs the language files.">
+        <mkdir dir="${destDir}/${i18nDir}"/>
+    </target>
+
+</project>

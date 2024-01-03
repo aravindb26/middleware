@@ -1,0 +1,168 @@
+#!/bin/bash
+#
+#
+#   @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+#   @license AGPL-3.0
+#
+#   This code is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+#
+#   Any use of the work other than as authorized under this license or copyright law is prohibited.
+#
+#
+
+OXFUNCTIONS=@oxfunctions@
+OXCONFIG=@oxscriptconf@
+
+
+test -f $OXFUNCTIONS || {
+    echo "missing common shell functions file"
+    exit 1
+}
+
+. $OXFUNCTIONS
+
+test -f $OXCONFIG && . $OXCONFIG
+
+ox_set_JAVA_BIN
+
+test -z "$JAVA_OXCMD_OPTS" && JAVA_OXCMD_OPTS="-Xmx280M"
+
+JAVA_OPTS="${JAVA_OXCMD_OPTS} \
+-Djava.awt.headless=true \
+-Dopenexchange.propdir=$PROPERTIESDIR"
+
+CLASSPATH="-classpath @classpath@"
+
+umask 066
+#######################
+# Basic workflow
+#######################
+# 1) CreateSchema
+# 2) mysql < dump
+# 3) RestoreReference
+#######################
+usage() {
+	echo "Usage: $0 [-h] [-m <source_schema> -t <target_cluster_id> -i <dump_file> -A <admin_user> -P <admin_pass> [-l <jmxLogin> -s <jmxPassword> [-p <jmxPort]] -r <rmi-host>]"
+	echo "  -h                                            Prints a help text"
+	echo "  -A,--adminuser <admin_user>                 ? Admin username"
+	echo "  -P,--adminpass <admin_pass>                 ? Admin password"
+	echo "  -i,--in <dump_file>                         * The dump file previously created with dumpschema"
+	echo "  -m,--source-schema <source_schema>          * The source schema name (i.e. the schema that was dumped before)"
+	echo "  -t,--target-cluster-id <target_cluster_id>  * The target cluster identifier"
+	echo "  -r,--rmi-host <rmi_host>                      A RMI host address e.g. 192.168.1.25:1099. If no port is given the default RMI port 1099 is taken. Default: rmi://localhost:1099/"
+	echo ""
+	echo "Entries marked with an asterisk (*) are mandatory."
+	echo "Entries marked with an question mark (?) are mandatory depending on your configuration."
+	echo "Entries marked with a pipe (|) are mandatory for one another which means that at least one of them must be set."
+}
+
+ARGS=`getopt -o i:m:t:hA:P:r: --long in:,source-schema:,target-cluster-id:,help,adminuser:,adminpass:,rmi-host: -n 'replayschema' -- "$@"`
+
+if [ $? -ne 0 ]; then
+	exit 1
+fi
+
+eval set -- "$ARGS"
+
+if [ $# -lt 10 ]; then
+        usage
+        exit 1
+fi
+
+while true; do
+	case "$1" in
+		-h | --help)
+			usage
+			exit 0;;
+		-m | --source-schema)
+			case "$2" in
+				"") shift 2;;
+				*) schema=$2
+					shift 2;;
+			esac;;
+		-t | --target-cluster-id)
+			case "$2" in
+				"") shift 2;;
+				*) target=$2
+					shift 2;;
+			esac;;
+		-i | --in)
+			case "$2" in
+				"") shift 2;;
+				*) input=$2
+					shift 2;;
+			esac;;
+		-A | --adminuser)
+			case "$2" in
+				"") shift 2;;
+				*) adminuser=$2
+					shift 2;;
+			esac;;
+		-P | --adminpass)
+			case "$2" in
+				"") shift 2;;
+				*) adminpass=$2
+					shift 2;;
+			esac;;
+		-r | --rmi-host)
+			case "$2" in
+				"") rmiHost="localhost"
+					optRMIArgs="-r $rmiHost"
+					shift 2;break;;
+				*) rmiHost=$2
+					optRMIArgs="-r $rmiHost"
+					shift 2;;
+			esac;;
+		--)
+			shift; break;;
+		*)
+			usage
+			exit;;
+	esac
+done
+
+# invoke create schema
+OUTPUT="$(exec $JAVA_BIN $JAVA_OPTS $CLASSPATH com.openexchange.admin.console.schemamove.CreateSchema -A $adminuser -P $adminpass -t $target $optRMIArgs 2>&1)"
+RETVAL=$?
+
+# pump data in mysql
+if [ $RETVAL -eq 0 ]; then
+	targetSchema="$(echo $OUTPUT | awk '{print $1}')"
+	echo -n "Connected to "
+	if [ ! -z $rmiHost ]; then
+		echo "$rmiHost"
+	else
+		echo "localhost"
+	fi
+	echo -n "Pumping into schema '$targetSchema' "
+	dumpOutput="$(mysql $OUTPUT < $input)"
+	RETVAL=$?
+	
+	if [ $RETVAL -ne 0 ]; then
+		echo "failed!"
+		echo "Failed pumping data into schema '$targetSchema'... "
+		exit $RETVAL;
+	else 
+		echo "done."
+	fi
+else
+	echo -e "$OUTPUT"
+	exit $RETVAL
+fi
+
+# restore configdb references
+RESTORE="$(exec $JAVA_BIN $JAVA_OPTS $CLASSPATH com.openexchange.admin.console.schemamove.RestoreReference -A $adminuser -P $adminpass -m $schema -n $targetSchema -t $target $optRMIArgs 2>&1)"
+RETVAL=$?
+echo -e "$RESTORE"
+exit $RETVAL

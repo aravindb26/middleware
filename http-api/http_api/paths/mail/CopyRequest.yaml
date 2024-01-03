@@ -1,0 +1,40 @@
+/mail?action=copy:
+  put:
+    operationId: copyMail
+    tags:
+      - Mail
+    summary: Copies a mail to another folder.
+    security: 
+        - session: []      
+        - oauth:
+          - write_mail    
+    parameters:
+      - in: query
+        name: id
+        description: Object ID of the requested mail that shall be copied.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/gblQueryParamMailFolder'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MailDestinationBody'
+      description: A JSON object containing the id of the destination folder.
+      required: true      
+    responses:
+      '200':
+        description: >
+          A JSON object containing the object ID and the folder ID of the copied
+          mail. In case of errors the responsible fields in the
+
+          response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailDestinationResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

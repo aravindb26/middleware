@@ -1,0 +1,26 @@
+/deputy?action=update:
+  put:
+    operationId: updateDeputyPermission
+    tags:
+      - Deputypermission
+    summary: Update a deputy permission
+    description: Updates a previously granted deputy permission to a certain user
+    security: 
+        - session: []    
+    responses:
+      '200':
+        description: The JSON representation of the updated deputy permission
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeputyResponse'
+      '400':
+        description: 'Bad request, response contains error message.'
+      '401':
+        description: Not authorized
+    requestBody:
+      description: A JSON object describing the deputy permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DeputyPermission'

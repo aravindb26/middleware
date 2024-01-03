@@ -1,0 +1,66 @@
+feature_name: AuthenticationServiceRegistry
+feature_description: |
+  Properties related to running multiple authentication services in an authentication service registry.
+properties:
+    - key: com.openexchange.authentication.[provider].ranking
+      description: |
+        A ranking for the authentication service. Internal ranking will be from higher ranking to lower.
+        
+        [provider] must be replaced with identifier of authentication service you want to configure.
+        Available identifier in core are 'database', 'oidc', 'imap', 'ldap', 'parallels' and 'oauth'
+      defaultValue: 0
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: authentication.properties
+      packageName: open-xchange-core
+      tags: ["Authentication"]
+
+    - key: com.openexchange.authentication.[provider].hostnames
+      description: |
+        Optional comma-separated list of refering hostnames this service is responsible for.
+        
+        [provider] must be replaced with identifier of authentication service you want to configure.
+        Available identifier in core are 'database', 'oidc', 'imap', 'ldap', 'parallels' and 'oauth'
+      defaultValue: 
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: false
+      related: 
+      file: authentication.properties
+      packageName: open-xchange-core
+      tags: ["Authentication"]
+
+    - key: com.openexchange.authentication.[provider].customHeaders
+      description: |
+        Optional comma-separated list of headers which requests must contain to use this authentication service.
+        Either configured as 'headerName=headerValue' pair or just the headerName, if the header does not contain
+        a value.
+        
+        [provider] must be replaced with identifier of authentication service you want to configure.
+        Available identifier in core are 'database', 'oidc', 'imap', 'ldap', 'parallels' and 'oauth'
+      defaultValue: 
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: false
+      related:
+      file: authentication.properties
+      packageName: open-xchange-core
+      tags: ["Authentication"]
+
+    - key: com.openexchange.authentication.[provider].customCookies
+      description: |
+        Optional comma-separated list of cookies which requests must contain to use this authentication service.
+        Configured as 'cookieName=cookieValue'.
+        
+        [provider] must be replaced with identifier of authentication service you want to configure.
+        Available identifier in core are 'database', 'oidc', 'imap', 'ldap', 'parallels' and 'oauth'
+      defaultValue: 
+      version: 8.0.0
+      reloadable: true
+      configcascadeAware: false
+      related:
+      file: authentication.properties
+      packageName: open-xchange-core
+      tags: ["Authentication"]

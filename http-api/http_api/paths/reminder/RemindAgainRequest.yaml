@@ -1,0 +1,42 @@
+/reminder?action=remindAgain:
+  put:
+    operationId: remindAgain
+    tags:
+      - Reminder
+    summary: Updates the reminder alarm.
+    security:
+      - session: []     
+      - oauth:
+        - write_reminder    
+    parameters:
+      - in: query
+        name: id
+        description: The ID of the reminder whose alarm date shall be changed.
+        required: true
+        schema:
+          type: integer
+          format: int64
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReminderUpdateBody'
+      description: >-
+        A JSON object containing the field `alarm` which provides the new
+        reminder date.
+      required: true          
+    responses:
+      '200':
+        description: >
+          A JSON object containing the data of the updated reminder. In case of
+
+          errors the responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReminderResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

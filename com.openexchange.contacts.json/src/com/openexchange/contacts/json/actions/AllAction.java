@@ -1,0 +1,67 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.contacts.json.actions;
+
+import java.util.List;
+import java.util.Set;
+import com.google.common.collect.ImmutableSet;
+import com.openexchange.ajax.requesthandler.AJAXRequestResult;
+import com.openexchange.ajax.requesthandler.annotation.restricted.RestrictedAction;
+import com.openexchange.contact.provider.composition.IDBasedContactsAccess;
+import com.openexchange.contacts.json.ContactRequest;
+import com.openexchange.exception.OXException;
+import com.openexchange.groupware.container.Contact;
+import com.openexchange.server.ServiceLookup;
+
+/**
+ * {@link AllAction}
+ *
+ * @author <a href="mailto:steffen.templin@open-xchange.com">Steffen Templin</a>
+ * @author <a href="mailto:tobias.friedrich@open-xchange.com">Tobias Friedrich</a>
+ * @author <a href="mailto:ioannis.chouklis@open-xchange.com">Ioannis Chouklis</a>
+ */
+@RestrictedAction(module = IDBasedContactAction.MODULE_NAME, type = RestrictedAction.Type.READ)
+public class AllAction extends IDBasedContactAction {
+
+    private static final Set<String> OPTIONAL_PARAMETERS = ImmutableSet.of(PARAM_FIELDS, PARAM_ORDER, PARAM_ORDER_BY, PARAM_LEFT_HAND_LIMIT, PARAM_RIGHT_HAND_LIMIT, PARAM_COLLATION);
+
+    /**
+     * Initializes a new {@link AllAction}.
+     *
+     * @param serviceLookup A service lookup reference
+     * @param internalAccessOnly <code>true</code> to use the <i>internal</i> contacts access directly, <code>false</code> to use the compositing access interfaces
+     */
+    public AllAction(ServiceLookup serviceLookup, boolean internalAccessOnly) {
+        super(serviceLookup, internalAccessOnly);
+    }
+
+    @Override
+    protected AJAXRequestResult perform(IDBasedContactsAccess access, ContactRequest request) throws OXException {
+        List<Contact> contacts = access.getContacts(request.getFolderID());
+        return new AJAXRequestResult(sortIfNeeded(request, contacts), getLatestTimestamp(contacts), "contact");
+    }
+
+    @Override
+    protected Set<String> getOptionalParameters() {
+        return OPTIONAL_PARAMETERS;
+    }
+}

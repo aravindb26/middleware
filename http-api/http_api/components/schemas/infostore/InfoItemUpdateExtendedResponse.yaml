@@ -1,0 +1,6 @@
+type: object
+title: InfoItemUpdateExtendedResponse
+properties:
+  $ref: ../common/CommonResponseData.yaml
+  data:
+    $ref: '#/components/schemas/InfoItemData'

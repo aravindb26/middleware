@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Snippet Bundle
+Bundle-SymbolicName: com.openexchange.snippet
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.google.common.collect,
+ com.openexchange.exception,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.session,
+ org.json,
+ org.slf4j
+Export-Package: com.openexchange.snippet,
+ com.openexchange.snippet.db
+Automatic-Module-Name: com.openexchange.snippet

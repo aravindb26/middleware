@@ -1,0 +1,26 @@
+/sessionmanagement?action=delete:
+  put:
+    operationId: delete
+    tags:
+      - sessionmanagement
+    summary: Remove user's session
+    security: 
+        - session: []    
+    responses:
+      '200':
+        description: >
+          A JSON object signaling success. In case of errors the responsible
+          fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            description: Session Ids to delete
+            items:
+              type: string
+              description: A session id
+      description: A JSON array containing all session Ids to delete
+      required: true

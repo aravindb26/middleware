@@ -1,0 +1,19 @@
+/chronos/itip?action=ignore:
+  put:
+    operationId: ignore
+    tags:
+      - Chronos
+    summary: Ignores an iMIP mail and marks it as processed
+    security: 
+        - session: []
+    description: >-
+      Marks an messages as processed, thus getting rid of potential harmeful iMIP messages
+    responses:
+      '200':
+        description: An empty response if the operation was successful
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonResponse'
+    requestBody:
+      $ref: '#/components/requestBodies/ConversionDataSource'

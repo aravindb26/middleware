@@ -1,0 +1,15 @@
+{
+  "client-list" : {
+    "open-xchange-appsuite" : 2
+  },
+  "total" : 70,
+  "Context-users-max" : 30,
+  "capabilities" : [ "active_sync" ],
+  "guests" : 1,
+  "admin" : 100000000001,
+  "disabled" : 1,
+  "links" : 0,
+  "contexts" : 13,
+  "Context-users-min" : 5,
+  "Context-users-avg" : 5
+}

@@ -1,0 +1,28 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Calendar SMS Alarm Delivery
+Bundle-SymbolicName: com.openexchange.chronos.alarm.sms
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.chronos.alarm.sms
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Activator: com.openexchange.chronos.alarm.sms.osgi.SMSAlarmActivator
+Import-Package: com.google.i18n.phonenumbers,
+ com.openexchange.chronos,
+ com.openexchange.chronos.alarm.message,
+ com.openexchange.chronos.common,
+ com.openexchange.config.lean,
+ com.openexchange.exception,
+ com.openexchange.groupware.ldap,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.osgi,
+ com.openexchange.ratelimit,
+ com.openexchange.regional,
+ com.openexchange.server,
+ com.openexchange.sms,
+ com.openexchange.sms.tools,
+ com.openexchange.user,
+ org.dmfs.rfc5545,
+ org.osgi.framework,
+ org.slf4j

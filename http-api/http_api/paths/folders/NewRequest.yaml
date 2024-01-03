@@ -1,0 +1,65 @@
+/folders?action=new:
+  put:
+    operationId: createFolder
+    tags:
+      - Folders
+    summary: Creates a new folder.
+    security:
+        - session: []
+        - oauth: 
+          - write_mails
+        - oauth: 
+          - write_tasks
+        - oauth: 
+          - write_calendar
+        - oauth: 
+          - write_contacts             
+    parameters:
+      - in: query
+        name: folder_id
+        description: The parent folder object ID of the newly created folder.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/gblQueryParamFolderTree'
+      - $ref: '#/components/parameters/gblQueryParamAllowedModules'
+      - in: query
+        name: pushToken
+        description: The client's push token to restrict the generated drive event
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/QueryParamFolderAutoRename'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NewFolderBody'
+      description: >
+        JSON object with "folder" object containing the modified fields and
+        optional "notification"
+
+        object to let added permission entities be notified about newly shared
+        folders for all modules
+
+        except mail. (Example:
+        {"folder":{"module":"infostore","subscribed":true,"title":"Test123"}}
+        or 
+
+        {"folder":{"module":"infostore","subscribed":true,"title":"Test123","permissions":[{"bits":403710016,"entity":84,"group":false}]},"notification":{"transport":"mail","message":"The
+        message"}})
+      required: true      
+    responses:
+      '200':
+        description: >-
+          A JSON object with the object ID of the folder. In case of errors the
+          responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FolderUpdateResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

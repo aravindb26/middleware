@@ -1,0 +1,45 @@
+/mail?action=clear:
+  put:
+    operationId: clearMailFolders
+    tags:
+      - Mail
+    summary: Clears the content of mail folders.
+    security: 
+        - session: []      
+        - oauth:
+          - write_mail    
+    parameters:
+      - in: query
+        name: timestamp
+        description: 'Not IMAP: timestamp of the last update of the deleted mails.'
+        required: false
+        schema:
+          type: integer
+          format: int64
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+      description: A JSON array with object IDs of the mail folders that shall be cleared.
+      required: true          
+    responses:
+      '200':
+        description: >
+          A JSON array with IDs of mail folder that could not be cleared;
+          meaning the response body is an empty
+
+          JSON array if everything went well. In case of errors the responsible
+          fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailsCleanUpResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

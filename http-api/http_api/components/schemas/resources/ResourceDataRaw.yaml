@@ -1,0 +1,47 @@
+id:
+  type: integer
+  description: The resource ID.
+display_name:
+  type: string
+  description: Display name of the resource.
+name:
+  type: string
+  description: Internal name with character restrictions.
+mailaddress:
+  type: string
+  description: Email address of the resource.
+availability:
+  type: boolean
+  description: Can be false to mark the resource currently unavailable.
+description:
+  type: string
+  description: The description of the resource.
+last_modified:
+  type: integer
+  format: int64
+  description: Timestamp of the last modification.
+  readOnly: true
+last_modified_utc:
+  type: integer
+  format: int64
+  description: Timestamp of the last modification.
+  readOnly: true
+permissions:
+  type: array
+  description: The permissions of the resource.
+  items:
+    $ref: '#/components/schemas/ResourcePermission'
+own_privilege:
+  type: string
+  readOnly: true
+  description: >-
+    The granted scheduling privilege applicable for the requesting user.
+      * `none` - Not allowed to book the resource 
+      * `ask_to_book` - May submit a request to book the resource if it is available 
+      * `book_directly` - May book the resource directly if it is available 
+      * `delegate` - Act as delegate of the resource and manage bookings
+  enum:
+    - none
+    - ask_to_book
+    - book_directly
+    - delegate

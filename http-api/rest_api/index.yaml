@@ -1,0 +1,51 @@
+openapi: 3.0.0 
+
+info: 
+  $ref: ./info/index.yaml 
+
+tags:
+  - name: Userfeedback
+    description: The user feedback module
+  - name: Advertisement
+    description: The advertisement module
+  - name: Admin
+    description: Interface for provisioning and other administrative operations.
+  - name: Health
+    description: The health-check module 
+  - name: InternetFreeBusy
+    description: Servlet for requesting free busy data.
+  - name: Metrics
+    description: The metrics module
+  - name: Push
+    description: The push module
+  - name: Preliminary
+    description: This module contains preliminary endpoints which can change in the future.
+  - name: Request-Analysis
+    description: This module contains endpoints used to analyze requests
+
+paths: 
+   source: ./paths/ 
+
+components: 
+  schemas: 
+   $ref: ./components/schemas/index.yaml 
+
+  parameters: 
+   $ref: ./components/parameters/index.yaml 
+
+  requestBodies: 
+   $ref: ./components/requestBodies/index.yaml
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: HTTP Basic Authentication.
+    contextAdminAuth:
+      type: http
+      scheme: basic
+      description: The API can be accessed via HTTP Basic Auth with context administrator credentials or reseller/master administrator credentials if MASTER_ACCOUNT_OVERRIDE is enabled.
+    masterAdminAuth:
+      type: http
+      scheme: basic
+      description: The API can be accessed via HTTP Basic Auth with master administrator credentials.

@@ -1,0 +1,25 @@
+type: object
+description: An analysis result
+required: 
+  - marker
+  - headers
+properties:
+  marker:
+    type: string
+  headers:
+    type: object
+    description: An object containing headers which should be added to the request
+    required:
+      - x-ox-context-id
+    properties:
+      x-ox-context-id:
+        type: integer
+        format: int32
+        example: 1
+      x-ox-user-id:
+        type: integer
+        format: int32
+        example: 3
+      x-ox-login:
+        type: string
+        example: "anton@some.domain.com"

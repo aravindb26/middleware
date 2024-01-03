@@ -1,0 +1,94 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.multifactor.json.converter;
+
+import java.util.Collection;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import com.openexchange.ajax.requesthandler.AJAXRequestData;
+import com.openexchange.ajax.requesthandler.AJAXRequestResult;
+import com.openexchange.ajax.requesthandler.Converter;
+import com.openexchange.ajax.requesthandler.ResultConverter;
+import com.openexchange.exception.OXException;
+import com.openexchange.multifactor.MultifactorProvider;
+import com.openexchange.multifactor.json.converter.mapper.MultifactorProviderMapper;
+import com.openexchange.tools.servlet.OXJSONExceptionCodes;
+import com.openexchange.tools.session.ServerSession;
+
+/**
+ * {@link MultifactorProvidersResultConverter}
+ *
+ * @author <a href="mailto:benjamin.gruedelbach@open-xchange.com">Benjamin Gruedelbach</a>
+ * @since v7.10.2
+ */
+public class MultifactorProvidersResultConverter implements ResultConverter {
+
+    public static final String INPUT_FORMAT = "multifactor_providers";
+    private static final String OUTPUT_FORMAT = "json";
+
+    @Override
+    public String getInputFormat() {
+        return INPUT_FORMAT;
+    }
+
+    @Override
+    public String getOutputFormat() {
+        return OUTPUT_FORMAT;
+    }
+
+    @Override
+    public Quality getQuality() {
+        return Quality.GOOD;
+    }
+
+    @Override
+    public void convert(AJAXRequestData requestData, AJAXRequestResult result, ServerSession session, Converter converter) throws OXException {
+        Object resultObject = result.getResultObject();
+        if (resultObject instanceof Collection) {
+            @SuppressWarnings("unchecked") Collection<MultifactorProvider> providers = (Collection<MultifactorProvider>) resultObject;
+            try {
+                JSONArray json = new JSONArray(providers.size());
+                for (MultifactorProvider p : providers) {
+                    json.put(toJSON(p));
+                }
+                result.setResultObject(json);
+            } catch (JSONException e) {
+                throw OXJSONExceptionCodes.JSON_WRITE_ERROR.create(e);
+            }
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * Internal method to convert a provider to JSON format
+     *
+     * @param provider The {@link MultifactorProvider}
+     * @return the provider as JSON
+     * @throws OXException
+     * @throws JSONException
+     */
+    private JSONObject toJSON(MultifactorProvider provider) throws JSONException, OXException {
+        return MultifactorProviderMapper.getInstance().serialize(provider, MultifactorProviderMapper.getInstance().getAssignedFields(provider));
+    }
+}

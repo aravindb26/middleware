@@ -1,0 +1,205 @@
+Source: open-xchange-l10n
+Section: web
+Priority: optional
+Maintainer: Marcus Klein <marcus.klein@open-xchange.com>
+Build-Depends: debhelper (>= 7.0.1)
+Standards-Version: 3.9.8
+Homepage: http://www.open-xchange.com
+
+Package: open-xchange-l10n-ca-es
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for ca_ES
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-cs-cz
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for cs_CZ
+
+Package: open-xchange-l10n-da-dk
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for da_DK
+
+Package: open-xchange-l10n-de-de
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for de_DE
+
+Package: open-xchange-l10n-el-gr
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for el_GR
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-en-us
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for en_US
+
+Package: open-xchange-l10n-es-es
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for es_ES
+
+Package: open-xchange-l10n-es-mx
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for es_MX
+
+Package: open-xchange-l10n-et-ee
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for et_EE
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-eu-es
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for eu_ES
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-fi-fi
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for fi_FI
+
+Package: open-xchange-l10n-fr-ca
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for fr_CA
+
+Package: open-xchange-l10n-fr-fr
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for fr_FR
+
+Package: open-xchange-l10n-gl-es
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for gl_ES
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-he-he
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for he_HE
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-hi-in
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for hi_IN
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-hu-hu
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for hu_HU
+
+Package: open-xchange-l10n-it-it
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for it_IT
+
+Package: open-xchange-l10n-ja-jp
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for ja_JP
+
+Package: open-xchange-l10n-ko-ko
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for ko_KO
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-lv-lv
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for lv_LV
+
+Package: open-xchange-l10n-nb-no
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for nb_NO
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-nl-nl
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for nl_NL
+
+Package: open-xchange-l10n-pl-pl
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for pl_PL
+
+Package: open-xchange-l10n-pt-br
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for pt_BR
+
+Package: open-xchange-l10n-pt-pt
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for pt_PT
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-ro-ro
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for ro_RO
+
+Package: open-xchange-l10n-ru-ru
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for ru_RU
+ This localization package are driven by the community.
+
+Package: open-xchange-l10n-sk-sk
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for sk_SK
+
+Package: open-xchange-l10n-sv-se
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Replaces: open-xchange-l10n-sv-sv (<< 7.4.0)
+Conflicts: open-xchange-l10n-sv-sv (<< 7.4.0)
+Description: Package containing Open-Xchange backend localization for sv_SE
+
+Package: open-xchange-l10n-sv-sv
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-l10n-sv-se
+Section: oldlibs
+Description: transitional dummy package
+ This transitional package ensures that the content of the previous open-xchange-l10n-sv-sv package is removed from the system and the
+ successor open-xchange-l10n-sv-se is installed. This package can be safely removed after the upgrade process.
+
+Package: open-xchange-l10n-tr-tr
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for tr_TR
+ This localization package are driven by the community.
+
+#Package: open-xchange-l10n-vi-vi
+#Architecture: all
+#Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+#Description: Package containing Open-Xchange backend localization for vi_VI
+# This localization package are driven by the community.
+
+Package: open-xchange-l10n-zh-cn
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for zh_CN
+
+Package: open-xchange-l10n-zh-tw
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for zh_TW
+
+Package: open-xchange-l10n-en-gb
+Architecture: all
+Depends: ${misc:Depends}, open-xchange-core (>= @OXVERSION@)
+Description: Package containing Open-Xchange backend localization for en_GB

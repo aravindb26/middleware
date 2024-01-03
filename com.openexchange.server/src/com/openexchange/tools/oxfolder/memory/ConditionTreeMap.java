@@ -1,0 +1,990 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.tools.oxfolder.memory;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import com.openexchange.cache.impl.FolderCacheManager;
+import com.openexchange.database.DatabaseService;
+import com.openexchange.database.Databases;
+import com.openexchange.exception.OXException;
+import com.openexchange.groupware.container.FolderObject;
+import com.openexchange.groupware.contexts.Context;
+import com.openexchange.java.Functions;
+import com.openexchange.server.impl.OCLPermission;
+import com.openexchange.server.services.ServerServiceRegistry;
+import com.openexchange.threadpool.AbstractTask;
+import com.openexchange.threadpool.ThreadPoolService;
+import com.openexchange.threadpool.ThreadPools;
+import com.openexchange.tools.oxfolder.OXFolderBatchLoader;
+import com.openexchange.tools.oxfolder.OXFolderExceptionCode;
+import gnu.trove.TIntCollection;
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.procedure.TIntProcedure;
+import gnu.trove.set.EmptyTIntSet;
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
+
+/**
+ * {@link ConditionTreeMap} - Stores context-related condition trees for individual entities (users/groups).
+ *
+ * @author <a href="mailto:thorben.betten@open-xchange.com">Thorben Betten</a>
+ */
+public final class ConditionTreeMap {
+
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(ConditionTreeMap.class);
+
+    private static final EmptyTIntSet EMPTY_SET = EmptyTIntSet.getInstance();
+
+    final ConcurrentMap<Integer, Future<ConditionTree>> entity2tree;
+    private final int contextId;
+    private final int time2live;
+
+    /**
+     * Initializes a new {@link ConditionTreeMap}.
+     */
+    public ConditionTreeMap(int contextId, int time2live) {
+        super();
+        // Evict user-associated entries after <time2live> milliseconds
+        entity2tree = new ConcurrentHashMap<Integer, Future<ConditionTree>>(16, 0.9f, 1);
+        this.contextId = contextId;
+        this.time2live = time2live;
+    }
+
+    /**
+     * Trims this context condition tree map; meaning removes all elapsed entries.
+     */
+    public void trim() {
+        trim(System.currentTimeMillis() - time2live);
+    }
+
+    /**
+     * Trims this context condition tree map; meaning removes all elapsed entries.
+     */
+    public void trim(long stamp) {
+        for (Iterator<Future<ConditionTree>> it = entity2tree.values().iterator(); it.hasNext();) {
+            Future<ConditionTree> f = it.next();
+            try {
+                ConditionTree conditionTree = getFrom(f);
+                if (null == conditionTree || conditionTree.isElapsed(stamp)) {
+                    it.remove();
+                }
+            } catch (Exception e) {
+                // Drop on error
+                LOG.trace("", e);
+                it.remove();
+            }
+        }
+    }
+
+    /**
+     * Checks if this map is empty
+     *
+     * @return <code>true</code> if empty; otherwise <code>false</code>
+     */
+    public boolean isEmpty() {
+        return entity2tree.isEmpty();
+    }
+
+    private static final int PAGINATION_LIMIT = Databases.PAGINATION_LIMIT;
+    private static final int READ_FOLDER = OCLPermission.READ_FOLDER;
+
+    /**
+     * Initializes the tree map for map's associated context.
+     *
+     * @return This initialized tree map
+     * @throws OXException If initialization fails
+     */
+    public ConditionTreeMap init() throws OXException {
+        entity2tree.clear();
+        DatabaseService service = ServerServiceRegistry.getInstance().getService(DatabaseService.class);
+
+        try {
+            int offset = 0;
+            int rowCount = PAGINATION_LIMIT;
+            String selectStmt = "SELECT ot.fuid, op.permission_id, op.admin_flag, op.fp, ot.module, ot.type, ot.created_from, ot.changing_date, ot.parent"
+                + " FROM oxfolder_tree AS ot JOIN oxfolder_permissions AS op ON ot.cid = op.cid AND ot.fuid = op.fuid WHERE ot.cid=? ORDER BY ot.fuid LIMIT ?,?";
+
+            Map<Integer, List<Permission>> entity2permissions = new LinkedHashMap<>();
+            for (boolean hasMoreRows = true; hasMoreRows;) {
+                PreparedStatement stmt = null;
+                ResultSet rs = null;
+                Connection connection = service.getReadOnly(contextId);
+                try {
+                    stmt = connection.prepareStatement(selectStmt);
+                    stmt.setInt(1, contextId);
+                    stmt.setInt(2, offset);
+                    stmt.setInt(3, rowCount);
+                    rs = stmt.executeQuery();
+
+                    int rows = 0;
+                    while (rs.next()) {
+                        boolean admin = rs.getInt(3) > 0;
+                        boolean readFolder = rs.getInt(4) >= READ_FOLDER;
+                        if (admin || readFolder) {
+                            int entity = rs.getInt(2);
+                            entity2permissions.computeIfAbsent(Integer.valueOf(entity), Functions.getNewArrayListFuntion()).add(new Permission(rs.getInt(1), entity, admin, readFolder, rs.getInt(5), rs.getInt(6), rs.getInt(7), rs.getLong(8), rs.getInt(9)));
+                        }
+                        rows++;
+                    }
+
+                    hasMoreRows = rows >= rowCount;
+                    if (hasMoreRows) {
+                        offset += rowCount;
+                    }
+                } finally {
+                    Databases.closeSQLStuff(rs, stmt);
+                    service.backReadOnly(contextId, connection);
+                }
+            }
+
+            insert(entity2permissions);
+            entity2permissions = null; // May help GC
+
+            return this;
+        } catch (SQLException e) {
+            throw OXFolderExceptionCode.SQL_ERROR.create(e, e.getMessage());
+        } catch (RuntimeException e) {
+            throw OXFolderExceptionCode.UNKNOWN_EXCEPTION.create(e, e.getMessage());
+        }
+    }
+
+    /**
+     * Initializes a new tree for given entity.
+     *
+     * @param entity The entity identifier
+     * @throws OXException If initialization fails
+     */
+    public ConditionTree newTreeForEntity(int entity) throws OXException {
+        return newTreeForEntity(Optional.empty(), entity);
+    }
+
+    /**
+     * Initializes a new tree for given entity.
+     *
+     * @param optCon The optional connection to use
+     * @param entity The entity identifier
+     * @throws OXException If initialization fails
+     */
+    public ConditionTree newTreeForEntity(Optional<Connection> optCon, int entity) throws OXException {
+        DatabaseService service = ServerServiceRegistry.getInstance().getService(DatabaseService.class);
+
+        try {
+            int offset = 0;
+            int rowCount = PAGINATION_LIMIT;
+            String selectStmt = "SELECT ot.fuid, op.admin_flag, op.fp, ot.module, ot.type, ot.created_from, ot.changing_date, ot.parent"
+                + " FROM oxfolder_tree AS ot JOIN oxfolder_permissions AS op ON ot.cid = op.cid AND ot.fuid = op.fuid WHERE ot.cid=? AND op.permission_id=? ORDER BY ot.fuid LIMIT ?,?";
+            ConditionTree tree = new ConditionTree();
+
+            List<Permission> permissions = new ArrayList<>();
+            for (boolean hasMoreRows = true; hasMoreRows;) {
+                PreparedStatement stmt = null;
+                ResultSet rs = null;
+                Connection connection = optCon.orElse(null);
+                boolean closeConnection = false;
+                if (connection == null) {
+                    closeConnection = true;
+                    connection = service.getReadOnly(contextId);
+                }
+                try {
+                    stmt = connection.prepareStatement(selectStmt);
+                    stmt.setInt(1, contextId);
+                    stmt.setInt(2, entity);
+                    stmt.setInt(3, offset);
+                    stmt.setInt(4, rowCount);
+                    rs = stmt.executeQuery();
+
+                    int rows = 0;
+                    while (rs.next()) {
+                        boolean admin = rs.getInt(3) > 0;
+                        boolean readFolder = rs.getInt(4) >= READ_FOLDER;
+                        if (admin || readFolder) {
+                            permissions.add(new Permission(rs.getInt(1), entity, admin, readFolder, rs.getInt(4), rs.getInt(5), rs.getInt(6), rs.getLong(7), rs.getInt(8)));
+                        }
+                        rows++;
+                    }
+
+                    hasMoreRows = rows >= rowCount;
+                    if (hasMoreRows) {
+                        offset += rowCount;
+                    }
+                } finally {
+                    Databases.closeSQLStuff(rs, stmt);
+                    if (closeConnection && null != connection) {
+                        service.backReadOnly(contextId, connection);
+                    }
+                }
+            }
+
+            tree.insert(permissions);
+            permissions = null; // May help GC
+
+            return tree;
+        } catch (SQLException e) {
+            throw OXFolderExceptionCode.SQL_ERROR.create(e, e.getMessage());
+        } catch (RuntimeException e) {
+            throw OXFolderExceptionCode.UNKNOWN_EXCEPTION.create(e, e.getMessage());
+        }
+    }
+
+    /**
+     * Clears whole tree map.
+     */
+    public void clear() {
+        entity2tree.clear();
+    }
+
+    /**
+     * Removes the tree for specified entity.
+     *
+     * @param entity The entity identifier
+     */
+    public void removeFor(int entity) {
+        entity2tree.remove(Integer.valueOf(entity));
+    }
+
+    /**
+     * Feeds given permissions to this tree map.
+     *
+     * @param permissions The permissions
+     */
+    private void insert(Map<Integer, List<Permission>> entity2permissions) throws OXException {
+        for (Map.Entry<Integer, List<Permission>> entry : entity2permissions.entrySet()) {
+            Integer entity = entry.getKey();
+            Future<ConditionTree> f = entity2tree.get(entity);
+            if (null == f) {
+                FutureTask<ConditionTree> ft = new FutureTask<ConditionTree>(new NewTreeCallable());
+                f = entity2tree.putIfAbsent(entity, ft);
+                if (null == f) {
+                    ft.run();
+                    f = ft;
+                }
+            }
+
+            // Insert into tree
+            ConditionTree conditionTree = getFrom(f);
+            if (null != conditionTree) {
+                conditionTree.insert(entry.getValue());
+            }
+        }
+    }
+
+    private Future<ConditionTree> futureFor(int entity) {
+        return futureFor(entity, Optional.empty());
+    }
+
+    private Future<ConditionTree> futureFor(int entity, Optional<Connection> optCon) {
+        Future<ConditionTree> f = entity2tree.get(Integer.valueOf(entity));
+        if (null == f) {
+            FutureTask<ConditionTree> ft = new FutureTask<ConditionTree>(new InitEntityCallable(optCon, entity, LOG));
+            f = entity2tree.putIfAbsent(Integer.valueOf(entity), ft);
+            if (null == f) {
+                ft.run();
+                f = ft;
+            }
+        }
+        return f;
+    }
+
+    /**
+     * Gets the visible folders for given user.
+     *
+     * @param userId The user identifier
+     * @param groups The groups associated with given user
+     * @param accessibleModules The user's accessible modules
+     * @param conditions The conditions to fulfill
+     * @return The identifiers of visible folders
+     */
+    public TIntSet getVisibleForUser(int userId, int[] groups, int[] accessibleModules, Condition... conditions) throws OXException {
+        Future<ConditionTree> f = futureFor(userId);
+        Condition condition = new CombinedCondition(new ModulesCondition(accessibleModules), conditions);
+        /*
+         * Iterate visible sets
+         */
+        TIntSet set = getFrom(f).getVisibleFolderIds(condition);
+        if (null == set) {
+            set = new TIntHashSet();
+        }
+        if (null != groups) {
+            for (int group : groups) {
+                f = futureFor(group);
+                ConditionTree conditionTree = getFrom(f);
+                if (null != conditionTree) {
+                    set.addAll(conditionTree.getVisibleFolderIds(condition));
+                }
+            }
+        }
+        /*
+         * Return set
+         */
+        return set;
+    }
+
+    /**
+     * Gets the visible folders for given user.
+     *
+     * @param userId The user identifier
+     * @param groups The groups associated with given user
+     * @param accessibleModules The user's accessible modules
+     * @param conditions The conditions to fulfill
+     * @return The identifiers of visible folders
+     */
+    public TIntSet getVisibleForUser(int userId, int[] groups, int[] accessibleModules, Collection<Condition> conditions) throws OXException {
+        Future<ConditionTree> f = futureFor(userId);
+        Condition condition = new CombinedCondition(new ModulesCondition(accessibleModules), conditions);
+        /*
+         * Iterate visible sets
+         */
+        TIntSet set = getFrom(f).getVisibleFolderIds(condition);
+        if (null == set) {
+            set = new TIntHashSet();
+        }
+        if (null != groups) {
+            for (int group : groups) {
+                f = futureFor(group);
+                ConditionTree conditionTree = getFrom(f);
+                if (null != conditionTree) {
+                    set.addAll(conditionTree.getVisibleFolderIds(condition));
+                }
+            }
+        }
+        /*
+         * Return set
+         */
+        return set;
+    }
+
+    /**
+     * Checks for visibility of given user.
+     *
+     * @param userId The user identifier
+     * @param groups The groups associated with given user
+     * @param accessibleModules The user's accessible modules
+     * @param folderId The folder identifier
+     * @return <code>true</code> if visible; otherwise <code>false</code>
+     */
+    public boolean isVisibleFolder(int userId, int[] groups, int[] accessibleModules, int folderId) throws OXException {
+        Future<ConditionTree> f = futureFor(userId);
+        /*
+         * Iterate visible sets
+         */
+        Condition condition = new ModulesCondition(accessibleModules);
+        TIntSet set = getFrom(f).getVisibleFolderIds(condition);
+        if (!set.isEmpty() && set.contains(folderId)) {
+            return true;
+        }
+        if (null != groups) {
+            for (int group : groups) {
+                f = futureFor(group);
+                set = getFrom(f).getVisibleFolderIds(condition);
+                if (!set.isEmpty() && set.contains(folderId)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks for any shared folder visible to given user.
+     *
+     * @param userId The user identifier
+     * @param groups The groups associated with given user
+     * @param accessibleModules The user's accessible modules
+     * @param type The type
+     * @return The identifiers of visible folders
+     */
+    public boolean hasSharedFolder(int userId, int[] groups, int[] accessibleModules) throws OXException {
+        Future<ConditionTree> f = futureFor(userId);
+        Condition condition = new CombinedCondition(new ModulesCondition(accessibleModules), new TypeCondition(FolderObject.SHARED, userId));
+        /*
+         * Iterate visible sets
+         */
+        TIntSet set = getFrom(f).getVisibleFolderIds(condition);
+        if (null != set && !set.isEmpty()) {
+            return true;
+        }
+        if (null != groups) {
+            for (int group : groups) {
+                f = futureFor(group);
+                ConditionTree conditionTree = getFrom(f);
+                if (null != conditionTree && !conditionTree.getVisibleFolderIds(condition).isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Gets the visible folders for given user.
+     *
+     * @param userId The user identifier
+     * @param groups The groups associated with given user
+     * @param accessibleModules The user's accessible modules
+     * @param type The type
+     * @return The identifiers of visible folders
+     */
+    public TIntSet getVisibleTypeForUser(int userId, int[] groups, int[] accessibleModules, int type) throws OXException {
+        Future<ConditionTree> f = futureFor(userId);
+        Condition condition = new CombinedCondition(new ModulesCondition(accessibleModules), new TypeCondition(type, userId));
+        /*
+         * Iterate visible sets
+         */
+        TIntSet set = getFrom(f).getVisibleFolderIds(condition);
+        if (null == set) {
+            set = new TIntHashSet();
+        }
+        if (null != groups) {
+            for (int group : groups) {
+                f = futureFor(group);
+                ConditionTree conditionTree = getFrom(f);
+                if (null != conditionTree) {
+                    set.addAll(conditionTree.getVisibleFolderIds(condition));
+                }
+            }
+        }
+        /*
+         * Return set
+         */
+        return set;
+    }
+
+    /**
+     * Gets the visible folders for given user.
+     *
+     * @param userId The user identifier
+     * @param groups The groups associated with given user
+     * @param accessibleModules The user's accessible modules
+     * @param module The module
+     * @return The identifiers of visible folders
+     */
+    public TIntSet getVisibleModuleForUser(Optional<Connection> optCon, int userId, int[] groups, int[] accessibleModules, int module) throws OXException {
+        Condition condition;
+        {
+            if (null != accessibleModules) {
+                TIntSet modules = new TIntHashSet(accessibleModules);
+                if (!modules.contains(module)) {
+                    return EMPTY_SET;
+                }
+            }
+            condition = ModuleCondition.moduleCondition(module);
+        }
+        Future<ConditionTree> f = futureFor(userId, optCon);
+        /*
+         * Iterate visible sets
+         */
+        TIntSet set = getFrom(f).getVisibleFolderIds(condition);
+        if (null == set) {
+            set = new TIntHashSet();
+        }
+        if (null != groups) {
+            for (int group : groups) {
+                f = futureFor(group, optCon);
+                ConditionTree ct = getFrom(f);
+                if (null != ct) {
+                    set.addAll(ct.getVisibleFolderIds(condition));
+                }
+            }
+        }
+        /*
+         * Return set
+         */
+        return set;
+    }
+
+    /**
+     * Gets the visible folders for given user.
+     *
+     * @param userId The user identifier
+     * @param groups The groups associated with given user
+     * @param accessibleModules The user's accessible modules
+     * @param module The module
+     * @param type The type
+     * @return The identifiers of visible folders
+     */
+    public TIntSet getVisibleForUser(int userId, int[] groups, int[] accessibleModules, int module, int type) throws OXException {
+        Condition condition;
+        {
+            if (null != accessibleModules) {
+                TIntSet modules = new TIntHashSet(accessibleModules);
+                if (!modules.contains(module)) {
+                    return EMPTY_SET;
+                }
+            }
+            condition = new CombinedCondition(ModuleCondition.moduleCondition(module), new TypeCondition(type, userId));
+        }
+        Future<ConditionTree> f = futureFor(userId);
+        /*
+         * Iterate visible sets
+         */
+        TIntSet set = getFrom(f).getVisibleFolderIds(condition);
+        if (null == set) {
+            set = new TIntHashSet();
+        }
+        if (null != groups) {
+            for (int group : groups) {
+                f = futureFor(group);
+                ConditionTree conditionTree = getFrom(f);
+                if (null != conditionTree) {
+                    set.addAll(conditionTree.getVisibleFolderIds(condition));
+                }
+            }
+        }
+        /*
+         * Return set
+         */
+        return set;
+    }
+
+    /**
+     * Creates a list for specified set.
+     *
+     * @param set The set to turn into a list
+     * @param context The associated context
+     * @return The list
+     * @throws OXException If creating a list fails
+     */
+    public static List<FolderObject> asList(TIntSet set, Context context) throws OXException {
+        return asList(set, context, null);
+    }
+
+    /**
+     * Creates a list for specified set.
+     *
+     * @param set The set to turn into a list
+     * @param context The associated context
+     * @param con A connection in read-only mode
+     * @return The list
+     * @throws OXException If creating a list fails
+     */
+    public static List<FolderObject> asList(TIntSet set, Context context, Connection con) throws OXException {
+        if (null == set || set.isEmpty()) {
+            return Collections.emptyList();
+        }
+        try {
+            /*
+             * List of folders to return
+             */
+            final TIntObjectMap<FolderObject> m = new TIntObjectHashMap<FolderObject>(set.size());
+            {
+                TIntSet toLoad = new TIntHashSet(set);
+                FolderCacheManager cacheManager = FolderCacheManager.getInstance();
+                boolean cacheEnabled = FolderCacheManager.isEnabled();
+                if (cacheEnabled) {
+                    for (FolderObject fo : cacheManager.getTrimedFolderObjects(set.toArray(), context)) {
+                        int objectID = fo.getObjectID();
+                        toLoad.remove(objectID); // Needs not to be loaded; therefore removed from set
+                        m.put(objectID, fo);
+                    }
+                }
+                /*
+                 * Loadees...
+                 */
+                if (!toLoad.isEmpty()) {
+                    if (null == con) {
+                        loadBy(toLoad, m, cacheEnabled, cacheManager, context);
+                    } else {
+                        loadBy(toLoad, m, cacheEnabled, cacheManager, context, con);
+                    }
+                }
+            }
+            /*
+             * Fill list from map
+             */
+            final List<FolderObject> list = new ArrayList<FolderObject>(m.size());
+            TIntProcedure procedure = new TIntProcedure() {
+
+                @Override
+                public boolean execute(int folderId) {
+                    try {
+                        FolderObject fo = m.get(folderId);
+                        if (null != fo) {
+                            list.add(fo);
+                        }
+                        return true;
+                    } catch (Exception e) {
+                        throw new ProcedureFailedException(e);
+                    }
+                }
+            };
+            set.forEach(procedure);
+            return list;
+        } catch (ProcedureFailedException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof OXException) {
+                throw (OXException) cause;
+            }
+            throw OXFolderExceptionCode.RUNTIME_ERROR.create(cause, cause.getMessage());
+        }
+    }
+
+    private static void loadBy(TIntSet toLoad, TIntObjectMap<FolderObject> m, boolean cacheEnabled, FolderCacheManager cacheManager, Context context) throws OXException {
+        DatabaseService service = ServerServiceRegistry.getInstance().getService(DatabaseService.class);
+        Connection con = null;
+        try {
+            con = service.getReadOnly(context);
+            loadBy(toLoad, m, cacheEnabled, cacheManager, context, con);
+        } finally {
+            if (null != con) {
+                service.backReadOnly(context, con);
+            }
+        }
+    }
+
+    private static void loadBy(TIntSet toLoad, TIntObjectMap<FolderObject> m, boolean cacheEnabled, final FolderCacheManager cacheManager, final Context context, Connection con) throws OXException {
+        if (null == con) {
+            loadBy(toLoad, m, cacheEnabled, cacheManager, context);
+            return;
+        }
+        List<FolderObject> loaded = OXFolderBatchLoader.loadFolderObjectsFromDB(toLoad.toArray(), context, con, true, true);
+        // Put to cache asynchronously with a separate list
+        if (cacheEnabled) {
+            final List<FolderObject> tmp = new ArrayList<FolderObject>(loaded);
+            ThreadPoolService threadPoolService = ThreadPools.getThreadPool();
+            if (threadPoolService == null) {
+                LOG.debug("The Thread Pool Service is absent (probably due to server shutdown.");
+                return;
+            }
+            threadPoolService.submit(new AbstractTask<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    for (FolderObject fo : tmp) {
+                        if (null != fo) {
+                            cacheManager.putFolderObject(fo, context, false, null);
+                        }
+                    }
+                    return null;
+                }
+            });
+        }
+        // Put to map
+        for (FolderObject fo : loaded) {
+            if (null != fo) {
+                m.put(fo.getObjectID(), fo);
+            }
+        }
+    }
+
+    protected static FolderObject getFolderObject(int folderId, Context context, Connection con) throws OXException {
+        if (!FolderCacheManager.isEnabled()) {
+            return FolderObject.loadFolderObjectFromDB(folderId, context, con, true, true);
+        }
+        FolderCacheManager cacheManager = FolderCacheManager.getInstance();
+        FolderObject fo = cacheManager.getFolderObject(folderId, context);
+        if (null == fo) {
+            fo = FolderObject.loadFolderObjectFromDB(folderId, context, con, true, true);
+            cacheManager.putFolderObject(fo, context, false, null);
+        }
+        return fo;
+    }
+
+    private static final class CombinedCondition implements Condition {
+
+        private final List<Condition> conditions;
+
+        protected CombinedCondition(Condition first, Condition... others) {
+            super();
+            if (null != others) {
+                conditions = new ArrayList<Condition>(others.length + 1);
+                conditions.add(first);
+                conditions.addAll(Arrays.asList(others));
+            } else {
+                conditions = new ArrayList<Condition>(1);
+                conditions.add(first);
+            }
+        }
+
+        public CombinedCondition(ModulesCondition first, Collection<Condition> conditions) {
+            super();
+            this.conditions = new ArrayList<Condition>(conditions.size() + 1);
+            this.conditions.add(first);
+            this.conditions.addAll(conditions);
+        }
+
+        @Override
+        public boolean fulfilled(Permission p) {
+            for (Condition condition : conditions) {
+                if (!condition.fulfilled(p)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public static final class PrivateCondition implements Condition {
+
+        private final int userId;
+
+        public PrivateCondition(int userId) {
+            super();
+            this.userId = userId;
+        }
+
+        @Override
+        public boolean fulfilled(Permission p) {
+            return (FolderObject.PRIVATE == p.type) && (p.creator == userId);
+        }
+
+    }
+
+    public static final class ParentCondition implements Condition {
+
+        private final int parent;
+
+        public ParentCondition(int parent) {
+            super();
+            this.parent = parent;
+        }
+
+        @Override
+        public boolean fulfilled(Permission p) {
+            return (p.parent == parent);
+        }
+
+    }
+
+    public static final class CreatorCondition implements Condition {
+
+        private final int creator;
+
+        public CreatorCondition(int creator) {
+            super();
+            this.creator = creator;
+        }
+
+        @Override
+        public boolean fulfilled(Permission p) {
+            return (p.creator == creator);
+        }
+
+    }
+
+    public static final class TypeCondition implements Condition {
+
+        private final int type;
+        private final int userId;
+
+        public TypeCondition(int type, int userId) {
+            super();
+            if (FolderObject.SHARED == type) {
+                this.userId = userId;
+                this.type = FolderObject.PRIVATE;
+            } else {
+                this.userId = -1;
+                this.type = type;
+            }
+        }
+
+        @Override
+        public boolean fulfilled(Permission p) {
+            return (p.type == type) && (userId >= 0 ? (p.creator != userId) : true);
+        }
+
+    }
+
+    public static final class TypesCondition implements Condition {
+
+        private final TIntSet types;
+
+        public TypesCondition(int[] types) {
+            super();
+            this.types = new TIntHashSet(types);
+        }
+
+        @Override
+        public boolean fulfilled(Permission p) {
+            return types.contains(p.type);
+        }
+
+    }
+
+    public static final class ModuleCondition implements Condition {
+
+        private static final ConcurrentMap<Integer, ModuleCondition> conditions = new ConcurrentHashMap<Integer, ModuleCondition>(8, 0.9f, 1);
+
+        static ModuleCondition moduleCondition(int module) {
+            Integer key = Integer.valueOf(module);
+            ModuleCondition mc = conditions.get(key);
+            if (null == mc) {
+                ModuleCondition nmc = new ModuleCondition(module);
+                mc = conditions.putIfAbsent(key, nmc);
+                if (mc == null) {
+                    mc = nmc;
+                }
+            }
+            return mc;
+        }
+
+        private final int module;
+
+        private ModuleCondition(int module) {
+            super();
+            this.module = module;
+        }
+
+        @Override
+        public boolean fulfilled(Permission p) {
+            return module == p.module;
+        }
+
+    }
+
+    public static final class ModulesCondition implements Condition {
+
+        private final TIntSet accessibleModules;
+
+        public ModulesCondition(int[] accessibleModules) {
+            super();
+            this.accessibleModules = new TIntHashSet(accessibleModules);
+        }
+
+        public ModulesCondition(TIntCollection accessibleModules) {
+            super();
+            this.accessibleModules = new TIntHashSet(accessibleModules);
+        }
+
+        @Override
+        public boolean fulfilled(Permission p) {
+            return accessibleModules.contains(p.module);
+        }
+
+    }
+
+    public static final class LastModifiedCondition implements Condition {
+
+        private final long lastModified;
+
+        public LastModifiedCondition(long lastModified) {
+            super();
+            this.lastModified = lastModified;
+        }
+
+        @Override
+        public boolean fulfilled(Permission p) {
+            return p.lastModified > lastModified;
+        }
+
+    }
+
+    private static final class ProcedureFailedException extends RuntimeException {
+
+        private static final long serialVersionUID = 1821041261492515385L;
+
+        protected ProcedureFailedException(Throwable cause) {
+            super(cause);
+        }
+
+    }
+
+    // --------------------------------------------------------------------------------------- //
+
+    protected static ConditionTree getFrom(Future<ConditionTree> f) throws OXException {
+        return timedFrom(f, 0);
+    }
+
+    protected static ConditionTree timedFrom(Future<ConditionTree> f, long timeoutMillis) throws OXException {
+        if (null == f) {
+            return null;
+        }
+        try {
+            return timeoutMillis > 0 ? f.get(timeoutMillis, TimeUnit.MILLISECONDS) : f.get();
+        } catch (InterruptedException e) {
+            // Cannot occur
+            Thread.currentThread().interrupt();
+            throw OXFolderExceptionCode.RUNTIME_ERROR.create(e, e.getMessage());
+        } catch (ExecutionException e) {
+            throw ThreadPools.launderThrowable(e, OXException.class);
+        } catch (TimeoutException e) {
+            return null;
+        }
+    }
+
+    private static final class NewTreeCallable implements Callable<ConditionTree> {
+
+        protected NewTreeCallable() {
+            super();
+        }
+
+        @Override
+        public ConditionTree call() {
+            return new ConditionTree();
+        }
+    } // End of NewTreeCallable class
+
+    private final class InitEntityCallable implements Callable<ConditionTree> {
+
+        private final int entity;
+        private final org.slf4j.Logger logger;
+        private final Optional<Connection> con;
+
+        /**
+         * Initializes a new {@link InitEntityCallable}.
+         *
+         * @param optCon The optional connection to use
+         * @param entity The entity
+         * @param logger The logger
+         */
+        InitEntityCallable(Optional<Connection> optCon, int entity, org.slf4j.Logger logger) {
+            super();
+            this.entity = entity;
+            this.logger = logger;
+            this.con = optCon;
+        }
+
+        @Override
+        public ConditionTree call() throws OXException {
+            try {
+                return newTreeForEntity(con, entity);
+            } catch (OXException e) {
+                logger.warn("", e);
+                throw e;
+            } catch (RuntimeException e) {
+                logger.error("", e);
+                throw OXFolderExceptionCode.RUNTIME_ERROR.create(e, e.getMessage());
+            }
+        }
+    } // End of InitEntityCallable class
+
+}

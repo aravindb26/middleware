@@ -1,0 +1,8 @@
+title: OX REST API
+description: |
+  Documentation of the Open-Xchange REST API.
+contact:
+  name: Open-Xchange GmbH
+  email: info@open-xchange.com
+  url: 'https://www.open-xchange.com/'
+$ref: ../../../com.openexchange.version/version.txt

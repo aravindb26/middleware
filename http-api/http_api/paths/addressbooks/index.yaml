@@ -1,0 +1,12 @@
+requests: 
+  - AdvancedSearchRequest.yaml
+  - AllRequest.yaml
+  - AnniversariesRequest.yaml
+  - AutocompleteRequest.yaml
+  - BirthdaysRequest.yaml
+  - DeleteRequest.yaml
+  - GetRequest.yaml
+  - ListRequest.yaml
+  - NewRequest.yaml
+  - UpdateRequest.yaml
+  - UpdatesRequest.yaml

@@ -1,0 +1,44 @@
+/certificate?action=store:
+  put:
+    operationId: storeCertificate
+    tags:
+      - Certificate
+    summary: Stores the fingerprint of an SSL certificate.
+    security: 
+        - session: []    
+    description: >-
+      Stores the fingerprint of an SSL certificate in combination with a
+      hostname as either trusted or untrusted. This API call also accepts a
+      JSONObject.
+    parameters:
+      - in: query
+        name: fingerprint
+        description: The fingerprint of the SSL certificate
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: hostname
+        description: The hostname for which to trust/untrust the SSL certificate
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: trust
+        description: >-
+          Whether the combination of the SSL certificate and the hostname is to
+          be trusted
+        required: true
+        schema:
+          type: boolean
+    responses:
+      '200':
+        description: >-
+          An empty JSON object. In case of errors the responsible fields in the
+          response are filled (see [Error handling](#error-handling)).
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CertificateStoreData'
+      description: A JSON object describing the SSL certificate.

@@ -1,0 +1,32 @@
+type: object
+title: RequestData
+required:
+  - method
+  - url
+  - remoteIP
+  - headers
+properties:
+  method: 
+    type: string
+    description: The method of the request
+  url:
+    type: string
+    description: The url of the request
+  remoteIP:
+    type: string
+    description: the remote ip of the request
+  headers:
+    type: array
+    description: An array of headers of the request
+    items:
+      type: object
+      title: Header
+      description: A header
+      properties:
+        name: 
+          type: string
+        value:
+          type: string
+  body:
+    type: string  
+    description: The body of the request as a base64 encoded string

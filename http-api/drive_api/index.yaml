@@ -1,0 +1,28 @@
+openapi: 3.0.0 
+
+info: 
+  $ref: ./info/index.yaml 
+
+tags:
+  - name: Drive
+    description: The drive module
+
+paths: 
+   source: ./paths/ 
+
+components: 
+  schemas: 
+   $ref: ./components/schemas/index.yaml 
+
+  parameters: 
+   $ref: ./components/parameters/index.yaml 
+   
+  securitySchemes:
+    session:
+      type: apiKey
+      in: query
+      name: session
+      description: The default security scheme which uses a session ID previously obtained from the login module. Used in combination with a session cookie.   
+
+#  requestBodies: 
+#   $ref: ./components/requestBodies/index.yaml

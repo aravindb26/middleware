@@ -1,0 +1,30 @@
+/oauth/accounts?action=all:
+  get:
+    operationId: getAllOAuthAccounts
+    tags:
+      - OAuth
+    summary: Gets all OAuth accounts.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: serviceId
+        description: >-
+          The service meta data identifier. If missing all accounts of all
+          services are returned; otherwise all accounts of specified service are
+          returned.
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array of JSON objects each describing an
+          OAuth account. In case of errors the responsible fields in the
+          response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthAccountsResponse'

@@ -1,0 +1,36 @@
+/calendar?action=getChangeExceptions:
+  get:
+    operationId: getChangeExceptions
+    tags:
+      - Calendar
+    summary: Gets all change exceptions.
+    security: 
+        - session: []
+        - oauth: 
+          - read_calendar            
+    parameters:
+      - in: query
+        name: id
+        description: Object ID of the appointment series.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/gblQueryParamCalendarFolder'
+      - $ref: '#/components/parameters/gblQueryParamCalendarColumns'
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with appointment data. Each array
+          element describes one appointment and
+
+          is itself an array. The elements of each array contain the information
+          specified by the corresponding
+
+          identifiers in the `columns` parameter. In case of errors the
+          responsible fields in the response are filled
+
+          (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentsResponse'

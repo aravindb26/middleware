@@ -1,0 +1,35 @@
+/infostore?action=lock:
+  get:
+    operationId: lockInfoItem
+    tags:
+      - Infostore
+    summary: Locks an infoitem.
+    security: 
+        - session: []    
+    parameters:
+      - in: query
+        name: id
+        description: Object ID of the infoitem that shall be locked.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: diff
+        description: >-
+          If present the value is added to the current time on the server (both
+          in ms). The document will be locked until that time. If this parameter
+          is not present, the document will be locked for a duration as
+          configured on the server.
+        required: false
+        schema:
+          type: integer
+          format: int64
+    responses:
+      '200':
+        description: >
+          In case of errors the responsible fields in the response are filled
+          (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonResponse'

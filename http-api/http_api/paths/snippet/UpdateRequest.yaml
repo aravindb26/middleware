@@ -1,0 +1,42 @@
+/snippet?action=update:
+  put:
+    operationId: updateSnippet
+    tags:
+      - Snippet
+    summary: Updates a snippet.
+    security: 
+        - session: []
+        - oauth: 
+          - write_userconfig    
+    parameters:
+      - in: query
+        name: id
+        description: The identifier of the snippet.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SnippetData'
+      description: >-
+        A JSON object providing the fields that should be changed, excluding its
+        attachments. For deleting attachments see `/snippet?action=detach`
+        request.
+      required: true          
+    responses:
+      '200':
+        description: >
+          A JSON object containing the data of the updated snippet. In case of
+          errors the responsible fields in the response are
+
+          filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SnippetResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'
+      '403':
+        $ref: '#/components/responses/OAuth_insufficient_scope'              

@@ -1,0 +1,740 @@
+/*
+ * @copyright Copyright (c) OX Software GmbH, Germany <info@open-xchange.com>
+ * @license AGPL-3.0
+ *
+ * This code is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with OX App Suite.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ *
+ * Any use of the work other than as authorized under this license or copyright law is prohibited.
+ *
+ */
+
+package com.openexchange.admin.reseller.rmi.impl;
+
+import static com.openexchange.java.Autoboxing.I;
+import static com.openexchange.java.Autoboxing.i;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import com.openexchange.admin.daemons.ClientAdminThread;
+import com.openexchange.admin.plugins.PluginException;
+import com.openexchange.admin.reseller.daemons.ClientAdminThreadExtended;
+import com.openexchange.admin.reseller.plugins.OXResellerPluginInterface;
+import com.openexchange.admin.reseller.rmi.OXResellerInterface;
+import com.openexchange.admin.reseller.rmi.OXResellerTools;
+import com.openexchange.admin.reseller.rmi.OXResellerTools.ClosureInterface;
+import com.openexchange.admin.reseller.rmi.dataobjects.ResellerAdmin;
+import com.openexchange.admin.reseller.rmi.dataobjects.Restriction;
+import com.openexchange.admin.reseller.rmi.exceptions.OXResellerException;
+import com.openexchange.admin.reseller.rmi.exceptions.OXResellerException.Code;
+import com.openexchange.admin.reseller.services.PluginInterfaces;
+import com.openexchange.admin.reseller.storage.interfaces.OXResellerStorageInterface;
+import com.openexchange.admin.rmi.dataobjects.Context;
+import com.openexchange.admin.rmi.dataobjects.Credentials;
+import com.openexchange.admin.rmi.exceptions.EnforceableDataObjectException;
+import com.openexchange.admin.rmi.exceptions.InvalidCredentialsException;
+import com.openexchange.admin.rmi.exceptions.InvalidDataException;
+import com.openexchange.admin.rmi.exceptions.RemoteExceptionUtils;
+import com.openexchange.admin.rmi.exceptions.StorageException;
+import com.openexchange.admin.rmi.impl.BasicAuthenticator;
+import com.openexchange.admin.rmi.impl.OXCommonImpl;
+import com.openexchange.admin.tools.AdminCache;
+import com.openexchange.admin.tools.GenericChecks;
+import com.openexchange.exception.LogLevel;
+
+/**
+ * {@link OXReseller}
+ *
+ * @author <a href="mailto:carsten.hoeger@open-xchange.com">Carsten Hoeger</a>
+ * @author <a href="mailto:ioannis.chouklis@open-xchange.com">Ioannis Chouklis</a>
+ */
+public class OXReseller extends OXCommonImpl implements OXResellerInterface {
+
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(OXReseller.class);
+
+    private final AdminCache cache;
+    private final BasicAuthenticator basicauth;
+    private final OXResellerStorageInterface oxresell;
+    private final ResellerAuth resellerauth;
+
+    /**
+     * Initializes a new {@link OXReseller}.
+     *
+     * @throws StorageException if an error is occurred
+     */
+    public OXReseller() throws StorageException {
+        super();
+        log(LogLevel.DEBUG, LOGGER, null, null, "Class loaded: {}", this.getClass().getName());
+        cache = ClientAdminThread.cache;
+        basicauth = BasicAuthenticator.createNonPluginAwareAuthenticator();
+        resellerauth = new ResellerAuth();
+        try {
+            oxresell = OXResellerStorageInterface.getInstance();
+        } catch (StorageException e) {
+            log(LogLevel.ERROR, LOGGER, null, e, "");
+            throw e;
+        }
+    }
+
+    @Override
+    public void change(final ResellerAdmin adm, final Credentials creds) throws RemoteException, InvalidDataException, StorageException, OXResellerException, InvalidCredentialsException {
+        try {
+            doNullCheck(LOGGER, creds, adm);
+            ResellerAdmin parent = null;
+            final Credentials masterCredentials = cache.getMasterCredentials();
+            if (null != masterCredentials && masterCredentials.getLogin().equals(creds.getLogin())) {
+                basicauth.doAuthentication(creds);
+            } else {
+                resellerauth.doAuthentication(creds);
+                parent = oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(creds.getLogin(), creds.getPassword()) })[0];
+                if (adm.getParentId() != null) {
+                    throw new OXResellerException(Code.SUBAMIN_NOT_ALLOWED_TO_CHANGE_PARENTID);
+                }
+            }
+
+            checkIdOrName(adm);
+
+            if (adm.getId() != null && !oxresell.existsAdmin(adm)) {
+                throw new OXResellerException(Code.RESELLER_ADMIN_NOT_EXIST, adm.getName());
+            }
+
+            GenericChecks.checkChangeValidPasswordMech(adm);
+
+            final ResellerAdmin dbadm = oxresell.getData(new ResellerAdmin[] { adm })[0];
+            if (null != parent && false == dbadm.getParentId().equals(parent.getId())) {
+                log(LogLevel.ERROR, LOGGER, creds, null, "unathorized access to {} by {}", dbadm.getName(), creds.getLogin());
+                throw new InvalidCredentialsException("authentication failed");
+            }
+            // if no password mech supplied, use the old one as set in db
+            if (adm.getPasswordMech() == null) {
+                adm.setPasswordMech(dbadm.getPasswordMech());
+            }
+
+            final Integer changedParentId = adm.getParentId();
+            if (changedParentId != null && 0 != changedParentId.intValue()) {
+                if (!oxresell.existsAdmin(new ResellerAdmin(i(changedParentId)))) {
+                    throw new OXResellerException(Code.RESELLER_ADMIN_NOT_EXIST, "with parentId=" + changedParentId);
+                }
+                final ResellerAdmin changedParentAdmin = oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(i(changedParentId)) })[0];
+                if (changedParentAdmin.getParentId().intValue() > 0) {
+                    throw new OXResellerException(Code.CANNOT_SET_PARENTID_TO_SUBSUBADMIN);
+                }
+                parent = changedParentAdmin;
+            }
+
+            Restriction[] res = adm.getRestrictions();
+            if (res != null) {
+                if (res.length > 0 && dbadm.getParentId().intValue() > 0) {
+                    throw new OXResellerException(Code.SUBSUBADMIN_NOT_ALLOWED_TO_CHANGE_RESTRICTIONS);
+                }
+            }
+
+            final String newname = adm.getName();
+            final String dbname = dbadm.getName();
+
+            if (newname != null && adm.getId() != null && !newname.equals(dbname)) {
+                // want to change name?, check whether new name does already
+                // exist
+                if (oxresell.existsAdmin(new ResellerAdmin(newname))) {
+                    throw new OXResellerException(Code.RESELLER_ADMIN_EXISTS, adm.getName());
+                }
+            }
+
+            checkRestrictionsPerSubadmin(adm);
+
+            adm.setParentId(null != parent ? parent.getId() : I(0));
+            adm.setParentName(null != parent ? parent.getName() : null);
+
+            // Trigger plugin extensions
+            {
+                final PluginInterfaces pluginInterfaces = PluginInterfaces.getInstance();
+                if (null != pluginInterfaces) {
+                    for (final OXResellerPluginInterface oxresellpi : pluginInterfaces.getResellerPlugins().getServiceList()) {
+                        try {
+                            log(LogLevel.DEBUG, LOGGER, creds, null, "Calling beforeChange for plugin: {}", oxresellpi.getClass().getName());
+                            oxresellpi.beforeChange(adm, creds);
+                        } catch (PluginException | RuntimeException e) {
+                            log(LogLevel.ERROR, LOGGER, creds, e, "Error while calling beforeChange for plugin: {}", oxresellpi.getClass().getName());
+                            throw StorageException.wrapForRMI(e);
+                        }
+                    }
+                }
+            }
+
+            oxresell.change(adm);
+
+            // Trigger plugin extensions
+            {
+                final PluginInterfaces pluginInterfaces = PluginInterfaces.getInstance();
+                if (null != pluginInterfaces) {
+                    for (final OXResellerPluginInterface oxresellpi : pluginInterfaces.getResellerPlugins().getServiceList()) {
+                        try {
+                            log(LogLevel.DEBUG, LOGGER, creds, null, "Calling change for plugin: {}", oxresellpi.getClass().getName());
+                            oxresellpi.change(adm, creds);
+                        } catch (PluginException | RuntimeException e) {
+                            log(LogLevel.ERROR, LOGGER, creds, e, "Error while calling change for plugin: {}", oxresellpi.getClass().getName());
+                            throw StorageException.wrapForRMI(e);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public void changeSelf(ResellerAdmin admin, Credentials credentials) throws RemoteException, InvalidDataException, StorageException, OXResellerException, InvalidCredentialsException {
+        try {
+            doNullCheck(LOGGER, credentials, admin);
+            checkIdOrName(admin);
+            if (admin.getId() != null && !oxresell.existsAdmin(admin)) {
+                throw new OXResellerException(Code.RESELLER_ADMIN_NOT_EXIST, admin.getName());
+            }
+
+            ResellerAdmin dbAdmin = oxresell.getData(new ResellerAdmin[] { admin })[0];
+            Credentials masterCredentials = cache.getMasterCredentials();
+            if (null != masterCredentials && masterCredentials.getLogin().equals(credentials.getLogin())) {
+                basicauth.doAuthentication(credentials);
+            } else {
+                if (!dbAdmin.getName().equalsIgnoreCase(credentials.getLogin())) {
+                    InvalidCredentialsException invalidCredentialsException = new InvalidCredentialsException("Authentication failed");
+                    log(LogLevel.ERROR, LOGGER, credentials, invalidCredentialsException, "changeSelf can only be applied to own data");
+                    throw invalidCredentialsException;
+                }
+                resellerauth.doAuthentication(credentials);
+                if (admin.getParentId() != null) {
+                    throw new OXResellerException(Code.SUBAMIN_NOT_ALLOWED_TO_CHANGE_PARENTID);
+                }
+            }
+            checkResellerChangeSelfData(admin, dbAdmin);
+            oxresell.change(admin);
+        } catch (Throwable e) {
+            enhanceAndLogException(e, credentials);
+            throw e;
+        }
+    }
+
+    @Override
+    public ResellerAdmin create(final ResellerAdmin adm, final Credentials creds) throws RemoteException, InvalidDataException, StorageException, InvalidCredentialsException, OXResellerException {
+        try {
+            doNullCheck(LOGGER, creds, adm);
+            ResellerAdmin parent = null;
+
+            final Credentials masterCredentials = cache.getMasterCredentials();
+            if (null != masterCredentials && masterCredentials.getLogin().equals(creds.getLogin())) {
+                basicauth.doAuthentication(creds);
+            } else {
+                resellerauth.doAuthentication(creds);
+                oxresell.checkPerSubadminRestrictions(creds, null, true, Restriction.SUBADMIN_CAN_CREATE_SUBADMINS, Restriction.MAX_SUBADMIN_PER_SUBADMIN);
+                if (oxresell.existsAdmin(new ResellerAdmin(creds.getLogin(), creds.getPassword()))) {
+                    parent = oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(creds.getLogin(), creds.getPassword()) })[0];
+                }
+            }
+
+            if (oxresell.existsAdmin(adm)) {
+                throw new OXResellerException(Code.RESELLER_ADMIN_EXISTS, adm.getName());
+            }
+
+            GenericChecks.checkCreateValidPasswordMech(adm);
+            if (adm.getPassword() == null || adm.getPassword().trim().length() == 0) {
+                throw new InvalidDataException("Empty password is not allowed");
+            }
+            if (!adm.mandatoryCreateMembersSet()) {
+                throw new InvalidDataException("Mandatory fields not set: " + adm.getUnsetMembers());
+            }
+
+            Restriction[] res = adm.getRestrictions();
+            if (res != null) {
+                if (res.length > 0 && null != parent) {
+                    throw new OXResellerException(Code.SUBSUBADMIN_NOT_ALLOWED_TO_CHANGE_RESTRICTIONS);
+                }
+            }
+
+            adm.setParentId(null != parent ? parent.getId() : I(0));
+            adm.setParentName(null != parent ? parent.getName() : null);
+
+            checkRestrictionsPerSubadmin(adm);
+
+            ResellerAdmin ra = oxresell.create(adm);
+
+            // Trigger plugin extensions
+            {
+                final List<OXResellerPluginInterface> interfacelist = new ArrayList<>();
+                final PluginInterfaces pluginInterfaces = PluginInterfaces.getInstance();
+                if (null != pluginInterfaces) {
+                    for (final OXResellerPluginInterface oxresellpi : pluginInterfaces.getResellerPlugins().getServiceList()) {
+                        final String bundlename = oxresellpi.getClass().getName();
+                        try {
+                            log(LogLevel.DEBUG, LOGGER, creds, null, "Calling create for plugin: {}", bundlename);
+                            oxresellpi.create(ra, creds);
+                            interfacelist.add(oxresellpi);
+                        } catch (PluginException e) {
+                            log(LogLevel.ERROR, LOGGER, creds, e, "Error while calling create for plugin: {}", bundlename);
+                            log(LogLevel.INFO, LOGGER, creds, null, "Now doing rollback for everything until now...");
+                            for (final OXResellerPluginInterface oxresellerinterface : interfacelist) {
+                                try {
+                                    oxresellerinterface.delete(adm, creds);
+                                } catch (PluginException e1) {
+                                    log(LogLevel.ERROR, LOGGER, creds, e1, "Error doing rollback for plugin: {}", bundlename);
+                                }
+                            }
+                            try {
+                                oxresell.delete(adm);
+                            } catch (StorageException e1) {
+                                log(LogLevel.ERROR, LOGGER, creds, e1, "Error rolling back reseller creation in database");
+                            }
+                            throw StorageException.wrapForRMI(e);
+                        }
+                    }
+                }
+            }
+
+            return ra;
+        } catch (EnforceableDataObjectException e) {
+            RemoteException remoteException = RemoteExceptionUtils.convertException(e);
+            logAndReturnException(LOGGER, remoteException, e.getExceptionId(), creds);
+            throw remoteException;
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public void delete(final ResellerAdmin adm, final Credentials creds) throws RemoteException, InvalidDataException, StorageException, OXResellerException, InvalidCredentialsException {
+        try {
+            doNullCheck(LOGGER, creds, adm);
+            boolean isMaster = false;
+            final Credentials masterCredentials = cache.getMasterCredentials();
+            if (null != masterCredentials && masterCredentials.getLogin().equals(creds.getLogin())) {
+                basicauth.doAuthentication(creds);
+                isMaster = true;
+            } else {
+                resellerauth.doAuthentication(creds);
+            }
+
+            checkIdOrName(adm);
+
+            if (!oxresell.existsAdmin(adm)) {
+                throw new OXResellerException(Code.RESELLER_ADMIN_NOT_EXIST, adm.getName());
+            }
+
+            final ResellerAdmin dbadm = oxresell.getData(new ResellerAdmin[] { adm })[0];
+            final Optional<ResellerAdmin> parent;
+            if (isMaster) {
+                if (dbadm.getParentId() != null && dbadm.getParentId().intValue() > 0) {
+                    parent = Optional.of(oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(i(dbadm.getParentId())) })[0]);
+                } else {
+                    parent = Optional.empty();
+                }
+            } else {
+                parent = Optional.of(oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(creds.getLogin(), creds.getPassword()) })[0]);
+                if (!dbadm.getParentId().equals(parent.get().getId())) {
+                    throw new OXResellerException(Code.SUBADMIN_DOES_NOT_BELONG_TO_SUBADMIN, dbadm.getName(), parent.get().getName());
+                }
+            }
+
+            if (oxresell.ownsContext(null, dbadm.getId().intValue())) {
+                throw new OXResellerException(Code.UNABLE_TO_DELETE, dbadm.getId().toString());
+            }
+
+            ResellerAdmin[] list = oxresell.list("*", i(dbadm.getId()));
+            if (list.length != 0) {
+                throw new OXResellerException(Code.UNABLE_TO_DELETE_OWNS_SUBADMINS, dbadm.getId().toString());
+            }
+
+            dbadm.setParentName(parent.isPresent() ? parent.get().getName() : null);
+
+            final ArrayList<OXResellerPluginInterface> interfacelist = new ArrayList<>();
+
+            // Trigger plugin extensions
+            {
+                final PluginInterfaces pluginInterfaces = PluginInterfaces.getInstance();
+                if (null != pluginInterfaces) {
+                    for (final OXResellerPluginInterface oxresellpi : pluginInterfaces.getResellerPlugins().getServiceList()) {
+                        final String bundlename = oxresellpi.getClass().getName();
+                        try {
+                            log(LogLevel.DEBUG, LOGGER, creds, null, "Calling delete for plugin: {}", bundlename);
+                            oxresellpi.delete(dbadm, creds);
+                            interfacelist.add(oxresellpi);
+                        } catch (PluginException e) {
+                            log(LogLevel.ERROR, LOGGER, creds, e, "Error while calling delete for plugin: {}", bundlename);
+                            throw StorageException.wrapForRMI(e);
+                        }
+                    }
+                }
+            }
+
+            oxresell.delete(dbadm);
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public Restriction[] getAvailableRestrictions(final Credentials creds) throws RemoteException, InvalidCredentialsException, StorageException, OXResellerException {
+        try {
+            if (null == creds) {
+                throw new InvalidCredentialsException("Credentials are missing.");
+            }
+            final Credentials masterCredentials = cache.getMasterCredentials();
+            if (null != masterCredentials && masterCredentials.getLogin().equals(creds.getLogin())) {
+                basicauth.doAuthentication(creds);
+            } else {
+                resellerauth.doAuthentication(creds);
+            }
+
+            final Map<String, Restriction> validRestrictions = oxresell.listRestrictions("*");
+            if (validRestrictions == null || validRestrictions.size() <= 0) {
+                throw new OXResellerException(Code.UNABLE_TO_LOAD_AVAILABLE_RESTRICTIONS_FROM_DATABASE);
+            }
+
+            final HashSet<Restriction> ret = new HashSet<>();
+            for (final Entry<String, Restriction> entry : validRestrictions.entrySet()) {
+                ret.add(entry.getValue());
+            }
+            return ret.toArray(new Restriction[ret.size()]);
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public ResellerAdmin getData(final ResellerAdmin adm, final Credentials creds) throws RemoteException, InvalidDataException, InvalidCredentialsException, StorageException, OXResellerException {
+        return getMultipleData(new ResellerAdmin[] { adm }, creds)[0];
+    }
+
+    @Override
+    public ResellerAdmin getSelfData(ResellerAdmin admin, Credentials credentials) throws RemoteException, InvalidDataException, InvalidCredentialsException, StorageException, OXResellerException {
+        try {
+            doNullCheck(LOGGER, credentials, admin);
+
+            Credentials masterCredentials = cache.getMasterCredentials();
+            if (null != masterCredentials && masterCredentials.getLogin().equals(credentials.getLogin())) {
+                basicauth.doAuthentication(credentials);
+            } else {
+                resellerauth.doAuthentication(credentials);
+                ResellerAdmin parent = oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(credentials.getLogin(), credentials.getPassword()) })[0];
+                ResellerAdmin dbAdmin = oxresell.getData(new ResellerAdmin[] { admin })[0];
+                if (!dbAdmin.equals(parent) && null != parent && false == dbAdmin.getParentId().equals(parent.getId())) {
+                    log(LogLevel.ERROR, LOGGER, credentials, null, "unathorized access to {} by {}", dbAdmin.getName(), credentials.getLogin());
+                    throw new InvalidCredentialsException("authentication failed");
+                }
+            }
+            checkIdOrName(admin);
+            return oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(admin.getId(), admin.getName()) })[0];
+        } catch (Throwable e) {
+            enhanceAndLogException(e, credentials);
+            throw e;
+        }
+    }
+
+    @Override
+    public ResellerAdmin[] getMultipleData(final ResellerAdmin[] admins, final Credentials creds) throws RemoteException, InvalidDataException, InvalidCredentialsException, StorageException, OXResellerException {
+        try {
+            doNullCheck(LOGGER, creds, (Object[]) admins);
+            int pid = 0;
+            final Credentials masterCredentials = cache.getMasterCredentials();
+            if (null != masterCredentials && masterCredentials.getLogin().equals(creds.getLogin())) {
+                basicauth.doAuthentication(creds);
+            } else {
+                resellerauth.doAuthentication(creds);
+                pid = oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(creds.getLogin(), creds.getPassword()) })[0].getId().intValue();
+            }
+
+            checkAdminIdOrName(admins);
+            for (final ResellerAdmin admin : admins) {
+                if (!oxresell.existsAdmin(admin, pid)) {
+                    String id;
+                    if (admin.isNameset()) {
+                        id = admin.getName();
+                    } else if (admin.isIdset()) {
+                        id = admin.getId().toString();
+                    } else {
+                        id = "";
+                    }
+                    throw new OXResellerException(Code.RESELLER_ADMIN_NOT_EXIST, id);
+                }
+            }
+
+            return oxresell.getData(admins);
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public Restriction[] getRestrictionsFromContext(final Context ctx, final Credentials creds) throws RemoteException, InvalidDataException, OXResellerException, StorageException, InvalidCredentialsException {
+        try {
+            try {
+                doNullCheck(ctx);
+                doNullCheck(ctx.getId());
+            } catch (InvalidDataException e) {
+                log(LogLevel.ERROR, LOGGER, creds, e, "Invalid data sent by client!");
+                throw e;
+            }
+            final boolean isMasterAdmin = ClientAdminThreadExtended.cache.isMasterAdmin(creds);
+            if (isMasterAdmin) {
+                basicauth.doAuthentication(creds, ctx);
+            } else {
+                if (resellerauth.isMasterOfContext(creds, ctx) == false) {
+                    throw new OXResellerException(Code.CONTEXT_DOES_NOT_BELONG, String.valueOf(ctx.getId()), creds.getLogin());
+                }
+                resellerauth.doAuthentication(creds);
+            }
+
+            return oxresell.getRestrictionsFromContext(ctx);
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public void initDatabaseRestrictions(final Credentials creds) throws RemoteException, StorageException, InvalidCredentialsException, OXResellerException {
+        try {
+            basicauth.doAuthentication(creds);
+            final Map<String, Restriction> validRestrictions = oxresell.listRestrictions("*");
+            if (validRestrictions != null && validRestrictions.size() > 0) {
+                throw new OXResellerException(Code.DATABASE_ALREADY_CONTAINS_RESTRICTIONS);
+            }
+            oxresell.initDatabaseRestrictions();
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public ResellerAdmin[] list(final String search_pattern, final Credentials creds) throws RemoteException, InvalidDataException, StorageException, InvalidCredentialsException {
+        try {
+            try {
+                doNullCheck(search_pattern);
+            } catch (InvalidDataException e) {
+                log(LogLevel.ERROR, LOGGER, creds, e, "Invalid data sent by client!");
+                throw e;
+            }
+            final Credentials masterCredentials = cache.getMasterCredentials();
+            if (null != masterCredentials && masterCredentials.getLogin().equals(creds.getLogin())) {
+                basicauth.doAuthentication(creds);
+                return oxresell.list(search_pattern);
+            }
+            resellerauth.doAuthentication(creds);
+            int pid = oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(creds.getLogin(), creds.getPassword()) })[0].getId().intValue();
+            return oxresell.list(search_pattern, pid);
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public void removeDatabaseRestrictions(final Credentials creds) throws RemoteException, InvalidCredentialsException, StorageException, OXResellerException {
+        try {
+            basicauth.doAuthentication(creds);
+            final Map<String, Restriction> validRestrictions = oxresell.listRestrictions("*");
+            if (validRestrictions == null || validRestrictions.size() == 0) {
+                throw new OXResellerException(Code.NO_RESTRICTIONS_AVAILABLE_TO, "remove");
+            }
+
+            oxresell.removeDatabaseRestrictions();
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public void updateDatabaseModuleAccessRestrictions(final Credentials creds) throws RemoteException, StorageException, InvalidCredentialsException, OXResellerException {
+        try {
+            basicauth.doAuthentication(creds);
+
+            final Map<String, Restriction> validRestrictions = oxresell.listRestrictions("*");
+            if (validRestrictions == null || validRestrictions.size() == 0) {
+                throw new OXResellerException(Code.NO_RESTRICTIONS_AVAILABLE_TO, "update");
+            }
+
+            oxresell.updateModuleAccessRestrictions();
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    /**
+     * throws {@link InvalidDataException} when neither id nor name supplied
+     *
+     * @param admins
+     * @throws InvalidDataException
+     */
+    private void checkAdminIdOrName(final ResellerAdmin[] admins) throws InvalidDataException {
+        for (final ResellerAdmin adm : admins) {
+            if (null == adm) {
+                throw new InvalidDataException("cannot handle null object");
+            }
+            final Integer id = adm.getId();
+            final String name = adm.getName();
+            if (null == id && null == name) {
+                throw new InvalidDataException("either ID or name must be specified.");
+            }
+        }
+    }
+
+    /**
+     * Checks whether either id or name is specified
+     *
+     * @param adm
+     * @throws InvalidDataException
+     */
+    private void checkIdOrName(final ResellerAdmin adm) throws InvalidDataException {
+        if (adm.getId() == null && adm.getName() == null) {
+            throw new InvalidDataException("Either ID or name must be specified");
+        }
+    }
+
+    /**
+     * Check whether creator supplied any {@link Restriction} and check if those exist within the database. If, add the corresponding
+     * Restriction id. Check whether Restrictions can be applied to subadmin. If not, throw {@link InvalidDataException} or
+     * {@link StorageException} if there are no Restrictions defined within the database. Check whether Restrictions contain duplicate
+     * Restriction entries and throws {@link InvalidDataException} if that is the case.
+     *
+     * @throws StorageException
+     * @throws InvalidDataException
+     * @throws OXResellerException
+     */
+    private void checkRestrictionsPerSubadmin(final ResellerAdmin adm) throws StorageException, InvalidDataException, OXResellerException {
+        final Map<String, Restriction> validRestrictions = oxresell.listRestrictions("*");
+        if (null == validRestrictions || validRestrictions.size() <= 0) {
+            throw new OXResellerException(Code.UNABLE_TO_LOAD_AVAILABLE_RESTRICTIONS_FROM_DATABASE);
+        }
+
+        final HashSet<Restriction> res = OXResellerTools.array2HashSet(adm.getRestrictions());
+        if (null != res) {
+            OXResellerTools.checkRestrictions(res, validRestrictions, "subadmin", new ClosureInterface() {
+
+                @Override
+                public boolean checkAgainstCorrespondingRestrictions(final String rname) {
+                    return !(rname.equals(Restriction.MAX_CONTEXT_PER_SUBADMIN) || rname.equals(Restriction.MAX_OVERALL_CONTEXT_QUOTA_PER_SUBADMIN) || rname.equals(Restriction.MAX_OVERALL_USER_PER_SUBADMIN) || rname.equals(Restriction.SUBADMIN_CAN_CREATE_SUBADMINS) || rname.equals(Restriction.MAX_SUBADMIN_PER_SUBADMIN) || rname.startsWith(Restriction.MAX_OVERALL_USER_PER_SUBADMIN_BY_MODULEACCESS_PREFIX));
+                }
+            });
+        }
+    }
+
+    /**
+     * Checks if any contained reseller data besides ID, Capabilities, Properties, Taxonomies is set
+     * for a self-change.
+     *
+     * @param admin The admin that issued the self-change
+     * @throws InvalidDataException If invalid data is set
+     */
+    private void checkResellerChangeSelfData(ResellerAdmin admin, ResellerAdmin dbAdmin) throws InvalidDataException {
+        // @formatter:off
+        if (admin.isNameset() && false == admin.getName().equals(dbAdmin.getName())) {
+            throw new InvalidDataException("Invalid data sent by client!");
+        }
+        if ( admin.isDisplaynameset() || admin.isParentIdset() || admin.isParentNameset() || admin.isPasswordMechset()
+            || admin.isPasswordset() || admin.isRestrictionsset() || admin.isSaltSet()) {
+            throw new InvalidDataException("Invalid data sent by client!");
+        }
+        // @formatter:on
+    }
+
+    @Override
+    public void updateDatabaseRestrictions(Credentials creds) throws RemoteException, StorageException, InvalidCredentialsException, OXResellerException {
+        try {
+            basicauth.doAuthentication(creds);
+
+            final Map<String, Restriction> validRestrictions = oxresell.listRestrictions("*");
+            if (validRestrictions == null || validRestrictions.size() == 0) {
+                throw new OXResellerException(Code.NO_RESTRICTIONS_AVAILABLE_TO, "update");
+            }
+
+            oxresell.updateRestrictions();
+        } catch (Throwable e) {
+            enhanceAndLogException(e, creds);
+            throw e;
+        }
+    }
+
+    @Override
+    public Set<String> getCapabilities(ResellerAdmin admin, Credentials credentials) throws RemoteException, InvalidDataException, StorageException, InvalidCredentialsException, OXResellerException {
+        try {
+            doNullCheck(LOGGER, credentials, admin);
+
+            ResellerAdmin parent = null;
+            Credentials masterCredentials = cache.getMasterCredentials();
+            boolean isMaster = false;
+            if (null != masterCredentials && masterCredentials.getLogin().equals(credentials.getLogin())) {
+                basicauth.doAuthentication(credentials);
+                isMaster = true;
+            } else {
+                resellerauth.doAuthentication(credentials);
+                parent = oxresell.getData(new ResellerAdmin[] { new ResellerAdmin(credentials.getLogin(), credentials.getPassword()) })[0];
+                if (admin.getParentId() != null) {
+                    throw new OXResellerException(Code.SUBADMIN_IS_NOT_AUTHORIZED_TO_LIST_DATA);
+                }
+            }
+
+            checkIdOrName(admin);
+            if (admin.getId() != null && !oxresell.existsAdmin(admin)) {
+                throw new OXResellerException(Code.RESELLER_ADMIN_NOT_EXIST, admin.getName());
+            }
+
+            if (isMaster || null == parent || parent.getId().equals(admin.getId())) {
+                return getCapabilities(admin);
+            }
+
+            GenericChecks.checkChangeValidPasswordMech(admin);
+            ResellerAdmin dbAdmin = oxresell.getData(new ResellerAdmin[] { admin })[0];
+            if (false == dbAdmin.getParentId().equals(parent.getId())) {
+                LOGGER.error("Unathorized access to {} by {}", dbAdmin.getName(), credentials.getLogin());
+                throw new InvalidCredentialsException("Authentication failed");
+            }
+            // if no password mech supplied, use the old one as set in db
+            if (admin.getPasswordMech() == null) {
+                admin.setPasswordMech(dbAdmin.getPasswordMech());
+            }
+
+            return getCapabilities(admin);
+        } catch (Throwable e) {
+            enhanceAndLogException(e, credentials);
+            throw e;
+        }
+    }
+
+    /**
+     * Returns the capabilities for the specified admin
+     *
+     * @param admin
+     * @return The capabilities
+     * @throws StorageException
+     */
+    private Set<String> getCapabilities(ResellerAdmin admin) throws StorageException {
+        ResellerAdmin[] data = oxresell.getData(new ResellerAdmin[] { admin });
+        Set<String> c = new HashSet<>();
+        for (ResellerAdmin d : data) {
+            c.addAll(d.getCapabilities());
+        }
+        return c;
+    }
+}

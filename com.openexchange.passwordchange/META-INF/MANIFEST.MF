@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Open-Xchange Password Change 
+Bundle-SymbolicName: com.openexchange.passwordchange
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Description: The Open-Xchange password-change bundle that contains interfaces
+Import-Package: com.openexchange.authentication,
+ com.openexchange.exception,
+ com.openexchange.groupware.contexts,
+ com.openexchange.osgi,
+ com.openexchange.session
+Automatic-Module-Name: com.openexchange.passwordchange
+Export-Package: com.openexchange.passwordchange

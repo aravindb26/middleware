@@ -1,0 +1,37 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Deferrer Plug-in
+Bundle-SymbolicName: com.openexchange.http.deferrer
+Bundle-Version: 8
+Bundle-Vendor: OX Software GmbH
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.ajax,
+ com.openexchange.config,
+ com.openexchange.config.cascade,
+ com.openexchange.config.lean,
+ com.openexchange.configuration,
+ com.openexchange.dispatcher,
+ com.openexchange.exception,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.log,
+ com.openexchange.osgi,
+ com.openexchange.osgi.annotation,
+ com.openexchange.osgi.service.http,
+ com.openexchange.server,
+ com.openexchange.tools.service,
+ com.openexchange.tools.servlet.http,
+ javax.servlet,
+ javax.servlet.http,
+ org.apache.commons.codec,
+ org.apache.commons.codec.binary,
+ org.apache.commons.codec.digest,
+ org.apache.commons.codec.net,
+ org.apache.commons.logging,
+ org.osgi.framework,
+ org.osgi.service.http,
+ org.osgi.util.tracker,
+ org.slf4j
+Bundle-Activator: com.openexchange.http.deferrer.osgi.HTTPDeferrerActivator
+Export-Package: com.openexchange.http.deferrer
+Automatic-Module-Name: com.openexchange.http.deferrer

@@ -1,0 +1,14 @@
+requests: 
+  - Accept_and_ignore_conflictsRequest.yaml
+  - AcceptRequest.yaml
+  - AnalyzeRequest.yaml
+  - ApplyChangeRequest.yaml
+  - ApplyCreateRequest.yaml
+  - ApplyProposalRequest.yaml
+  - ApplyRemoveRequest.yaml
+  - ApplyResponseRequest.yaml
+  - DeclineRequest.yaml
+  - DeleteRequest.yaml
+  - IgnoreRequest.yaml
+  - TentativeRequest.yaml
+  - UpdateRequest.yaml

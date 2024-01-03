@@ -1,0 +1,61 @@
+/folders?action=list:
+  get:
+    operationId: getSubFolders
+    tags:
+      - Folders
+    summary: Gets the subfolders of a specified parent folder.
+    security: 
+        - session: []
+        - oauth: 
+          - read_mails
+        - oauth: 
+          - read_tasks
+        - oauth: 
+          - read_calendar
+        - oauth: 
+          - read_contacts    
+    parameters:
+      - in: query
+        name: parent
+        description: >-
+          Object ID of a folder, which is the parent folder of the requested
+          folders.
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/gblQueryParamFolderColumns'
+      - in: query
+        name: all
+        description: Set to 1 to list even not subscribed folders.
+        required: false
+        schema:
+          type: integer
+      - $ref: '#/components/parameters/gblQueryParamFolderTree'
+      - $ref: '#/components/parameters/gblQueryParamAllowedModules'
+      - $ref: '#/components/parameters/gblQueryParamLanguage'
+      - $ref: '#/components/parameters/gblQueryParamFolderAltNames'
+      - in: query
+        name: errorOnDuplicateName
+        required: false
+        schema:
+          type: boolean
+    responses:
+      '200':
+        description: >
+          A JSON object containing an array with data for all folders, which
+          have the folder with the requested object
+
+          ID as parent. Each array element describes one folder and is itself an
+          array. The elements of each array
+
+          contain the information specified by the corresponding identifiers in
+          the `columns` parameter. In case of
+
+          errors the responsible fields in the response are filled (see [Error
+          handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FoldersResponse'
+      '401':
+        $ref: '#/components/responses/OAuth_unauthorized'

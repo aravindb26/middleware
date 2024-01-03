@@ -1,0 +1,29 @@
+/chronos/itip?action=apply_response:
+  put:
+    operationId: apply_response
+    tags:
+      - Chronos
+    summary: Applies a reply based on an iMIP mail to the calendar.
+    security: 
+        - session: []
+    description: >-
+      Takes over the attendee's participation status based on the iMIP REPLY mail by the attendee.
+    parameters:
+      - in: query
+        name: timezone
+        description: The timezone to show the resulting events in.
+        required: false
+        schema:
+          type: string
+          default: UTC
+    responses:
+      '200':
+        description: >
+          A JSON object containing containing the result of the update. In case
+          of errors the responsible fields in the response are filled (see [Error handling](#error-handling)).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChronosCalendarResultResponse'
+    requestBody:
+      $ref: '#/components/requestBodies/ConversionDataSource'

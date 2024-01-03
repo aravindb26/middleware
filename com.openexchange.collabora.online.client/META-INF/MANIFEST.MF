@@ -1,0 +1,35 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Collabora Online Client
+Bundle-SymbolicName: com.openexchange.collabora.online.client
+Bundle-Version: 8.0.0
+Bundle-Vendor: OX Software GmbH
+Automatic-Module-Name: com.openexchange.collabora.online.client
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: com.openexchange.ajax.container,
+ com.openexchange.exception,
+ com.openexchange.i18n,
+ com.openexchange.java,
+ com.openexchange.osgi,
+ com.openexchange.rest.client.httpclient,
+ com.openexchange.server,
+ com.openexchange.tools.stream,
+ org.apache.commons.io,
+ org.apache.http,
+ org.apache.http.auth,
+ org.apache.http.client,
+ org.apache.http.client.methods,
+ org.apache.http.client.utils,
+ org.apache.http.cookie,
+ org.apache.http.entity,
+ org.apache.http.entity.mime,
+ org.apache.http.impl.client,
+ org.apache.http.message,
+ org.apache.http.protocol,
+ org.apache.http.util,
+ org.osgi.framework,
+ org.slf4j
+Bundle-Activator: com.openexchange.collabora.online.client.osgi.CollaboraClientActivator
+Export-Package: com.openexchange.collabora.online.client,
+ com.openexchange.collabora.online.client.conversion
+

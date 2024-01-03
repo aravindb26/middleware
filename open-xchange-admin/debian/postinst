@@ -1,0 +1,181 @@
+#!/bin/bash
+#
+# see: dh_installdeb(1)
+
+set -e
+
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <postinst> `abort-remove'
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+
+. /opt/open-xchange/lib/oxfunctions.sh
+
+postFix() {
+    local version=${1%-*}
+    version=${version//[-.]/}
+
+    # prevent bash from expanding, see bug 13316
+    GLOBIGNORE='*'
+
+    # SoftwareChange_Request-2197
+    ox_add_property SCHEMA_MOVE_MAINTENANCE_REASON 1431655765 /opt/open-xchange/etc/plugin/hosting.properties
+
+    # SoftwareChange_Request-2285
+    MOD_PASSWDS=0
+    TMPFILE=$(mktemp)
+    while read LINE; do
+        case "$LINE" in
+            \#*|*:crypt:*|*:bcrypt:*)
+                # ignore commented and already converted lines
+                echo $LINE
+                ;;
+            *)
+                IFS=":"
+                PARTS=( $LINE )
+                unset IFS
+                # only modify matching lines
+                if [ -n "${PARTS[0]}" ] && [ -n "${PARTS[1]}" ]
+                then
+                    echo ${PARTS[0]}:crypt:${PARTS[1]}
+                    MOD_PASSWDS=$(($MOD_PASSWDS+1))
+                else
+                    echo $LINE
+                fi
+                ;;
+        esac
+    done < /opt/open-xchange/etc/mpasswd >$TMPFILE
+    if [ ${MOD_PASSWDS} -gt 0 ]
+    then
+        cat $TMPFILE > /opt/open-xchange/etc/mpasswd
+    fi
+    rm $TMPFILE
+
+    # SoftwareChange_Request-2382
+    ox_add_property MASTER_ACCOUNT_OVERRIDE false /opt/open-xchange/etc/AdminDaemon.properties
+
+    # SoftwareChange_Request-2535
+    # ox_add_property drive globaladdressbookdisabled,infostore,deniedportal /opt/open-xchange/etc/ModuleAccessDefinitions.properties
+    # Bug 44000
+    pfile=/opt/open-xchange/etc/ModuleAccessDefinitions.properties
+    if ox_exists_property drive $pfile
+    then
+        defin=$(ox_read_property drive $pfile)
+        if [ "$defin" = "globaladdressbookdisabled,infostore,deniedportal" ]
+        then
+            ox_set_property drive infostore,deniedportal,readcreatesharedfolders,editpublicfolders $pfile
+        fi
+    else
+        ox_add_property drive infostore,deniedportal,readcreatesharedfolders,editpublicfolders $pfile
+    fi
+
+    # SoftwareChange_Request-2699
+    ox_add_property ALLOW_CHANGING_QUOTA_IF_NO_FILESTORE_SET false /opt/open-xchange/etc/AdminUser.properties
+
+    ox_add_property AVERAGE_USER_SIZE 100 /opt/open-xchange/etc/AdminUser.properties
+
+    # SoftwareChange_Request-3226
+    PFILE=/opt/open-xchange/etc/ModuleAccessDefinitions.properties
+    VALUE=$(ox_read_property drive $PFILE)
+    if [ "infostore,deniedportal,readcreatesharedfolders,editpublicfolders" = "$VALUE" ]; then
+        ox_set_property drive 'infostore,deniedportal,contacts,collectemailaddresses' $PFILE
+    fi
+
+    # SoftwareChange_Request-3676
+    ox_add_property DEFAULT_TIMEZONE Europe/Berlin /opt/open-xchange/etc/AdminUser.properties
+
+    # SoftwareChange_Request-4170
+    ox_add_property LOCK_ON_WRITE_CONTEXT_INTO_PAYLOAD_DB false /opt/open-xchange/etc/plugin/hosting.properties
+
+    # SoftwareChange_Request-4351
+    PFILE=/opt/open-xchange/etc/ModuleAccessDefinitions.properties
+    expression='# webdavxml (interface for OXtender for Microsoft Outlook, used by KDE for synchronization)'
+    $(contains "^${expression}$" $PFILE) && sed -i "s/^${expression}$/${expression} [DEPRECATED]/" $PFILE
+
+    # SoftwareChange_Request-147
+    ox_remove_property CREATE_CONTEXT_USE_UNIT /opt/open-xchange/etc/plugin/hosting.properties
+
+    SCR=SCR-322.admin
+    if ox_scr_todo ${SCR}
+    then
+      prop_file=/opt/open-xchange/etc/ModuleAccessDefinitions.properties
+      orig_line='# publication (Permission to publish content of folders)'
+      new_line='# publication (Permission to publish content of folders, Deprecated with v7.10.2, will have no impact) [DEPRECATED]'
+      $(contains "^${orig_line}$" ${prop_file}) && {
+        sed -i -e "s/${orig_line}/${new_line}/" ${prop_file}
+      }
+      ox_scr_done ${SCR}
+    fi
+
+    SCR=SCR-338
+    if ox_scr_todo ${SCR}
+    then
+      pfile=/opt/open-xchange/etc/plugin/hosting.properties
+      prop_key=CONTEXT_STORAGE
+      old_default=com.openexchange.admin.storage.mysqlStorage.OXContextMySQLStorage
+      new_default=com.openexchange.admin.plugin.hosting.storage.mysqlStorage.OXContextMySQLStorage
+      curr_val=$(ox_read_property ${prop_key} ${pfile})
+      if [ "${old_default}" = "${curr_val}" ]
+      then
+        ox_set_property ${prop_key} ${new_default} ${pfile}
+      fi
+      ox_scr_done ${SCR}
+    fi
+
+    SCR=SCR-466
+    if ox_scr_todo ${SCR}
+    then
+      pfile=/opt/open-xchange/etc/AdminUser.properties
+      p_key=DEFAULT_PASSWORD_MECHANISM
+      old_default=SHA
+      new_default=SHA-256
+      curr_val=$(ox_read_property ${p_key} ${pfile})
+      if [ "${curr_val}" = "${old_default}" ]
+      then
+        ox_set_property ${p_key} ${new_default} ${pfile}
+      fi
+      ox_scr_done ${SCR}
+    fi
+
+    # SCR-704
+    ox_add_property ALLOW_CREATING_NEW_SCHEMA_IF_ALL_LOCKED_OR_NEED_UPDATE true /opt/open-xchange/etc/plugin/hosting.properties
+
+}
+
+setConfigFilePermissions() {
+    ox_update_permissions "/opt/open-xchange/etc/mpasswd" root:open-xchange 640
+}
+
+case "$1" in
+    configure)
+        test -n "$2" && {
+            # we are in update mode, run postFix to apply fixes
+            postFix "$2"
+        }
+        setConfigFilePermissions
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+dpkg-maintscript-helper rm_conffile /opt/open-xchange/etc/Sql.properties 7.3.99 -- "$@"
+
+# dh_installdeb will replace this with shell code automatically
+# generated by other debhelper scripts.
+
+#DEBHELPER#
+
+exit 0

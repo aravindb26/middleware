@@ -1,0 +1,9 @@
+requests: 
+  - DeleteLinkRequest.yaml
+  - GetLinkRequest.yaml
+  - SendLinkRequest.yaml
+  - UpdateLinkRequest.yaml
+  - AnalyzeLinkRequest.yaml
+  - SubscribeShareRequest.yaml
+  - ResubscribeShareRequest.yaml
+  - UnsubscribeShareRequest.yaml

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="com.openexchange.server overrides" basedir=".">
+
+    <description>
+        This build file overrides the installConf target to patch a lot of configuration files before installing them.
+    </description>
+
+    <!-- Customizable values -->
+    <!-- This values must be changed for defining other installation places -->
+    <property name="logInstallDir" value="/var/log/open-xchange"/>
+    <property name="templatesDir" value="templates"/>
+
+    <import file="build-project.xml"/>
+
+    <!-- Constants -->
+    <property name="osgiDir" value="osgi"/>
+    <property name="importCSVDir" value="importCSV"/>
+    <property name="patchConfDir" value="${tmpDir}/${confDir}"/>
+
+    <target name="installConf" depends="patchConfig">
+        <copy todir="${destDir}/${confInstallDir}">
+            <fileset dir="${patchConfDir}"/>
+        </copy>
+    </target>
+
+    <target name="patchConfig">
+        <mkdir dir="${patchConfDir}"/>
+        <copy todir="${patchConfDir}" overwrite="true">
+            <fileset dir="${confDir}"/>
+        </copy>
+        <antcall target="patchConfigFiles"/>
+    </target>
+
+    <target name="patchConfigFiles">
+        <antcall target="patchScriptConf"/>
+    </target>
+
+    <target name="patchScriptConf">
+        <move tofile="${patchConfDir}/ox-scriptconf.sh" file="${patchConfDir}/ox-scriptconf.sh.in" overwrite="true"/>
+        <replace file="${patchConfDir}/ox-scriptconf.sh">
+            <replacefilter token="@libDir@" value="${prefix}/${libDir}"/>
+            <replacefilter token="@propertiesdir@" value="${confInstallDir}"/>
+            <replacefilter token="@oxgroupwaresysconfdir@" value="${prefix}"/>
+        </replace>
+    </target>
+
+    <target name="postClean" description="Removes artifacts created by this build script.">
+        <delete dir="${tmpDir}"/>
+    </target>
+
+    <target name="postInstall">
+        <mkdir dir="${destDir}/${prefix}/${templatesDir}"/>
+        <copy todir="${destDir}/${prefix}/${templatesDir}">
+            <fileset dir="${templatesDir}"/>
+        </copy>
+    </target>
+
+</project>

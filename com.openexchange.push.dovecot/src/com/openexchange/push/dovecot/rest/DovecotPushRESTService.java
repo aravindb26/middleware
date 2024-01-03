@@ -1,0 +1,299 @@
+
+package com.openexchange.push.dovecot.rest;
+
+import static com.openexchange.java.Autoboxing.I;
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import org.json.JSONException;
+import org.json.JSONObject;
+import com.openexchange.exception.OXException;
+import com.openexchange.java.Strings;
+import com.openexchange.mail.dataobjects.IDMailMessage;
+import com.openexchange.mail.dataobjects.MailMessage;
+import com.openexchange.mail.mime.QuotedInternetAddress;
+import com.openexchange.mail.mime.utils.MimeMessageUtility;
+import com.openexchange.mail.utils.MailFolderUtility;
+import com.openexchange.mailaccount.Account;
+import com.openexchange.pns.DefaultPushNotification;
+import com.openexchange.pns.KnownTopic;
+import com.openexchange.pns.PushNotificationField;
+import com.openexchange.pns.PushNotificationService;
+import com.openexchange.push.Container;
+import com.openexchange.push.PushEventConstants;
+import com.openexchange.push.PushListenerService;
+import com.openexchange.push.PushUser;
+import com.openexchange.push.PushUtility;
+import com.openexchange.push.dovecot.osgi.Services;
+import com.openexchange.rest.services.annotation.Role;
+import com.openexchange.rest.services.annotation.RoleAllowed;
+import com.openexchange.server.ServiceLookup;
+import com.openexchange.session.Session;
+import com.openexchange.sessiond.SessionMatcher;
+import com.openexchange.sessiond.SessiondService;
+import com.openexchange.tools.servlet.AjaxExceptionCodes;
+import com.openexchange.user.UserExceptionCode;
+import com.openexchange.user.UserService;
+
+/**
+ * The {@link DovecotPushRESTService}.
+ *
+ * @author <a href="mailto:thorben.betten@open-xchange.com">Thorben Betten</a>
+ * @since v7.6.2
+ */
+@Path("/preliminary/http-notify/v1/")
+@RoleAllowed(Role.BASIC_AUTHENTICATED)
+public class DovecotPushRESTService {
+
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DovecotPushRESTService.class);
+
+    private final ServiceLookup services;
+
+    /**
+     * Initializes a new {@link DovecotPushRESTService}.
+     */
+    public DovecotPushRESTService(ServiceLookup services) {
+        super();
+        this.services = services;
+    }
+
+    /**
+     * <pre>
+     * PUT /rest/http-notify/v1/notify
+     * &lt;JSON-content&gt;
+     * </pre>
+     *
+     * Notifies about passed event.<br>
+     */
+    @PUT
+    @Path("/notify")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public JSONObject notify(JSONObject data) throws OXException {
+        if (data == null || data.isEmpty()) {
+            throw AjaxExceptionCodes.MISSING_REQUEST_BODY.create();
+        }
+
+        /*-
+         * {
+         *   "user":"4@464646669",
+         *   "imap-uidvalidity":123412341,
+         *   "imap-uid":2345,
+         *   "folder":"INBOX",
+         *   "event":"messageNew",
+         *   "from":"alice@barfoo.org",
+         *   "subject":"Test",
+         *   "snippet":"Hey guys\nThis is only a test..."
+         * }
+         */
+
+        try {
+            if (LOGGER.isDebugEnabled()) {
+                final JSONObject copyForLog = new JSONObject(data);
+                copyForLog.put("subject", Strings.abbreviate(copyForLog.getString("subject"), 8));
+                copyForLog.remove("snippet");
+                LOGGER.debug("Received Dovecot push callback: {}{}", Strings.getLineSeparator(), copyForLog.toString());
+            }
+            if ("messageNew".equals(data.optString("event", null))) {
+                int[] userAndContext = parseUserAndContext(data.optString("user", null));
+                if (null != userAndContext) {
+                    int contextId = userAndContext[1];
+                    int userId = userAndContext[0];
+
+                    checkUserExistence(userId, contextId);
+
+                    String folder = data.getString("folder");
+                    long uid = data.getLong("imap-uid");
+
+                    PushNotificationService pushNotificationService = Services.optService(PushNotificationService.class);
+                    if (null != pushNotificationService) {
+                        sendViaNotificationService(userId, contextId, uid, folder, data, pushNotificationService);
+                    }
+
+                    // Check for a session in local containers (short-term and long.term)
+                    SessiondService sessiondService = Services.getService(SessiondService.class);
+                    Session session = sessiondService.findFirstMatchingSessionForUser(userId, contextId, new SessionMatcher() {
+
+                        @Override
+                        public Set<Flag> flags() {
+                            return EnumSet.of(SessionMatcher.Flag.IGNORE_SESSION_STORAGE);
+                        }
+
+                        @Override
+                        public boolean accepts(Session session_tmp) {
+                            return true;
+                        }}
+                    );
+
+                    // Try to generate a session
+                    if (null == session) {
+                        session = generateSessionFor(userId, contextId);
+                    }
+
+                    // Check for a session in session storage (short-term and long.term)
+                    if (null == session) {
+                        session = sessiondService.findFirstMatchingSessionForUser(userId, contextId, new SessionMatcher() {
+
+                            @Override
+                            public Set<Flag> flags() {
+                                return EnumSet.of(SessionMatcher.Flag.IGNORE_SHORT_TERM, SessionMatcher.Flag.IGNORE_LONG_TERM);
+                            }
+
+                            @Override
+                            public boolean accepts(Session session_tmp) {
+                                return true;
+                            }}
+                        );
+                    }
+
+                    if (null == session) {
+                        LOGGER.warn("Could not look-up an appropriate session for user {} in context {}. Hence cannot push 'new-message' event.", I(userId), I(contextId));
+                    } else {
+                        Map<String, Object> props = new LinkedHashMap<String, Object>(4);
+                        props.put(PushEventConstants.PROPERTY_NO_FORWARD, Boolean.TRUE); // Do not redistribute through com.openexchange.pns.impl.event.PushEventHandler!
+                        setEventProperties(uid, folder, data.optString("from", null), data.optString("subject", null), data.optInt("unseen", -1), props);
+                        PushUtility.triggerOSGiEvent(MailFolderUtility.prepareFullname(Account.DEFAULT_ID, "INBOX"), session, props, true, true);
+                        LOGGER.info("Successfully parsed & triggered 'new-message' event for user {} in context {}", I(userId), I(contextId));
+                    }
+                }
+            }
+
+            return new JSONObject(2).put("success", true);
+        } catch (JSONException e) {
+            throw AjaxExceptionCodes.JSON_ERROR.create(e, e.getMessage());
+        }
+    }
+
+    private void checkUserExistence(int userId, int contextId) throws OXException {
+        UserService userService = Services.getServiceLookup().getServiceSafe(UserService.class);
+
+        try {
+            userService.getUser(userId, contextId);
+        } catch (OXException e) {
+            if (!UserExceptionCode.USER_NOT_FOUND.equals(e)) {
+                LOGGER.warn("Failed to check existence of user {} in context {}", I(userId), I(contextId), e);
+            }
+            throw e;
+        }
+    }
+
+    private void sendViaNotificationService(int userId, int contextId, long uid, String folder, JSONObject data, PushNotificationService pushNotificationService) throws OXException {
+        Map<String, Object> messageData = new LinkedHashMap<>(6);
+        messageData.put(PushNotificationField.FOLDER.getId(), MailFolderUtility.prepareFullname(Account.DEFAULT_ID, folder));
+        messageData.put(PushNotificationField.ID.getId(), Long.toString(uid));
+        {
+            String from = data.optString("from", null);
+            if (null != from) {
+                try {
+                    InternetAddress fromAddress = QuotedInternetAddress.parseHeader(from, true)[0];
+                    messageData.put(PushNotificationField.MAIL_SENDER_EMAIL.getId(), fromAddress.getAddress());
+                    String personal = fromAddress.getPersonal();
+                    if (Strings.isNotEmpty(personal)) {
+                        messageData.put(PushNotificationField.MAIL_SENDER_PERSONAL.getId(), personal);
+                    }
+                } catch (AddressException e) {
+                    LOGGER.warn("Failed to parse \"from\" address: {}", from, e);
+                    messageData.put(PushNotificationField.MAIL_SENDER_EMAIL.getId(),  MimeMessageUtility.decodeEnvelopeSubject(from));
+                }
+            }
+        }
+        {
+            String subject = data.optString("subject", null);
+            if (null != subject) {
+                messageData.put(PushNotificationField.MAIL_SUBJECT.getId(), MimeMessageUtility.decodeEnvelopeSubject(subject));
+            }
+        }
+        {
+            int unread = data.optInt("unseen", -1);
+            if (unread >= 0) {
+                messageData.put(PushNotificationField.MAIL_UNREAD.getId(), Integer.valueOf(unread));
+            }
+        }
+        {
+            String snippet = data.optString("snippet", null);
+            if (null != snippet) {
+                messageData.put(PushNotificationField.MAIL_TEASER.getId(), snippet);
+            }
+        }
+
+        DefaultPushNotification notification = DefaultPushNotification.builder()
+            .contextId(contextId)
+            .userId(userId)
+            .topic(KnownTopic.MAIL_NEW.getName())
+            .messageData(messageData)
+            .build();
+        pushNotificationService.handle(notification);
+        LOGGER.info("Successfully submitted '{}' notification for user {} in context {} to notification service", KnownTopic.MAIL_NEW.getName(), I(userId), I(contextId));
+    }
+
+    private void setEventProperties(long uid, String fullName, String from, String subject, int unread, Map<String, Object> props) {
+        props.put(PushEventConstants.PROPERTY_IDS, Long.toString(uid));
+
+        try {
+            Container<MailMessage> container = new Container<MailMessage>();
+            container.add(asMessage(uid, fullName, from, subject, unread));
+            props.put(PushEventConstants.PROPERTY_CONTAINER, container);
+        } catch (MessagingException e) {
+            LOGGER.warn("Could not fetch message info.", e);
+        }
+    }
+
+    private MailMessage asMessage(long uid, String fullName, String from, String subject, int unread) throws MessagingException {
+        MailMessage mailMessage = new IDMailMessage(Long.toString(uid), fullName);
+        if (null != from) {
+            mailMessage.addFrom(QuotedInternetAddress.parseHeader(from, true));
+        }
+        if (null != subject) {
+            mailMessage.setSubject(MimeMessageUtility.decodeEnvelopeSubject(subject), true);
+        }
+        if (unread >= 0) {
+            mailMessage.setUnreadMessages(unread);
+        }
+        return mailMessage;
+    }
+
+    private int[] parseUserAndContext(String userAndContext) {
+        if (Strings.isEmpty(userAndContext)) {
+            LOGGER.error("Missing user and context identifiers");
+            return null;
+        }
+        int pos = userAndContext.indexOf('@');
+        if (pos <= 0) {
+            LOGGER.error("Could not parse user and context identifiers from \"{}\"", userAndContext);
+            return null;
+        }
+        try {
+            return new int[] { Integer.parseInt(userAndContext.substring(0, pos)), Integer.parseInt(userAndContext.substring(pos + 1)) };
+        } catch (NumberFormatException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.error("Could not parse user and context identifiers from \"{}\"", userAndContext, e);
+            } else {
+                LOGGER.error("Could not parse user and context identifiers from \"{}\"", userAndContext);
+            }
+            return null;
+        }
+    }
+
+    private Session generateSessionFor(int userId, int contextId) {
+        try {
+            PushListenerService pushListenerService = services.getService(PushListenerService.class);
+            return pushListenerService.generateSessionFor(new PushUser(userId, contextId));
+        } catch (OXException e) {
+            LOGGER.debug("Unable to generate a session", e);
+            return null;
+        } catch (RuntimeException e) {
+            LOGGER.warn("Unable to generate a session", e);
+            return null;
+        }
+    }
+
+}
